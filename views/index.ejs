@@ -1,0 +1,64 @@
+<html>
+<head>
+    <title>Game</title>
+
+    <link rel='stylesheet' href='/css/style.css' />
+
+    <!-- Add jquery -->
+    <!--<script src="http://code.jquery.com/jquery-latest.min.js"></script>-->
+    <script src="/javascripts/jquery-1.12.3.min.js"></script>
+
+    <!-- Add socketio for menage socket connection -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Use of sockets -->
+    <script src="/javascripts/client.js"></script>
+
+    <!-- Add easeljs for menage canvas -->
+    <script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
+    <!-- Add tween for menage animations -->
+    <script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>
+    <!-- Use of createjs -->
+    <script src="/javascripts/draw.js"></script>
+
+
+</head>
+
+<body onload="init();">
+    <canvas id="canvas" width="500" height="300"></canvas>
+</body>
+
+</html>
+
+
+
+
+<!--
+<body>
+
+<div id="chat"></div>
+<form id="send-message">
+    <input size="35" id="message" />
+    <input type="submit" />
+</form>
+
+
+<script>
+    jQuery(function($){
+        var socket = io.connect();
+        var $messageForm = $('#send-message');
+        var $messageBox = $('#message');
+        var $chat = $('#chat');
+
+        $messageForm.submit(function(e){
+            e.preventDefault();
+            socket.emit('send message', $messageBox.val());
+            $messageBox.val('');
+        });
+
+        socket.on('new message', function(data){
+            $chat.append(data + "<br/>");
+        });
+    });
+</script>
+</body>
+-->
