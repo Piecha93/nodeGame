@@ -6,9 +6,7 @@ function InputHandler() {
     };
 };
 
-
 InputHandler.prototype.keyPressed = function (event) {
-    // if(event.keyCode == 37)
     this.inputArray.push(event.keyCode);
     console.log('input: ' + this.inputArray);
 };

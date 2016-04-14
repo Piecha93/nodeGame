@@ -5,10 +5,12 @@ var timer = new DeltaTimer();
 
 function Game() {
     this.players = {};
+
+    this.dd = 'asdddwwwwwwwwwwwwww';
 }
 
 Game.prototype.startGameLoop = function () {
-    this.gameLoop();
+    gameLoop(this);
 };
 
 //creates new player
@@ -38,29 +40,21 @@ Game.prototype.removePlayer = function (id) {
     }
 };
 
-Game.prototype.gameLoop = function () {
+function gameLoop(self) {
     var delta = timer.getDelta();
     handleInput();
     update();
-    render();
 
-    console.log('dd');
-    //  for (var key in this.players) {
-    //     console.log('dd' + this.players[key].x);
-    //   }
-
-    setTimeout(this.gameLoop, 1);
+    setTimeout(function () {
+        gameLoop(self);
+    }, 100);
 };
 
-function handleInput() {
+function handleInput(player, input) {
 
 };
 
 function update() {
-
-};
-
-function render() {
 
 };
 

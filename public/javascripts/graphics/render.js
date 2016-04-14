@@ -30,7 +30,7 @@ Draw.prototype.newPlayer = function (player) {
     this.playersRender[player.id] = playerRender;
     this.stage.addChild(playerRender.shape);
 
-    console.log('new player add to draw');
+    console.log('new player add to render');
 };
 
 Draw.prototype.removePlayer = function (id) {
@@ -39,6 +39,9 @@ Draw.prototype.removePlayer = function (id) {
         this.stage.removeChild(this.playersRender[id].shape);
         //remove from playersRender array
         delete this.playersRender[id];
+
+        console.log('player removed from render');
+
     }
 };
 
