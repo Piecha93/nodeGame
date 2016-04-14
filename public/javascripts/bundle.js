@@ -27,6 +27,8 @@
         var InputHandler = require('./logic/inputhandler');
         var Draw = require('./graphics/render');
 
+        var tickrate = 64;
+
         var game = new Game();
         var draw = new Draw();
 
@@ -35,16 +37,24 @@
         var localPlayer;
 
         game.startGameLoop();
+        serverUpdateLoop();
 
         socket.on('onconnected', function (data) {
             console.log('Connection to server succesfull. Your id is: ' + data.id);
             draw.init("canvas");
         });
 
-        socket.on('updateLoop', function (data) {
+        socket.on('serverUpdate', function (data) {
             //console.log(data);
             updatePlayers(data.players);
         });
+
+//send update to server
+        function serverUpdateLoop() {
+            socket.emit('clientUpdate', {input: inputHandler.getInput()});
+            setTimeout(serverUpdateLoop, 1 / tickrate * 1000);
+            //console.log('updating clients' + new Date().getTime());
+        };
 
 //updates local player depends on server data
         function updatePlayers(serverPlayers) {
@@ -99,7 +109,7 @@
 
         Draw.prototype.init = function (canvas) {
             this.stage = new createjs.Stage(canvas);
-            //  this.stage.updateLoop();
+            //  this.stage.serverUpdateLoop();
 
             console.log('draw init completed');
             createjs.Ticker.setFPS(60);
@@ -170,8 +180,7 @@
 
         function Game() {
             this.players = {};
-
-            this.dd = 'asdddwwwwwwwwwwwwww';
+            //this.inputArray = {};
         }
 
         Game.prototype.startGameLoop = function () {
@@ -182,7 +191,6 @@
         Game.prototype.newPlayer = function (id, newPlayer) {
             var player = new Player();
             player.id = id;
-            //this.players.push(player);
 
             if (typeof newPlayer !== "undefined") {
                 player.x = newPlayer.x;
@@ -196,8 +204,6 @@
 
 
         Game.prototype.removePlayer = function (id) {
-            //var indexToRemove = this.players.indexOf(id);
-            //this.players.splice(indexToRemove, 1);
             delete this.players[id];
 
             for (var key in this.players) {
@@ -207,19 +213,44 @@
 
         function gameLoop(self) {
             var delta = timer.getDelta();
-            handleInput();
-            update();
+            self.handleInput(delta);
+            self.update(delta);
 
             setTimeout(function () {
                 gameLoop(self);
-            }, 100);
+            }, 10);
         };
 
-        function handleInput(player, input) {
-
+        Game.prototype.handleInput = function (delta) {
+            for (var key in this.players) {
+                this.playerInput(key, this.players[key].input, delta)
+            }
         };
 
-        function update() {
+        Game.prototype.playerInput = function (playerId, input, delta) {
+            var player = this.players[playerId];
+            input.forEach(function (i) {
+                var dir;
+                switch (i) {
+                    case 37:
+                        dir = 'left';
+                        break;
+                    case 39:
+                        dir = 'right';
+                        break;
+                    case 38:
+                        dir = 'up';
+                        break;
+                    case 40:
+                        dir = 'down';
+                        break;
+                }
+                player.move(dir, delta);
+            });
+            player.input = [];
+        }
+
+        Game.prototype.update = function () {
 
         };
 
@@ -236,9 +267,18 @@
         };
 
         InputHandler.prototype.keyPressed = function (event) {
-            this.inputArray.push(event.keyCode);
+            //dont put duplicate input
+            if (this.inputArray.indexOf(event.keyCode) == -1)
+                this.inputArray.push(event.keyCode);
+
             console.log('input: ' + this.inputArray);
         };
+
+        InputHandler.prototype.getInput = function () {
+            var inputCopy = this.inputArray.slice();
+            this.inputArray = [];
+            return inputCopy;
+        }
 
         module.exports = InputHandler;
     }, {}],
@@ -246,14 +286,17 @@
         function Player() {
             this.x = Math.random() * 300;
             this.y = Math.random() * 300;
-            ;
+            this.input = [];
+
+            this.speed = 1;
             this.id = 0;
         }
 
-        Player.prototype.move = function (x, y) {
-            this.x += x;
-            this.y += y;
-        };
+        /*
+         Player.prototype.move = function (x, y) {
+         this.x += x;
+         this.y += y;
+         };*/
 
         Player.prototype.setPosition = function (x, y) {
             this.x = x;
@@ -263,6 +306,25 @@
         Player.prototype.update = function (player) {
             this.x = player.x;
             this.y = player.y;
+        };
+
+        Player.prototype.move = function (dir, delta) {
+            var offset = this.speed * delta;
+            switch (dir) {
+                case 'left':
+                    this.x -= offset;
+                    break;
+                case 'right':
+                    this.x += offset;
+                    break;
+                case 'up':
+                    this.y -= offset;
+                    break;
+                case 'down':
+                    this.y += offset;
+                    break;
+            }
+            console.log('ide o ' + offset);
         };
 
         module.exports = Player;

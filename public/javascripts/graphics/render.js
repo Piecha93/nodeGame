@@ -7,7 +7,7 @@ function Draw() {
 
 Draw.prototype.init = function (canvas) {
     this.stage = new createjs.Stage(canvas);
-    //  this.stage.updateLoop();
+    //  this.stage.serverUpdateLoop();
 
     console.log('draw init completed');
     createjs.Ticker.setFPS(60);

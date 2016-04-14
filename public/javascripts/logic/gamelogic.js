@@ -5,8 +5,7 @@ var timer = new DeltaTimer();
 
 function Game() {
     this.players = {};
-
-    this.dd = 'asdddwwwwwwwwwwwwww';
+    //this.inputArray = {};
 }
 
 Game.prototype.startGameLoop = function () {
@@ -17,7 +16,6 @@ Game.prototype.startGameLoop = function () {
 Game.prototype.newPlayer = function (id, newPlayer) {
     var player = new Player();
     player.id = id;
-    //this.players.push(player);
 
     if (typeof newPlayer !== "undefined") {
         player.x = newPlayer.x;
@@ -31,8 +29,6 @@ Game.prototype.newPlayer = function (id, newPlayer) {
 
 
 Game.prototype.removePlayer = function (id) {
-    //var indexToRemove = this.players.indexOf(id);
-    //this.players.splice(indexToRemove, 1);
     delete this.players[id];
 
     for (var key in this.players) {
@@ -42,19 +38,44 @@ Game.prototype.removePlayer = function (id) {
 
 function gameLoop(self) {
     var delta = timer.getDelta();
-    handleInput();
-    update();
+    self.handleInput(delta);
+    self.update(delta);
 
     setTimeout(function () {
         gameLoop(self);
-    }, 100);
+    }, 10);
 };
 
-function handleInput(player, input) {
-
+Game.prototype.handleInput = function (delta) {
+    for (var key in this.players) {
+        this.playerInput(key, this.players[key].input, delta)
+    }
 };
 
-function update() {
+Game.prototype.playerInput = function (playerId, input, delta) {
+    var player = this.players[playerId];
+    input.forEach(function (i) {
+        var dir;
+        switch (i) {
+            case 37:
+                dir = 'left';
+                break;
+            case 39:
+                dir = 'right';
+                break;
+            case 38:
+                dir = 'up';
+                break;
+            case 40:
+                dir = 'down';
+                break;
+        }
+        player.move(dir, delta);
+    });
+    player.input = [];
+}
+
+Game.prototype.update = function () {
 
 };
 

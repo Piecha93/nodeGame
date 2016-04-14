@@ -7,8 +7,17 @@ function InputHandler() {
 };
 
 InputHandler.prototype.keyPressed = function (event) {
-    this.inputArray.push(event.keyCode);
+    //dont put duplicate input
+    if (this.inputArray.indexOf(event.keyCode) == -1)
+        this.inputArray.push(event.keyCode);
+    
     console.log('input: ' + this.inputArray);
 };
+
+InputHandler.prototype.getInput = function () {
+    var inputCopy = this.inputArray.slice();
+    this.inputArray = [];
+    return inputCopy;
+}
 
 module.exports = InputHandler;
