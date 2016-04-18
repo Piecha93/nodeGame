@@ -1,11 +1,11 @@
 var PlayerRender = require("./playerrender");
 
-function Draw() {
+function Render() {
     this.stage;
     this.playersRender = {};
 };
 
-Draw.prototype.init = function (canvas) {
+Render.prototype.init = function (canvas) {
     this.stage = new createjs.Stage(canvas);
     //  this.stage.serverUpdateLoop();
 
@@ -14,7 +14,7 @@ Draw.prototype.init = function (canvas) {
     createjs.Ticker.addEventListener("tick", this.stage);
 };
 
-Draw.prototype.newPlayer = function (player) {
+Render.prototype.newPlayer = function (player) {
     //create new player render
     var playerRender = new PlayerRender();
 
@@ -33,7 +33,7 @@ Draw.prototype.newPlayer = function (player) {
     console.log('new player add to render');
 };
 
-Draw.prototype.removePlayer = function (id) {
+Render.prototype.removePlayer = function (id) {
     if (id in this.playersRender) {
         //remove from stage
         this.stage.removeChild(this.playersRender[id].shape);
@@ -45,10 +45,10 @@ Draw.prototype.removePlayer = function (id) {
     }
 };
 
-Draw.prototype.update = function () {
+Render.prototype.update = function () {
     for (var key in this.playersRender) {
         this.playersRender[key].update();
     }
 };
 
-module.exports = Draw;
+module.exports = Render;

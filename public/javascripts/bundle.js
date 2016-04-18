@@ -24,24 +24,22 @@
     1: [function (require, module, exports) {
         var socket = io.connect();
         var Game = require('./logic/gamelogic');
-        var InputHandler = require('./logic/inputhandler');
-        var Draw = require('./graphics/render');
+        var Render = require('./graphics/render');
 
         var tickrate = 64;
 
         var game = new Game();
-        var draw = new Draw();
+        var render = new Render();
 
-        var inputHandler = new InputHandler();
-
-        var localPlayer;
-
-        game.startGameLoop();
-        serverUpdateLoop();
+        var localId = -1;
 
         socket.on('onconnected', function (data) {
             console.log('Connection to server succesfull. Your id is: ' + data.id);
-            draw.init("canvas");
+            render.init("canvas");
+            localId = data.id;
+
+            game.startGameLoop();
+            serverUpdateLoop();
         });
 
         socket.on('serverUpdate', function (data) {
@@ -51,8 +49,11 @@
 
 //send update to server
         function serverUpdateLoop() {
-            socket.emit('clientUpdate', {input: inputHandler.getInput()});
+            if (game.players[localId] != undefined)
+                socket.emit('clientUpdate', {input: game.players[localId].input});
+
             setTimeout(serverUpdateLoop, 1 / tickrate * 1000);
+            render.update();
             //console.log('updating clients' + new Date().getTime());
         };
 
@@ -61,27 +62,25 @@
             for (var key in serverPlayers) {
                 var localPlayer = game.players[key];
                 if (typeof localPlayer !== "undefined") {
-                    localPlayer.update(serverPlayers[key]);
+                    localPlayer.serverUpdate(serverPlayers[key]);
                 }
                 else {
                     localPlayer = game.newPlayer(serverPlayers[key].id, serverPlayers[key]);
-                    draw.newPlayer(localPlayer);
+                    render.newPlayer(localPlayer);
                 }
             }
 
             //delete players that server don't have
             for (var key in game.players) {
                 if (!(key in serverPlayers)) {
-                    draw.removePlayer(game.players[key].id);
+                    render.removePlayer(game.players[key].id);
                     delete game.players[key];
                 }
             }
-            draw.update();
         };
 
 
-    }, {"./graphics/render": 3, "./logic/gamelogic": 5, "./logic/inputhandler": 6}],
-    2: [function (require, module, exports) {
+    }, {"./graphics/render": 3, "./logic/gamelogic": 5}], 2: [function (require, module, exports) {
         function PlayerRender() {
             this.shape;
             this.player;
@@ -94,20 +93,18 @@
         PlayerRender.prototype.update = function () {
             this.shape.x = this.player.x;
             this.shape.y = this.player.y;
-
         };
 
         module.exports = PlayerRender;
-    }, {}],
-    3: [function (require, module, exports) {
+    }, {}], 3: [function (require, module, exports) {
         var PlayerRender = require("./playerrender");
 
-        function Draw() {
+        function Render() {
             this.stage;
             this.playersRender = {};
         };
 
-        Draw.prototype.init = function (canvas) {
+        Render.prototype.init = function (canvas) {
             this.stage = new createjs.Stage(canvas);
             //  this.stage.serverUpdateLoop();
 
@@ -116,7 +113,7 @@
             createjs.Ticker.addEventListener("tick", this.stage);
         };
 
-        Draw.prototype.newPlayer = function (player) {
+        Render.prototype.newPlayer = function (player) {
             //create new player render
             var playerRender = new PlayerRender();
 
@@ -135,7 +132,7 @@
             console.log('new player add to render');
         };
 
-        Draw.prototype.removePlayer = function (id) {
+        Render.prototype.removePlayer = function (id) {
             if (id in this.playersRender) {
                 //remove from stage
                 this.stage.removeChild(this.playersRender[id].shape);
@@ -147,15 +144,14 @@
             }
         };
 
-        Draw.prototype.update = function () {
+        Render.prototype.update = function () {
             for (var key in this.playersRender) {
                 this.playersRender[key].update();
             }
         };
 
-        module.exports = Draw;
-    }, {"./playerrender": 2}],
-    4: [function (require, module, exports) {
+        module.exports = Render;
+    }, {"./playerrender": 2}], 4: [function (require, module, exports) {
         function DeltaTimer() {
             this.currentTime;
             this.delta;
@@ -171,8 +167,7 @@
         };
 
         module.exports = DeltaTimer;
-    }, {}],
-    5: [function (require, module, exports) {
+    }, {}], 5: [function (require, module, exports) {
         var Player = require('./player');
         var DeltaTimer = require('./detlatimer');
 
@@ -202,13 +197,8 @@
             return player;
         };
 
-
         Game.prototype.removePlayer = function (id) {
             delete this.players[id];
-
-            for (var key in this.players) {
-                console.log('dd' + this.players[key].x);
-            }
         };
 
         function gameLoop(self) {
@@ -223,47 +213,31 @@
 
         Game.prototype.handleInput = function (delta) {
             for (var key in this.players) {
-                this.playerInput(key, this.players[key].input, delta)
+                this.players[key].handleInput();
             }
         };
 
-        Game.prototype.playerInput = function (playerId, input, delta) {
-            var player = this.players[playerId];
-            input.forEach(function (i) {
-                var dir;
-                switch (i) {
-                    case 37:
-                        dir = 'left';
-                        break;
-                    case 39:
-                        dir = 'right';
-                        break;
-                    case 38:
-                        dir = 'up';
-                        break;
-                    case 40:
-                        dir = 'down';
-                        break;
-                }
-                player.move(dir, delta);
-            });
-            player.input = [];
-        }
-
-        Game.prototype.update = function () {
-
+        Game.prototype.update = function (delta) {
+            //update players
+            for (var key in this.players) {
+                this.players[key].update(delta);
+            }
         };
 
         module.exports = Game;
 
-    }, {"./detlatimer": 4, "./player": 7}],
-    6: [function (require, module, exports) {
+    }, {"./detlatimer": 4, "./player": 7}], 6: [function (require, module, exports) {
         function InputHandler() {
             this.inputArray = [];
             var self = this;
-            document.onkeydown = function (event) {
-                self.keyPressed(event);
-            };
+            this.isServer = true;
+            //if document if undefined we are on server and dont need read keys
+            if (typeof document !== 'undefined') {
+                this.isServer = false;
+                document.onkeydown = function (event) {
+                    self.keyPressed(event);
+        };
+            }
         };
 
         InputHandler.prototype.keyPressed = function (event) {
@@ -274,22 +248,32 @@
             console.log('input: ' + this.inputArray);
         };
 
-        InputHandler.prototype.getInput = function () {
-            var inputCopy = this.inputArray.slice();
-            this.inputArray = [];
-            return inputCopy;
-        }
+        InputHandler.prototype.handleClientInput = function () {
+            if (!this.isServer) {
+                var inputCopy = this.inputArray.slice();
+                this.inputArray = [];
+                return inputCopy;
+            }
+            return [];
+        };
 
         module.exports = InputHandler;
-    }, {}],
-    7: [function (require, module, exports) {
+    }, {}], 7: [function (require, module, exports) {
+        var InputHandler = require('./inputhandler');
+
+        var HorizontalDir = {none: 0, left: -1, right: 1};
+        var VerticalDir = {none: 0, up: -1, down: 1};
+
         function Player() {
             this.x = Math.random() * 300;
             this.y = Math.random() * 300;
             this.input = [];
-
-            this.speed = 1;
+            this.horizontalDir = HorizontalDir.none;
+            this.verticalDir = VerticalDir.none;
+            this.speed = 0.1;
             this.id = 0;
+
+            this.inputHandler = new InputHandler();
         }
 
         /*
@@ -298,35 +282,49 @@
          this.y += y;
          };*/
 
+//get and store input from inputhandler
+        Player.prototype.handleInput = function () {
+            if (!this.inputHandler.isServer) {
+                this.input = this.inputHandler.handleClientInput();
+            }
+
+            var self = this;
+            this.input.forEach(function (i) {
+                switch (i) {
+                    case 37:
+                        self.horizontalDir = HorizontalDir.left;
+                        break;
+                    case 39:
+                        self.horizontalDir = HorizontalDir.right;
+                        break;
+                    case 38:
+                        self.verticalDir = VerticalDir.up;
+                        break;
+                    case 40:
+                        self.verticalDir = VerticalDir.down;
+                        break;
+        }
+            });
+        };
+
+//set player position to x, y
         Player.prototype.setPosition = function (x, y) {
             this.x = x;
             this.y = y;
         };
 
-        Player.prototype.update = function (player) {
+//update player position depends on delta and movedir
+        Player.prototype.update = function (delta) {
+            var offset = this.speed * delta;
+            this.x += this.horizontalDir * offset;
+            this.y += this.verticalDir * offset;
+        }
+
+        Player.prototype.serverUpdate = function (player) {
             this.x = player.x;
             this.y = player.y;
         };
 
-        Player.prototype.move = function (dir, delta) {
-            var offset = this.speed * delta;
-            switch (dir) {
-                case 'left':
-                    this.x -= offset;
-                    break;
-                case 'right':
-                    this.x += offset;
-                    break;
-                case 'up':
-                    this.y -= offset;
-                    break;
-                case 'down':
-                    this.y += offset;
-                    break;
-            }
-            console.log('ide o ' + offset);
-        };
-
         module.exports = Player;
-    }, {}]
+    }, {"./inputhandler": 6}]
 }, {}, [1]);

@@ -27,13 +27,8 @@ Game.prototype.newPlayer = function (id, newPlayer) {
     return player;
 };
 
-
 Game.prototype.removePlayer = function (id) {
     delete this.players[id];
-
-    for (var key in this.players) {
-        console.log('dd' + this.players[key].x);
-    }
 };
 
 function gameLoop(self) {
@@ -48,35 +43,15 @@ function gameLoop(self) {
 
 Game.prototype.handleInput = function (delta) {
     for (var key in this.players) {
-        this.playerInput(key, this.players[key].input, delta)
+        this.players[key].handleInput();
     }
 };
 
-Game.prototype.playerInput = function (playerId, input, delta) {
-    var player = this.players[playerId];
-    input.forEach(function (i) {
-        var dir;
-        switch (i) {
-            case 37:
-                dir = 'left';
-                break;
-            case 39:
-                dir = 'right';
-                break;
-            case 38:
-                dir = 'up';
-                break;
-            case 40:
-                dir = 'down';
-                break;
-        }
-        player.move(dir, delta);
-    });
-    player.input = [];
-}
-
-Game.prototype.update = function () {
-
+Game.prototype.update = function (delta) {
+    //update players
+    for (var key in this.players) {
+        this.players[key].update(delta);
+    }
 };
 
 module.exports = Game;

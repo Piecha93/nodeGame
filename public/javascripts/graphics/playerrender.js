@@ -10,7 +10,6 @@ PlayerRender.prototype.init = function () {
 PlayerRender.prototype.update = function () {
     this.shape.x = this.player.x;
     this.shape.y = this.player.y;
-
 };
 
 module.exports = PlayerRender;
