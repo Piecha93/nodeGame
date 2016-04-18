@@ -8,6 +8,9 @@ function InputHandler() {
         document.onkeydown = function (event) {
             self.keyPressed(event);
         };
+        document.onkeyup = function (event) {
+            self.keyReleased(event);
+        }
     }
 };
 
@@ -21,13 +24,22 @@ InputHandler.prototype.keyPressed = function (event) {
     console.log('input: ' + this.inputArray);
 };
 
+InputHandler.prototype.keyReleased = function (event) {
+    var index = this.inputArray.indexOf(event.keyCode);
+    if (index > -1) {
+        this.inputArray.splice(index, 1);
+    }
+    console.log('input: ' + this.inputArray);
+};
+
 InputHandler.prototype.handleClientInput = function () {
-    if (!this.isServer) {
+    /* if (!this.isServer) {
         var inputCopy = this.inputArray.slice();
         this.inputArray = [];
         return inputCopy;
     }
-    return [];
+     return [];*/
+    return this.inputArray;
 };
 
 module.exports = InputHandler;

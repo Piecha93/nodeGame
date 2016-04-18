@@ -237,24 +237,38 @@
                 document.onkeydown = function (event) {
                     self.keyPressed(event);
         };
+                document.onkeyup = function (event) {
+                    self.keyReleased(event);
+                }
             }
         };
 
+//event listener for press key
+//add keycode to input array
         InputHandler.prototype.keyPressed = function (event) {
-            //dont put duplicate input
+            //accepy only input code that is not in array already
             if (this.inputArray.indexOf(event.keyCode) == -1)
                 this.inputArray.push(event.keyCode);
 
             console.log('input: ' + this.inputArray);
         };
 
-        InputHandler.prototype.handleClientInput = function () {
-            if (!this.isServer) {
-                var inputCopy = this.inputArray.slice();
-                this.inputArray = [];
-                return inputCopy;
+        InputHandler.prototype.keyReleased = function (event) {
+            var index = this.inputArray.indexOf(event.keyCode);
+            if (index > -1) {
+                this.inputArray.splice(index, 1);
             }
-            return [];
+            console.log('input: ' + this.inputArray);
+        };
+
+        InputHandler.prototype.handleClientInput = function () {
+            /* if (!this.isServer) {
+             var inputCopy = this.inputArray.slice();
+             this.inputArray = [];
+             return inputCopy;
+             }
+             return [];*/
+            return this.inputArray;
         };
 
         module.exports = InputHandler;
@@ -287,6 +301,9 @@
             if (!this.inputHandler.isServer) {
                 this.input = this.inputHandler.handleClientInput();
             }
+
+            this.horizontalDir = HorizontalDir.none;
+            this.verticalDir = VerticalDir.none;
 
             var self = this;
             this.input.forEach(function (i) {

@@ -27,6 +27,9 @@ Player.prototype.handleInput = function () {
         this.input = this.inputHandler.handleClientInput();
     }
 
+    this.horizontalDir = HorizontalDir.none;
+    this.verticalDir = VerticalDir.none;
+
     var self = this;
     this.input.forEach(function (i) {
         switch (i) {
