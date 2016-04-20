@@ -33,12 +33,6 @@ InputHandler.prototype.keyReleased = function (event) {
 };
 
 InputHandler.prototype.handleClientInput = function () {
-    /* if (!this.isServer) {
-        var inputCopy = this.inputArray.slice();
-        this.inputArray = [];
-        return inputCopy;
-    }
-     return [];*/
     return this.inputArray;
 };
 

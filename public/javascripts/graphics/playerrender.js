@@ -4,7 +4,7 @@ function PlayerRender() {
 }
 
 PlayerRender.prototype.init = function () {
-    this.shape.graphics.beginFill("Blue").drawCircle(0, 0, 25);
+    this.shape.graphics.beginFill("Pink").drawCircle(0, 0, 25);
 }
 
 PlayerRender.prototype.update = function () {

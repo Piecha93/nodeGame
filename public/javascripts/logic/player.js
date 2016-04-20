@@ -9,11 +9,14 @@ function Player() {
     this.input = [];
     this.horizontalDir = HorizontalDir.none;
     this.verticalDir = VerticalDir.none;
-    this.speed = 0.1;
+    this.speed = 0.3;
     this.id = 0;
-
-    this.inputHandler = new InputHandler();
+    this.inputHandler = false;
 }
+
+Player.prototype.setUpInputHandler = function () {
+    this.inputHandler = new InputHandler();
+};
 
 /*
 Player.prototype.move = function (x, y) {
@@ -23,7 +26,7 @@ Player.prototype.move = function (x, y) {
 
 //get and store input from inputhandler
 Player.prototype.handleInput = function () {
-    if (!this.inputHandler.isServer) {
+    if (this.inputHandler) {
         this.input = this.inputHandler.handleClientInput();
     }
 

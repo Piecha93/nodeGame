@@ -39,6 +39,10 @@
             localId = data.id;
 
             game.startGameLoop();
+            var localPlayer = game.newPlayer(localId);
+            localPlayer.setUpInputHandler();
+            render.newPlayer(localPlayer);
+
             serverUpdateLoop();
         });
 
@@ -87,7 +91,7 @@
         }
 
         PlayerRender.prototype.init = function () {
-            this.shape.graphics.beginFill("Blue").drawCircle(0, 0, 25);
+            this.shape.graphics.beginFill("Pink").drawCircle(0, 0, 25);
         }
 
         PlayerRender.prototype.update = function () {
@@ -262,12 +266,6 @@
         };
 
         InputHandler.prototype.handleClientInput = function () {
-            /* if (!this.isServer) {
-             var inputCopy = this.inputArray.slice();
-             this.inputArray = [];
-             return inputCopy;
-             }
-             return [];*/
             return this.inputArray;
         };
 
@@ -284,11 +282,14 @@
             this.input = [];
             this.horizontalDir = HorizontalDir.none;
             this.verticalDir = VerticalDir.none;
-            this.speed = 0.1;
+            this.speed = 0.3;
             this.id = 0;
-
-            this.inputHandler = new InputHandler();
+            this.inputHandler = false;
         }
+
+        Player.prototype.setUpInputHandler = function () {
+            this.inputHandler = new InputHandler();
+        };
 
         /*
          Player.prototype.move = function (x, y) {
@@ -298,7 +299,7 @@
 
 //get and store input from inputhandler
         Player.prototype.handleInput = function () {
-            if (!this.inputHandler.isServer) {
+            if (this.inputHandler) {
                 this.input = this.inputHandler.handleClientInput();
             }
 
