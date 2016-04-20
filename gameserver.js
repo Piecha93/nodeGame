@@ -1,4 +1,4 @@
-var Game = require('./public/javascripts/gamelogic');
+var Game = require('./public/javascripts/logic/gamelogic');
 
 var game;
 
@@ -9,7 +9,7 @@ var clients = [];
 function startGameServer() {
     
     game = new Game();
-   // game.gameLoop();
+    game.startGameLoop();
     
     //start update loop
     updateLoop();
@@ -39,19 +39,35 @@ function clientDisconected(client) {
         console.log(c.id);
     });
     game.removePlayer(client.id);
-}
+};
 
-//updateLoop all clients
+//serverUpdateLoop all clients
 function updateLoop() {
-    var date =  new Date().getTime();
+    for (var key in game.players) {
+        // game.players[key].x = Math.random() * 500;
+        // game.players[key].y = Math.random() * 500;
+    }
+
     clients.forEach(function (c) {
-        c.emit('updateLoop', 'updatuje cie o czasie' + date)
+        c.timeOutTime -= 1 / tickrate;
+        if (c.timeOutTime < 0) {
+            clientDisconected(c);
+        } else {
+            c.emit('serverUpdate', {players: game.players});
+        }
     });
-    
+    //console.log(game.players);
+
     setTimeout(updateLoop, 1/tickrate * 1000);
     //console.log('updating clients' + new Date().getTime());
 };
 
+function handleClientInput(id, input) {
+    //console.log('client: ' + id + ' sent: ' + input);
+    game.players[id].input = input;
+}
+
 module.exports.clientConnected = clientConnected;
 module.exports.clientDisconected = clientDisconected;
 module.exports.startGameServer = startGameServer;
+module.exports.handleClientInput = handleClientInput;
