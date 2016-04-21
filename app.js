@@ -1,6 +1,6 @@
 //set up node modules
 var port = process.env.PORT || 3000;
-var TIME_OUT_TIME = 10; //secounds to timeot when lost connection
+var timeOut = 10; //secounds to timeot when lost connection
 
 var express = require('express');
 var app = express();
@@ -32,7 +32,7 @@ io.sockets.on('connection', function(client){
     client.emit('onconnected', { id :client.id });
     
     gameServer.clientConnected(client);
-    client.timeOutTime = TIME_OUT_TIME;
+    client.timeOutTime = timeOut;
 
     client.on('disconnect', function () {
         gameServer.clientDisconected(client);
@@ -40,7 +40,7 @@ io.sockets.on('connection', function(client){
 
     client.on('clientUpdate', function (data) {
         gameServer.handleClientInput(client.id, data.input);
-        client.timeOutTime = TIME_OUT_TIME;
+        client.timeOutTime = timeOut;
     });
 });
 

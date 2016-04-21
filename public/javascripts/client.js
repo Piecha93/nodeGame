@@ -2,7 +2,8 @@ var socket = io.connect();
 var Game = require('./logic/gamelogic');
 var Render = require('./graphics/render');
 
-var tickrate = 64;
+//number of times per secound sending packets to server
+var updateTickRate = 64;
 
 var game = new Game();
 var render = new Render();
@@ -14,14 +15,20 @@ socket.on('onconnected', function (data) {
     render.init("canvas");
     localId = data.id;
 
+    //start game loop when connected to server
     game.startGameLoop();
+    //set render to game logic update
+    game.setRender(render);
+    //create local player with id from server
     var localPlayer = game.newPlayer(localId);
     localPlayer.setUpInputHandler();
+    //add player to render
     render.newPlayer(localPlayer);
     
     serverUpdateLoop();
 });
 
+//get update from server
 socket.on('serverUpdate', function (data) {
     //console.log(data);
     updatePlayers(data.players);
@@ -32,8 +39,7 @@ function serverUpdateLoop() {
     if (game.players[localId] != undefined)
         socket.emit('clientUpdate', {input: game.players[localId].input});
 
-    setTimeout(serverUpdateLoop, 1 / tickrate * 1000);
-    render.update();
+    setTimeout(serverUpdateLoop, 1 / updateTickRate * 1000);
     //console.log('updating clients' + new Date().getTime());
 };
 

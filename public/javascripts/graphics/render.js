@@ -7,6 +7,8 @@ function Render() {
 
 Render.prototype.init = function (canvas) {
     this.stage = new createjs.Stage(canvas);
+    //  this.stage.width = $(window).width();
+    //  this.stage.height = $(window).height();
     //  this.stage.serverUpdateLoop();
 
     console.log('draw init completed');
@@ -23,12 +25,14 @@ Render.prototype.newPlayer = function (player) {
 
     //create shape for player
     playerRender.shape = new createjs.Shape();
+    playerRender.text = new createjs.Text();
 
     playerRender.init();
     playerRender.update();
 
     this.playersRender[player.id] = playerRender;
     this.stage.addChild(playerRender.shape);
+    this.stage.addChild(playerRender.text);
 
     console.log('new player add to render');
 };
@@ -37,6 +41,7 @@ Render.prototype.removePlayer = function (id) {
     if (id in this.playersRender) {
         //remove from stage
         this.stage.removeChild(this.playersRender[id].shape);
+        this.stage.removeChild(this.playersRender[id].text);
         //remove from playersRender array
         delete this.playersRender[id];
 
@@ -45,7 +50,7 @@ Render.prototype.removePlayer = function (id) {
     }
 };
 
-Render.prototype.update = function () {
+Render.prototype.update = function (delta) {
     for (var key in this.playersRender) {
         this.playersRender[key].update();
     }

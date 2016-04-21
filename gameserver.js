@@ -31,7 +31,7 @@ function clientConnected(client) {
 //client disconnected
 function clientDisconected(client) {
     var indexToRemove = clients.indexOf(client);
-    clients.splice(indexToRemove, 1)
+    clients.splice(indexToRemove, 1);
 
     console.log('Client disconnected');
     console.log('Clients connected(' + clients.length + '):');

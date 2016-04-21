@@ -10,19 +10,14 @@ function Player() {
     this.horizontalDir = HorizontalDir.none;
     this.verticalDir = VerticalDir.none;
     this.speed = 0.3;
-    this.id = 0;
     this.inputHandler = false;
+    this.id = -1;
 }
 
+//create new input handler
 Player.prototype.setUpInputHandler = function () {
     this.inputHandler = new InputHandler();
 };
-
-/*
-Player.prototype.move = function (x, y) {
-    this.x += x;
-    this.y += y;
- };*/
 
 //get and store input from inputhandler
 Player.prototype.handleInput = function () {
@@ -63,7 +58,7 @@ Player.prototype.update = function (delta) {
     var offset = this.speed * delta;
     this.x += this.horizontalDir * offset;
     this.y += this.verticalDir * offset;
-}
+};
 
 Player.prototype.serverUpdate = function (player) {
     this.x = player.x;

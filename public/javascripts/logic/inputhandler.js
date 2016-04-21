@@ -1,10 +1,8 @@
 function InputHandler() {
     this.inputArray = [];
     var self = this;
-    this.isServer = true;
     //if document if undefined we are on server and dont need read keys
     if (typeof document !== 'undefined') {
-        this.isServer = false;
         document.onkeydown = function (event) {
             self.keyPressed(event);
         };

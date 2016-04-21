@@ -26,7 +26,8 @@
         var Game = require('./logic/gamelogic');
         var Render = require('./graphics/render');
 
-        var tickrate = 64;
+//number of times per secound sending packets to server
+        var updateTickRate = 64;
 
         var game = new Game();
         var render = new Render();
@@ -38,14 +39,20 @@
             render.init("canvas");
             localId = data.id;
 
+            //start game loop when connected to server
             game.startGameLoop();
+            //set render to game logic update
+            game.setRender(render);
+            //create local player with id from server
             var localPlayer = game.newPlayer(localId);
             localPlayer.setUpInputHandler();
+            //add player to render
             render.newPlayer(localPlayer);
 
             serverUpdateLoop();
         });
 
+//get update from server
         socket.on('serverUpdate', function (data) {
             //console.log(data);
             updatePlayers(data.players);
@@ -56,8 +63,7 @@
             if (game.players[localId] != undefined)
                 socket.emit('clientUpdate', {input: game.players[localId].input});
 
-            setTimeout(serverUpdateLoop, 1 / tickrate * 1000);
-            render.update();
+            setTimeout(serverUpdateLoop, 1 / updateTickRate * 1000);
             //console.log('updating clients' + new Date().getTime());
         };
 
@@ -70,7 +76,7 @@
                 }
                 else {
                     localPlayer = game.newPlayer(serverPlayers[key].id, serverPlayers[key]);
-                    render.newPlayer(localPlayer);
+            render.newPlayer(localPlayer);
                 }
             }
 
@@ -87,16 +93,22 @@
     }, {"./graphics/render": 3, "./logic/gamelogic": 5}], 2: [function (require, module, exports) {
         function PlayerRender() {
             this.shape;
+            this.text;
             this.player;
         }
 
         PlayerRender.prototype.init = function () {
             this.shape.graphics.beginFill("Pink").drawCircle(0, 0, 25);
-        }
+
+            this.text.textAlign = "center";
+            this.text.text = this.player.id;
+        };
 
         PlayerRender.prototype.update = function () {
-            this.shape.x = this.player.x;
-            this.shape.y = this.player.y;
+            // this.shape.x = this.player.x;
+            // this.shape.y = this.player.y;
+            createjs.Tween.get(this.shape).to({x: this.player.x, y: this.player.y}, 15);
+            createjs.Tween.get(this.text).to({x: this.player.x, y: this.player.y}, 15);
         };
 
         module.exports = PlayerRender;
@@ -110,6 +122,8 @@
 
         Render.prototype.init = function (canvas) {
             this.stage = new createjs.Stage(canvas);
+            //  this.stage.width = $(window).width();
+            //  this.stage.height = $(window).height();
             //  this.stage.serverUpdateLoop();
 
             console.log('draw init completed');
@@ -126,12 +140,14 @@
 
             //create shape for player
             playerRender.shape = new createjs.Shape();
+            playerRender.text = new createjs.Text();
 
             playerRender.init();
             playerRender.update();
 
             this.playersRender[player.id] = playerRender;
             this.stage.addChild(playerRender.shape);
+            this.stage.addChild(playerRender.text);
 
             console.log('new player add to render');
         };
@@ -140,6 +156,7 @@
             if (id in this.playersRender) {
                 //remove from stage
                 this.stage.removeChild(this.playersRender[id].shape);
+                this.stage.removeChild(this.playersRender[id].text);
                 //remove from playersRender array
                 delete this.playersRender[id];
 
@@ -148,7 +165,7 @@
             }
         };
 
-        Render.prototype.update = function () {
+        Render.prototype.update = function (delta) {
             for (var key in this.playersRender) {
                 this.playersRender[key].update();
             }
@@ -177,42 +194,25 @@
 
         var timer = new DeltaTimer();
 
+        var tickRate = 128;
+
         function Game() {
             this.players = {};
-            //this.inputArray = {};
+            this.renderHandler = null;
         }
 
         Game.prototype.startGameLoop = function () {
             gameLoop(this);
         };
 
-//creates new player
-        Game.prototype.newPlayer = function (id, newPlayer) {
-            var player = new Player();
-            player.id = id;
-
-            if (typeof newPlayer !== "undefined") {
-                player.x = newPlayer.x;
-                player.y = newPlayer.y;
-            }
-
-            this.players[player.id] = player;
-
-            return player;
-        };
-
-        Game.prototype.removePlayer = function (id) {
-            delete this.players[id];
-        };
-
         function gameLoop(self) {
             var delta = timer.getDelta();
             self.handleInput(delta);
             self.update(delta);
-
+            self.render(delta);
             setTimeout(function () {
                 gameLoop(self);
-            }, 10);
+            }, 1 / tickRate * 1000);
         };
 
         Game.prototype.handleInput = function (delta) {
@@ -228,16 +228,50 @@
             }
         };
 
+        Game.prototype.render = function (delta) {
+            if (this.renderHandler != null) {
+                this.renderHandler.update(delta);
+            }
+        };
+
+        Game.prototype.setRender = function (render) {
+            this.renderHandler = render;
+        }
+
+//creates new player
+        Game.prototype.newPlayer = function (id, newPlayer) {
+            var player = new Player();
+            player.id = id;
+
+            if (typeof newPlayer !== "undefined") {
+                player.x = newPlayer.x;
+                player.y = newPlayer.y;
+            }
+            this.players[player.id] = player;
+
+            return player;
+        };
+
+        Game.prototype.removePlayer = function (id) {
+            delete this.players[id];
+        };
+
+        Game.prototype.setTickRate = function (tr) {
+            tickRate = tr;
+        };
+
+        Game.prototype.getTickRate = function () {
+            return tickRate;
+        };
+
         module.exports = Game;
 
     }, {"./detlatimer": 4, "./player": 7}], 6: [function (require, module, exports) {
         function InputHandler() {
             this.inputArray = [];
             var self = this;
-            this.isServer = true;
             //if document if undefined we are on server and dont need read keys
             if (typeof document !== 'undefined') {
-                this.isServer = false;
                 document.onkeydown = function (event) {
                     self.keyPressed(event);
         };
@@ -283,19 +317,14 @@
             this.horizontalDir = HorizontalDir.none;
             this.verticalDir = VerticalDir.none;
             this.speed = 0.3;
-            this.id = 0;
             this.inputHandler = false;
+            this.id = -1;
         }
 
+//create new input handler
         Player.prototype.setUpInputHandler = function () {
             this.inputHandler = new InputHandler();
         };
-
-        /*
-         Player.prototype.move = function (x, y) {
-         this.x += x;
-         this.y += y;
-         };*/
 
 //get and store input from inputhandler
         Player.prototype.handleInput = function () {
@@ -336,7 +365,7 @@
             var offset = this.speed * delta;
             this.x += this.horizontalDir * offset;
             this.y += this.verticalDir * offset;
-        }
+        };
 
         Player.prototype.serverUpdate = function (player) {
             this.x = player.x;
