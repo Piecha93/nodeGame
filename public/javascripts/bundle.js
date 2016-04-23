@@ -31,200 +31,192 @@
         var heartBeatsRate = 3;
         var heartBeatsTimer = 0;
 
-        var game = new Game();
         var render = new Render();
+        var game = new Game();
 
         var localId = -1;
 
-        var socket = io.connect();
+        render.loadAssets(function () {
+            var socket = io.connect();
 
-        socket.on('onconnected', function (data) {
-            console.log('Connection to server succesfull. Your id is: ' + data.id);
-            render.init("canvas");
-            localId = data.id;
+            socket.on('onconnected', function (data) {
+                render.init();
 
-            //start game loop when connected to server
-            game.startGameLoop();
-            //set render to game logic update
-            game.setRender(render);
-            //create local player with id from server
-            var localPlayer = game.newPlayer(localId);
-            localPlayer.setUpInputHandler();
-            //add player to render
-            render.newPlayer(localPlayer);
+                console.log('Connection to server succesfull. Your id is: ' + data.id);
+                localId = data.id;
 
-            startServerUpdateLoop();
-        });
-
-//get update from server
-        socket.on('serverUpdate', function (data) {
-            console.log(data);
-            if (data.players !== undefined)
-                updatePlayers(data.players);
-            if (data.disconnectedClients.length > 0)
-                deletePlayers(data.disconnectedClients);
-        });
-
-//send update to server
-        function serverUpdateLoop() {
-            var update = {};
-            //if local player exist and has new input to send
-            if (game.players[localId] != undefined && game.players[localId].inputHandler.isChanged) {
-                game.players[localId].inputHandler.isChanged = false;
-                update.input = game.players[localId].input;
-            }
-            if (heartBeatsTimer >= 1 / heartBeatsRate * 1000) {
-                heartBeatsTimer = 0;
-            } else {
-                heartBeatsTimer += 1 / updateTickRate * 1000
-            }
-
-            if (Object.keys(update).length !== 0) {
-                socket.emit('clientUpdate', update);
-            }
-            //console.log('updating clients' + new Date().getTime());
-        };
-
-//updates local player depends on server data
-        function updatePlayers(serverPlayers) {
-            for (var key in serverPlayers) {
-                console.log(key);
-                var localPlayer = game.players[key];
-                if (typeof localPlayer !== "undefined") {
-                    localPlayer.serverUpdate(serverPlayers[key]);
-                }
-                else {
-                    localPlayer = game.newPlayer(key, serverPlayers[key]);
-            render.newPlayer(localPlayer);
-        }
-            }
-        };
-
-        function deletePlayers(disconnected) {
-            console.log('usuwam');
-            disconnected.forEach(function (id) {
-                render.removePlayer(id);
-                game.removePlayer(id);
+                //start game loop when connected to server
+                game.startGameLoop();
+                //set render to game logic update
+                game.setRender(render);
+                //create local player with id from server
+                var localPlayer = game.newPlayer(localId);
+                localPlayer.setUpInputHandler();
+                startServerUpdateLoop();
+                //add player to render
+                render.newPlayer(localPlayer);
             });
-        };
 
-        function startServerUpdateLoop() {
-            serverUpdateLoop();
-            setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
-        }
+            //get update from server
+            socket.on('serverUpdate', function (data) {
+                if (data.players !== undefined)
+                    updatePlayers(data.players);
+                if (data.disconnectedClients.length > 0)
+                    deletePlayers(data.disconnectedClients);
+            });
 
-        var backgroundInterval;
-        window.onfocus = function () {
-            clearInterval(backgroundInterval);
-        };
+            //send update to server
+            function serverUpdateLoop() {
+                var update = {};
+                //if local player exist and has new input to send
+                if (game.players[localId] != undefined && game.players[localId].inputHandler.isChanged) {
+                    game.players[localId].inputHandler.isChanged = false;
+                    update.input = game.players[localId].input;
+                }
+                if (heartBeatsTimer >= 1 / heartBeatsRate * 1000) {
+                    heartBeatsTimer = 0;
+                } else {
+                    heartBeatsTimer += 1 / updateTickRate * 1000
+                }
 
-        window.onblur = function () {
-            if (localId != -1 && game.players[localId].inputHandler != undefined) {
-                game.players[localId].inputHandler.resetInput();
-                serverUpdateLoop();
+                if (Object.keys(update).length !== 0) {
+                    socket.emit('clientUpdate', update);
+                }
+                //console.log('updating clients' + new Date().getTime());
+            };
+
+            //updates local player depends on server data
+            function updatePlayers(serverPlayers) {
+                for (var key in serverPlayers) {
+                    var localPlayer = game.players[key];
+                    if (typeof localPlayer !== "undefined") {
+                        localPlayer.serverUpdate(serverPlayers[key]);
             }
-            backgroundInterval = setInterval(function () {
-                socket.emit('clientUpdate', {});
-            }, 1000);
-        };
+                    else {
+                        console.log("playerrrrr")
+                        localPlayer = game.newPlayer(key, serverPlayers[key]);
+                        render.newPlayer(localPlayer);
+            }
+        }
+            };
+
+            function deletePlayers(disconnected) {
+                disconnected.forEach(function (id) {
+                    render.removePlayer(id);
+                    game.removePlayer(id);
+                });
+            };
+
+            function startServerUpdateLoop() {
+                serverUpdateLoop();
+                setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
+            }
+
+            var backgroundInterval;
+            window.onfocus = function () {
+                clearInterval(backgroundInterval);
+            };
+
+            window.onblur = function () {
+                if (localId != -1 && game.players[localId].inputHandler != undefined) {
+                    game.players[localId].inputHandler.resetInput();
+                    serverUpdateLoop();
+        }
+                backgroundInterval = setInterval(function () {
+                    socket.emit('clientUpdate', {});
+                }, 1000);
+            };
+        });
 
 
     }, {"./graphics/render": 3, "./logic/gamelogic": 5}], 2: [function (require, module, exports) {
         function PlayerRender() {
-            this.shape;
-            this.shapeTween;
-
-            this.text;
-            this.textTween
-
-            this.player;
+            this.shape = null;
+            this.text = null;
+            this.player = null;
         }
 
         PlayerRender.prototype.init = function () {
-            this.shape.graphics.beginFill("Pink").drawCircle(0, 0, 25);
+            //this.shape.graphics.beginFill("Pink").drawCircle(0, 0, 25);
             // this.shapeTween = createjs.Tween.get(this.shape);
 
-            this.text.textAlign = "center";
-            this.text.text = this.player.id;
+            //this.text.textAlign = "center";
+            //this.text.text = this.player.id;
             //  this.textTween = createjs.Tween.get(this.text);
 
         };
 
         PlayerRender.prototype.update = function () {
-            // this.shape.x = this.player.x;
-            // this.shape.y = this.player.y;
-            createjs.Tween.get(this.shape).to({x: this.player.x, y: this.player.y}, 0);
-            createjs.Tween.get(this.text).to({x: this.player.x, y: this.player.y}, 0);
+            this.shape.x = this.player.x;
+            this.shape.y = this.player.y;
+            //createjs.Tween.get(this.shape).to({x: this.player.x, y: this.player.y}, 0);
+            //createjs.Tween.get(this.text).to({x: this.player.x, y: this.player.y}, 0);
         };
 
         module.exports = PlayerRender;
-
-
-        function Animal() {
-            this.getName = function () {
-                return "animal";
-            }
-        }
-
-        /*
-         function Cat() {
-         this.getName = function () {
-         return "cat";
-         }
-         }
-
-         Cat.prototype = new Animal();
-         */
     }, {}], 3: [function (require, module, exports) {
         var PlayerRender = require("./playerrender");
 
         function Render() {
+            this.renderer;
             this.stage;
+            this.loader;
             this.playersRender = {};
+
+        }
+
+        Render.prototype.loadAssets = function (callback) {
+            PIXI.loader.add('bunny', 'resources/images/bunny.png').load(function () {
+                console.log("wczytane");
+                callback();
+            });
         };
 
-        Render.prototype.init = function (canvas) {
-            this.stage = new createjs.Stage(canvas);
-            //  this.stage.width = $(window).width();
-            //  this.stage.height = $(window).height();
-            //  this.stage.serverUpdateLoop();
+        Render.prototype.init = function () {
+            // You can use either `new PIXI.WebGLRenderer`, `new PIXI.CanvasRenderer`, or `PIXI.autoDetectRenderer`
+            // which will try to choose the best renderer for the environment you are in.
+            this.renderer = new PIXI.autoDetectRenderer(800, 600);
 
-            console.log('draw init completed');
-            createjs.Ticker.setFPS(60);
-            createjs.Ticker.addEventListener("tick", this.stage);
+// The renderer will create a canvas element for you that you can then insert into the DOM.
+            document.body.appendChild(this.renderer.view);
+
+// You need to create a root container that will hold the scene you want to draw.
+            this.stage = new PIXI.Container();
         };
 
         Render.prototype.newPlayer = function (player) {
+            console.log("player2");
             //create new player render
             var playerRender = new PlayerRender();
 
             //set up player reference
             playerRender.player = player;
 
-            //create shape for player
-            playerRender.shape = new createjs.Shape();
-            playerRender.text = new createjs.Text();
+            // load the texture we need
+            playerRender.shape = new PIXI.Sprite(PIXI.loader.resources["bunny"].texture);
+
+            /*
+             playerRender.shape = new PIXI.Graphics();
+             playerRender.shape.lineStyle(2, 0xFF00FF);  //(thickness, color)
+             playerRender.shape.drawCircle(0, 0, 10);   //(x,y,radius)
+             playerRender.shape.endFill();*/
 
             playerRender.init();
             playerRender.update();
-
-            this.playersRender[player.id] = playerRender;
+            // Add the bunny to the scene we are building.
             this.stage.addChild(playerRender.shape);
-            this.stage.addChild(playerRender.text);
-
-            console.log('new player add to render');
+            // Add player to playersRender array
+            this.playersRender[player.id] = playerRender;
         };
 
         Render.prototype.removePlayer = function (id) {
             if (id in this.playersRender) {
                 //remove from stage
                 this.stage.removeChild(this.playersRender[id].shape);
-                this.stage.removeChild(this.playersRender[id].text);
                 //remove from playersRender array
                 delete this.playersRender[id];
 
                 console.log('player removed from render');
-
             }
         };
 
@@ -232,6 +224,8 @@
             for (var key in this.playersRender) {
                 this.playersRender[key].update();
             }
+
+            this.renderer.render(this.stage);
         };
 
         module.exports = Render;

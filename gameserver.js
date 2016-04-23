@@ -22,7 +22,6 @@ function startGameServer(sock) {
     console.log('Gameserver started');
 }
 
-
 //new client connected
 function clientConnected(client) {
     clients.push(client);
@@ -56,6 +55,7 @@ function clientDisconnected(client) {
 
 //serverUpdateLoop all clients
 function updateLoop() {
+    //check if client not timeout
     clients.forEach(function (c) {
         c.timeOutTime -= 1 / updateTickRate;
         if (c.timeOutTime < 0) {
@@ -63,6 +63,7 @@ function updateLoop() {
         }
     });
 
+    //get players who need update
     for (var key in game.players) {
         if (game.players[key].isChanged) {
             update.players[key] = game.players[key].getUpdateInfo();
@@ -71,10 +72,9 @@ function updateLoop() {
         }
     }
 
-
+    //if update is not empty send it to clients
     if (!update.isEmpty) {
         socket.emit('serverUpdate', update);
-        console.log("WYSYLAM");
         update = {
             players: {},
             disconnectedClients: [],
@@ -82,6 +82,7 @@ function updateLoop() {
         };
     }
 
+    //set next update time
     setTimeout(updateLoop, 1 / updateTickRate * 1000);
 };
 
