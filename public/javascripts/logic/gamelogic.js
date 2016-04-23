@@ -3,7 +3,7 @@ var DeltaTimer = require('./detlatimer');
 
 var timer = new DeltaTimer();
 
-var tickRate = 128;
+var tickRate = 64;
 
 function Game() {
     this.players = {};
@@ -19,6 +19,7 @@ function gameLoop(self) {
     self.handleInput(delta);
     self.update(delta);
     self.render(delta);
+
     setTimeout(function () {
         gameLoop(self);
     }, 1 / tickRate * 1000);
