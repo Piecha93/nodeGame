@@ -28,9 +28,14 @@ socket.on('onconnected', function (data) {
     localPlayer.setUpInputHandler();
     //add player to render
     render.newPlayer(localPlayer);
-    
-    serverUpdateLoop();
+
+    startServerUpdateLoop();
 });
+
+function startServerUpdateLoop() {
+    serverUpdateLoop();
+    setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
+}
 
 //get update from server
 socket.on('serverUpdate', function (data) {
@@ -58,7 +63,6 @@ function serverUpdateLoop() {
     if (Object.keys(update).length !== 0) {
         socket.emit('clientUpdate', update);
     }
-    setTimeout(serverUpdateLoop, 1 / updateTickRate * 1000);
     //console.log('updating clients' + new Date().getTime());
 };
 
@@ -90,6 +94,10 @@ window.onfocus = function () {
 };
 
 window.onblur = function () {
+    if (localId != -1) {
+        game.players[localId].inputHandler.resetInput();
+        serverUpdateLoop();
+    }
     backgroundInterval = setInterval(function () {
         socket.emit('clientUpdate', {});
     }, 1000);

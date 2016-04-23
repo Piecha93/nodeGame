@@ -2,6 +2,13 @@
 var port = process.env.PORT || 3000;
 var timeOut = 10; //secounds to timeot when lost connection
 
+var validInputs = [
+    39, //right
+    37, //left
+    38, //up
+    40  //down
+];
+
 var express = require('express');
 var app = express();
 var path = require('path');

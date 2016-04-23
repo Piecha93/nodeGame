@@ -1,3 +1,18 @@
+var validInputs = [
+    39, //right
+    37, //left
+    38, //up
+    40  //down
+];
+
+function isInputValid(inputCode) {
+    if (validInputs.indexOf(inputCode) != -1) {
+        return true;
+    }
+
+    return false;
+}
+
 function InputHandler() {
     this.isChanged = false;
     this.inputArray = [];
@@ -17,11 +32,11 @@ function InputHandler() {
 //add keycode to input array
 InputHandler.prototype.keyPressed = function (event) {
     //accepy only input code that is not in array already
-    if (this.inputArray.indexOf(event.keyCode) == -1) {
+    if (this.inputArray.indexOf(event.keyCode) == -1 && isInputValid(event.keyCode)) {
         this.inputArray.push(event.keyCode);
         this.isChanged = true;
     }
-    //console.log('input: ' + this.inputArray);
+    console.log('input: ' + this.inputArray);
 };
 
 InputHandler.prototype.keyReleased = function (event) {
@@ -36,5 +51,10 @@ InputHandler.prototype.keyReleased = function (event) {
 InputHandler.prototype.handleClientInput = function () {
     return this.inputArray;
 };
+
+InputHandler.prototype.resetInput = function () {
+    this.inputArray.splice(0, this.inputArray.length);
+    this.isChanged = true;
+}
 
 module.exports = InputHandler;

@@ -53,8 +53,13 @@
             //add player to render
             render.newPlayer(localPlayer);
 
-            serverUpdateLoop();
+            startServerUpdateLoop();
         });
+
+        function startServerUpdateLoop() {
+            serverUpdateLoop();
+            setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
+        }
 
 //get update from server
         socket.on('serverUpdate', function (data) {
@@ -82,7 +87,6 @@
             if (Object.keys(update).length !== 0) {
                 socket.emit('clientUpdate', update);
             }
-            setTimeout(serverUpdateLoop, 1 / updateTickRate * 1000);
             //console.log('updating clients' + new Date().getTime());
         };
 
@@ -96,7 +100,7 @@
                 else {
                     localPlayer = game.newPlayer(serverPlayers[key].id, serverPlayers[key]);
             render.newPlayer(localPlayer);
-                }
+        }
             }
         };
 
@@ -114,6 +118,10 @@
         };
 
         window.onblur = function () {
+            if (localId != -1) {
+                game.players[localId].inputHandler.resetInput();
+                serverUpdateLoop();
+            }
             backgroundInterval = setInterval(function () {
                 socket.emit('clientUpdate', {});
             }, 1000);
@@ -248,7 +256,7 @@
 
         var timer = new DeltaTimer();
 
-        var tickRate = 64;
+        var tickRate = 128;
 
         function Game() {
             this.players = {};
@@ -322,6 +330,21 @@
         module.exports = Game;
 
     }, {"./detlatimer": 4, "./player": 7}], 6: [function (require, module, exports) {
+        var validInputs = [
+            39, //right
+            37, //left
+            38, //up
+            40  //down
+        ];
+
+        function isInputValid(inputCode) {
+            if (validInputs.indexOf(inputCode) != -1) {
+                return true;
+            }
+
+            return false;
+        }
+
         function InputHandler() {
             this.isChanged = false;
             this.inputArray = [];
@@ -341,11 +364,11 @@
 //add keycode to input array
         InputHandler.prototype.keyPressed = function (event) {
             //accepy only input code that is not in array already
-            if (this.inputArray.indexOf(event.keyCode) == -1) {
+            if (this.inputArray.indexOf(event.keyCode) == -1 && isInputValid(event.keyCode)) {
                 this.inputArray.push(event.keyCode);
                 this.isChanged = true;
             }
-            //console.log('input: ' + this.inputArray);
+            console.log('input: ' + this.inputArray);
         };
 
         InputHandler.prototype.keyReleased = function (event) {
@@ -360,6 +383,11 @@
         InputHandler.prototype.handleClientInput = function () {
             return this.inputArray;
         };
+
+        InputHandler.prototype.resetInput = function () {
+            this.inputArray.splice(0, this.inputArray.length);
+            this.isChanged = true;
+        }
 
         module.exports = InputHandler;
     }, {}], 7: [function (require, module, exports) {
