@@ -147,10 +147,11 @@
         }
 
         PlayerRender.prototype.init = function () {
-            this.currentAnimation.animationSpeed = 0.1;
+            this.currentAnimation.animationSpeed = this.player.speed / 2;
         };
 
         PlayerRender.prototype.update = function () {
+            console.log(this.player.horizontalMove);
             if (this.player.horizontalMove == -1) {
                 this.currentAnimation.textures = this.framesLeft;
                 this.currentAnimation.play();
@@ -445,8 +446,11 @@
                 this.input = this.inputHandler.handleClientInput();
             }
 
-            this.horizontalDir = HorizontalDir.none;
-            this.verticalDir = VerticalDir.none;
+            if (this.horizontalDir != 0 || this.verticalDir != 0) {
+                this.horizontalDir = HorizontalDir.none;
+                this.verticalDir = VerticalDir.none;
+                this.isChanged = true;
+            }
 
             var self = this;
             this.input.forEach(function (i) {
@@ -468,17 +472,19 @@
             });
         };
 
+//update player position depends on delta and movedir
+        Player.prototype.update = function (delta) {
+            var offset = this.speed * delta;
+            if (this.verticalDir != 0 && this.horizontalDir != 0)
+                offset = offset * Math.sin(45 * (180 / Math.PI));
+            this.x += this.horizontalDir * offset;
+            this.y += this.verticalDir * offset;
+        };
+
 //set player position to x, y
         Player.prototype.setPosition = function (x, y) {
             this.x = x;
             this.y = y;
-        };
-
-//update player position depends on delta and movedir
-        Player.prototype.update = function (delta) {
-            var offset = this.speed * delta;
-            this.x += this.horizontalDir * offset;
-            this.y += this.verticalDir * offset;
         };
 
         Player.prototype.serverUpdate = function (playerUpdateInfo) {

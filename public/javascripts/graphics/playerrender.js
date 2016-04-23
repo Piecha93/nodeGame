@@ -13,10 +13,11 @@ function PlayerRender() {
 }
 
 PlayerRender.prototype.init = function () {
-    this.currentAnimation.animationSpeed = 0.1;
+    this.currentAnimation.animationSpeed = this.player.speed / 2;
 };
 
 PlayerRender.prototype.update = function () {
+    console.log(this.player.horizontalMove);
     if (this.player.horizontalMove == -1) {
         this.currentAnimation.textures = this.framesLeft;
         this.currentAnimation.play();
