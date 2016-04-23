@@ -22,17 +22,21 @@
     return s
 })({
     1: [function (require, module, exports) {
-        var socket = io.connect();
         var Game = require('./logic/gamelogic');
         var Render = require('./graphics/render');
 
 //number of times per secound sending packets to server
-        var updateTickRate = 64;
+        var updateTickRate = 32;
+
+        var heartBeatsRate = 3;
+        var heartBeatsTimer = 0;
 
         var game = new Game();
         var render = new Render();
 
         var localId = -1;
+
+        var socket = io.connect();
 
         socket.on('onconnected', function (data) {
             console.log('Connection to server succesfull. Your id is: ' + data.id);
@@ -55,14 +59,29 @@
 //get update from server
         socket.on('serverUpdate', function (data) {
             //console.log(data);
-            updatePlayers(data.players);
+            if (data.players !== undefined)
+                updatePlayers(data.players);
+            if (data.disconnectedClients.length > 0)
+                deletePlayers(data.disconnectedClients);
         });
 
 //send update to server
         function serverUpdateLoop() {
-            if (game.players[localId] != undefined)
-                socket.emit('clientUpdate', {input: game.players[localId].input});
+            var update = {};
+            //if local player exist and has new input to send
+            if (game.players[localId] != undefined && game.players[localId].inputHandler.isChanged) {
+                game.players[localId].inputHandler.isChanged = false;
+                update.input = game.players[localId].input;
+            }
+            if (heartBeatsTimer >= 1 / heartBeatsRate * 1000) {
+                heartBeatsTimer = 0;
+            } else {
+                heartBeatsTimer += 1 / updateTickRate * 1000
+            }
 
+            if (Object.keys(update).length !== 0) {
+                socket.emit('clientUpdate', update);
+            }
             setTimeout(serverUpdateLoop, 1 / updateTickRate * 1000);
             //console.log('updating clients' + new Date().getTime());
         };
@@ -79,39 +98,74 @@
             render.newPlayer(localPlayer);
                 }
             }
+        };
 
-            //delete players that server don't have
-            for (var key in game.players) {
-                if (!(key in serverPlayers)) {
-                    render.removePlayer(game.players[key].id);
-                    delete game.players[key];
-                }
-            }
+        function deletePlayers(disconnected) {
+            console.log('usuwam');
+            disconnected.forEach(function (id) {
+                render.removePlayer(id);
+                game.removePlayer(id);
+            });
+        }
+
+        var backgroundInterval;
+        window.onfocus = function () {
+            clearInterval(backgroundInterval);
+        };
+
+        window.onblur = function () {
+            backgroundInterval = setInterval(function () {
+                socket.emit('clientUpdate', {});
+            }, 1000);
         };
 
 
     }, {"./graphics/render": 3, "./logic/gamelogic": 5}], 2: [function (require, module, exports) {
         function PlayerRender() {
             this.shape;
+            this.shapeTween;
+
             this.text;
+            this.textTween
+
             this.player;
         }
 
         PlayerRender.prototype.init = function () {
             this.shape.graphics.beginFill("Pink").drawCircle(0, 0, 25);
+            // this.shapeTween = createjs.Tween.get(this.shape);
 
             this.text.textAlign = "center";
             this.text.text = this.player.id;
+            //  this.textTween = createjs.Tween.get(this.text);
+
         };
 
         PlayerRender.prototype.update = function () {
             // this.shape.x = this.player.x;
             // this.shape.y = this.player.y;
-            createjs.Tween.get(this.shape).to({x: this.player.x, y: this.player.y}, 15);
-            createjs.Tween.get(this.text).to({x: this.player.x, y: this.player.y}, 15);
+            createjs.Tween.get(this.shape).to({x: this.player.x, y: this.player.y}, 0);
+            createjs.Tween.get(this.text).to({x: this.player.x, y: this.player.y}, 0);
         };
 
         module.exports = PlayerRender;
+
+
+        function Animal() {
+            this.getName = function () {
+                return "animal";
+            }
+        }
+
+        /*
+         function Cat() {
+         this.getName = function () {
+         return "cat";
+         }
+         }
+
+         Cat.prototype = new Animal();
+         */
     }, {}], 3: [function (require, module, exports) {
         var PlayerRender = require("./playerrender");
 
@@ -194,7 +248,7 @@
 
         var timer = new DeltaTimer();
 
-        var tickRate = 128;
+        var tickRate = 64;
 
         function Game() {
             this.players = {};
@@ -210,6 +264,7 @@
             self.handleInput(delta);
             self.update(delta);
             self.render(delta);
+
             setTimeout(function () {
                 gameLoop(self);
             }, 1 / tickRate * 1000);
@@ -268,6 +323,7 @@
 
     }, {"./detlatimer": 4, "./player": 7}], 6: [function (require, module, exports) {
         function InputHandler() {
+            this.isChanged = false;
             this.inputArray = [];
             var self = this;
             //if document if undefined we are on server and dont need read keys
@@ -285,18 +341,20 @@
 //add keycode to input array
         InputHandler.prototype.keyPressed = function (event) {
             //accepy only input code that is not in array already
-            if (this.inputArray.indexOf(event.keyCode) == -1)
+            if (this.inputArray.indexOf(event.keyCode) == -1) {
                 this.inputArray.push(event.keyCode);
-
-            console.log('input: ' + this.inputArray);
+                this.isChanged = true;
+            }
+            //console.log('input: ' + this.inputArray);
         };
 
         InputHandler.prototype.keyReleased = function (event) {
             var index = this.inputArray.indexOf(event.keyCode);
             if (index > -1) {
                 this.inputArray.splice(index, 1);
+                this.isChanged = true;
             }
-            console.log('input: ' + this.inputArray);
+            //console.log('input: ' + this.inputArray);
         };
 
         InputHandler.prototype.handleClientInput = function () {
@@ -318,6 +376,7 @@
             this.verticalDir = VerticalDir.none;
             this.speed = 0.3;
             this.inputHandler = false;
+            this.isChanged = true;
             this.id = -1;
         }
 
@@ -326,8 +385,9 @@
             this.inputHandler = new InputHandler();
         };
 
-//get and store input from inputhandler
+
         Player.prototype.handleInput = function () {
+            //inputHandler exist only on client local player (never on server)
             if (this.inputHandler) {
                 this.input = this.inputHandler.handleClientInput();
             }
@@ -337,6 +397,7 @@
 
             var self = this;
             this.input.forEach(function (i) {
+                self.isChanged = true;
                 switch (i) {
                     case 37:
                         self.horizontalDir = HorizontalDir.left;

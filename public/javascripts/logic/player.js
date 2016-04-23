@@ -11,6 +11,7 @@ function Player() {
     this.verticalDir = VerticalDir.none;
     this.speed = 0.3;
     this.inputHandler = false;
+    this.isChanged = true;
     this.id = -1;
 }
 
@@ -19,8 +20,9 @@ Player.prototype.setUpInputHandler = function () {
     this.inputHandler = new InputHandler();
 };
 
-//get and store input from inputhandler
+
 Player.prototype.handleInput = function () {
+    //inputHandler exist only on client local player (never on server)
     if (this.inputHandler) {
         this.input = this.inputHandler.handleClientInput();
     }
@@ -30,6 +32,7 @@ Player.prototype.handleInput = function () {
 
     var self = this;
     this.input.forEach(function (i) {
+        self.isChanged = true;
         switch (i) {
             case 37:
                 self.horizontalDir = HorizontalDir.left;

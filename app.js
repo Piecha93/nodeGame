@@ -23,7 +23,7 @@ app.use('/', routes);
 
 var gameServer = require('./gameserver');
 
-gameServer.startGameServer();
+gameServer.startGameServer(io.sockets);
 
 io.sockets.on('connection', function(client){
 
@@ -39,7 +39,9 @@ io.sockets.on('connection', function(client){
     });
 
     client.on('clientUpdate', function (data) {
-        gameServer.handleClientInput(client.id, data.input);
+        if (data.input !== undefined) {
+            gameServer.handleClientInput(client.id, data.input);
+        }
         client.timeOutTime = timeOut;
     });
 });

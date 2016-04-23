@@ -1,14 +1,18 @@
-var socket = io.connect();
 var Game = require('./logic/gamelogic');
 var Render = require('./graphics/render');
 
 //number of times per secound sending packets to server
-var updateTickRate = 64;
+var updateTickRate = 32;
+
+var heartBeatsRate = 3;
+var heartBeatsTimer = 0;
 
 var game = new Game();
 var render = new Render();
 
 var localId = -1;
+
+var socket = io.connect();
 
 socket.on('onconnected', function (data) {
     console.log('Connection to server succesfull. Your id is: ' + data.id);
@@ -31,14 +35,29 @@ socket.on('onconnected', function (data) {
 //get update from server
 socket.on('serverUpdate', function (data) {
     //console.log(data);
-    updatePlayers(data.players);
+    if (data.players !== undefined)
+        updatePlayers(data.players);
+    if (data.disconnectedClients.length > 0)
+        deletePlayers(data.disconnectedClients);
 });
 
 //send update to server
 function serverUpdateLoop() {
-    if (game.players[localId] != undefined)
-        socket.emit('clientUpdate', {input: game.players[localId].input});
+    var update = {};
+    //if local player exist and has new input to send
+    if (game.players[localId] != undefined && game.players[localId].inputHandler.isChanged) {
+        game.players[localId].inputHandler.isChanged = false;
+        update.input = game.players[localId].input;
+    }
+    if (heartBeatsTimer >= 1 / heartBeatsRate * 1000) {
+        heartBeatsTimer = 0;
+    } else {
+        heartBeatsTimer += 1 / updateTickRate * 1000
+    }
 
+    if (Object.keys(update).length !== 0) {
+        socket.emit('clientUpdate', update);
+    }
     setTimeout(serverUpdateLoop, 1 / updateTickRate * 1000);
     //console.log('updating clients' + new Date().getTime());
 };
@@ -55,14 +74,25 @@ function updatePlayers(serverPlayers) {
             render.newPlayer(localPlayer);
         }
     }
+};
 
-    //delete players that server don't have
-    for (var key in game.players) {
-        if (!(key in serverPlayers)) {
-            render.removePlayer(game.players[key].id);
-            delete game.players[key];
-        }
-    }
+function deletePlayers(disconnected) {
+    console.log('usuwam');
+    disconnected.forEach(function (id) {
+        render.removePlayer(id);
+        game.removePlayer(id);
+    });
+}
+
+var backgroundInterval;
+window.onfocus = function () {
+    clearInterval(backgroundInterval);
+};
+
+window.onblur = function () {
+    backgroundInterval = setInterval(function () {
+        socket.emit('clientUpdate', {});
+    }, 1000);
 };
 
 
