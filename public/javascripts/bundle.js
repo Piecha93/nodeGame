@@ -36,6 +36,7 @@
 
         var localId = -1;
 
+//make callback when loaded
         render.loadAssets(function () {
             var socket = io.connect();
 
@@ -87,6 +88,7 @@
 
             //updates local player depends on server data
             function updatePlayers(serverPlayers) {
+                console.log(serverPlayers);
                 for (var key in serverPlayers) {
                     var localPlayer = game.players[key];
                     if (typeof localPlayer !== "undefined") {
@@ -131,24 +133,42 @@
 
     }, {"./graphics/render": 3, "./logic/gamelogic": 5}], 2: [function (require, module, exports) {
         function PlayerRender() {
-            this.shape = null;
+            this.currentAnimation = null;
             this.text = null;
             this.player = null;
+
+            this.framesLeft = [];
+            this.framesRight = [];
+            this.framesUp = [];
+            this.framesDown = [];
+
+            this.dir = "left";
+
         }
 
         PlayerRender.prototype.init = function () {
-            //this.shape.graphics.beginFill("Pink").drawCircle(0, 0, 25);
-            // this.shapeTween = createjs.Tween.get(this.shape);
-
-            //this.text.textAlign = "center";
-            //this.text.text = this.player.id;
-            //  this.textTween = createjs.Tween.get(this.text);
-
+            this.currentAnimation.animationSpeed = 0.1;
         };
 
         PlayerRender.prototype.update = function () {
-            this.shape.x = this.player.x;
-            this.shape.y = this.player.y;
+            if (this.player.horizontalMove == -1) {
+                this.currentAnimation.textures = this.framesLeft;
+                this.currentAnimation.play();
+            } else if (this.player.horizontalMove == 1) {
+                this.currentAnimation.textures = this.framesRight;
+                this.currentAnimation.play();
+            } else if (this.player.verticalMove == -1) {
+                this.currentAnimation.textures = this.framesUp;
+                this.currentAnimation.play();
+            } else if (this.player.verticalMove == 1) {
+                this.currentAnimation.textures = this.framesDown;
+                this.currentAnimation.play();
+            } else {
+                this.currentAnimation.stop();
+            }
+
+            this.currentAnimation.x = this.player.x;
+            this.currentAnimation.y = this.player.y;
             //createjs.Tween.get(this.shape).to({x: this.player.x, y: this.player.y}, 0);
             //createjs.Tween.get(this.text).to({x: this.player.x, y: this.player.y}, 0);
         };
@@ -166,7 +186,7 @@
         }
 
         Render.prototype.loadAssets = function (callback) {
-            PIXI.loader.add('bunny', 'resources/images/bunny.png').load(function () {
+            PIXI.loader.add('bunny', 'resources/images/bunny.png').add('resources/images/panda.json').load(function () {
                 console.log("wczytane");
                 callback();
             });
@@ -185,26 +205,33 @@
         };
 
         Render.prototype.newPlayer = function (player) {
-            console.log("player2");
             //create new player render
             var playerRender = new PlayerRender();
 
             //set up player reference
             playerRender.player = player;
+            var framesLeft = [];
+            var framesRight = [];
+            var framesUp = [];
+            var framesDown = [];
 
             // load the texture we need
             playerRender.shape = new PIXI.Sprite(PIXI.loader.resources["bunny"].texture);
+            for (var i = 1; i < 5; i++) {
+                // magically works since the spritesheet was loaded with the pixi loader
+                playerRender.framesLeft.push(PIXI.Texture.fromFrame('left' + i + '.png'));
+                playerRender.framesRight.push(PIXI.Texture.fromFrame('right' + i + '.png'));
+                playerRender.framesUp.push(PIXI.Texture.fromFrame('up' + i + '.png'));
+                playerRender.framesDown.push(PIXI.Texture.fromFrame('down' + i + '.png'));
+            }
 
-            /*
-             playerRender.shape = new PIXI.Graphics();
-             playerRender.shape.lineStyle(2, 0xFF00FF);  //(thickness, color)
-             playerRender.shape.drawCircle(0, 0, 10);   //(x,y,radius)
-             playerRender.shape.endFill();*/
+            playerRender.currentAnimation = new PIXI.extras.MovieClip(playerRender.framesDown);
+
+            this.stage.addChild(playerRender.currentAnimation);
 
             playerRender.init();
             playerRender.update();
             // Add the bunny to the scene we are building.
-            this.stage.addChild(playerRender.shape);
             // Add player to playersRender array
             this.playersRender[player.id] = playerRender;
         };
@@ -212,7 +239,7 @@
         Render.prototype.removePlayer = function (id) {
             if (id in this.playersRender) {
                 //remove from stage
-                this.stage.removeChild(this.playersRender[id].shape);
+                this.stage.removeChild(this.playersRender[id].currentAnimation);
                 //remove from playersRender array
                 delete this.playersRender[id];
 
@@ -363,7 +390,7 @@
                 this.inputArray.push(event.keyCode);
                 this.isChanged = true;
             }
-            console.log('input: ' + this.inputArray);
+            //console.log('input: ' + this.inputArray);
         };
 
         InputHandler.prototype.keyReleased = function (event) {
@@ -401,6 +428,9 @@
             this.inputHandler = false;
             this.isChanged = true;
             this.id = -1;
+
+            this.horizontalMove = HorizontalDir.none;
+            this.verticalMove = VerticalDir.none;
         }
 
 //create new input handler
@@ -453,12 +483,16 @@
 
         Player.prototype.serverUpdate = function (playerUpdateInfo) {
             this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
+            this.horizontalMove = playerUpdateInfo.horizontalMove;
+            this.verticalMove = playerUpdateInfo.verticalMove;
         };
 
         Player.prototype.getUpdateInfo = function () {
             var playerUpdateInfo = {};
             playerUpdateInfo.x = this.x;
             playerUpdateInfo.y = this.y;
+            playerUpdateInfo.horizontalMove = this.horizontalDir;
+            playerUpdateInfo.verticalMove = this.verticalDir;
 
             return playerUpdateInfo;
         };

@@ -12,9 +12,10 @@ var game = new Game();
 
 var localId = -1;
 
+//make callback when loaded
 render.loadAssets(function () {
     var socket = io.connect();
-    
+
     socket.on('onconnected', function (data) {
         render.init();
 
@@ -63,6 +64,7 @@ render.loadAssets(function () {
 
     //updates local player depends on server data
     function updatePlayers(serverPlayers) {
+        console.log(serverPlayers);
         for (var key in serverPlayers) {
             var localPlayer = game.players[key];
             if (typeof localPlayer !== "undefined") {

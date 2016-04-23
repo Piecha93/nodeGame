@@ -9,7 +9,7 @@ function Render() {
 }
 
 Render.prototype.loadAssets = function (callback) {
-    PIXI.loader.add('bunny', 'resources/images/bunny.png').load(function () {
+    PIXI.loader.add('bunny', 'resources/images/bunny.png').add('resources/images/panda.json').load(function () {
         console.log("wczytane");
         callback();
     });
@@ -28,26 +28,33 @@ Render.prototype.init = function () {
 };
 
 Render.prototype.newPlayer = function (player) {
-    console.log("player2");
     //create new player render
     var playerRender = new PlayerRender();
 
     //set up player reference
     playerRender.player = player;
+    var framesLeft = [];
+    var framesRight = [];
+    var framesUp = [];
+    var framesDown = [];
 
     // load the texture we need
     playerRender.shape = new PIXI.Sprite(PIXI.loader.resources["bunny"].texture);
+    for (var i = 1; i < 5; i++) {
+        // magically works since the spritesheet was loaded with the pixi loader
+        playerRender.framesLeft.push(PIXI.Texture.fromFrame('left' + i + '.png'));
+        playerRender.framesRight.push(PIXI.Texture.fromFrame('right' + i + '.png'));
+        playerRender.framesUp.push(PIXI.Texture.fromFrame('up' + i + '.png'));
+        playerRender.framesDown.push(PIXI.Texture.fromFrame('down' + i + '.png'));
+    }
 
-    /*
-     playerRender.shape = new PIXI.Graphics();
-     playerRender.shape.lineStyle(2, 0xFF00FF);  //(thickness, color)
-     playerRender.shape.drawCircle(0, 0, 10);   //(x,y,radius)
-     playerRender.shape.endFill();*/
+    playerRender.currentAnimation = new PIXI.extras.MovieClip(playerRender.framesDown);
+
+    this.stage.addChild(playerRender.currentAnimation);
 
     playerRender.init();
     playerRender.update();
     // Add the bunny to the scene we are building.
-    this.stage.addChild(playerRender.shape);
     // Add player to playersRender array
     this.playersRender[player.id] = playerRender;
 };
@@ -55,7 +62,7 @@ Render.prototype.newPlayer = function (player) {
 Render.prototype.removePlayer = function (id) {
     if (id in this.playersRender) {
         //remove from stage
-        this.stage.removeChild(this.playersRender[id].shape);
+        this.stage.removeChild(this.playersRender[id].currentAnimation);
         //remove from playersRender array
         delete this.playersRender[id];
 

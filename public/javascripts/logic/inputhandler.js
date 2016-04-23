@@ -36,7 +36,7 @@ InputHandler.prototype.keyPressed = function (event) {
         this.inputArray.push(event.keyCode);
         this.isChanged = true;
     }
-    console.log('input: ' + this.inputArray);
+    //console.log('input: ' + this.inputArray);
 };
 
 InputHandler.prototype.keyReleased = function (event) {

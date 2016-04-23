@@ -1,22 +1,40 @@
 function PlayerRender() {
-    this.shape = null;
+    this.currentAnimation = null;
     this.text = null;
     this.player = null;
+
+    this.framesLeft = [];
+    this.framesRight = [];
+    this.framesUp = [];
+    this.framesDown = [];
+
+    this.dir = "left";
+
 }
 
 PlayerRender.prototype.init = function () {
-    //this.shape.graphics.beginFill("Pink").drawCircle(0, 0, 25);
-    // this.shapeTween = createjs.Tween.get(this.shape);
-
-    //this.text.textAlign = "center";
-    //this.text.text = this.player.id;
-    //  this.textTween = createjs.Tween.get(this.text);
-
+    this.currentAnimation.animationSpeed = 0.1;
 };
 
 PlayerRender.prototype.update = function () {
-    this.shape.x = this.player.x;
-    this.shape.y = this.player.y;
+    if (this.player.horizontalMove == -1) {
+        this.currentAnimation.textures = this.framesLeft;
+        this.currentAnimation.play();
+    } else if (this.player.horizontalMove == 1) {
+        this.currentAnimation.textures = this.framesRight;
+        this.currentAnimation.play();
+    } else if (this.player.verticalMove == -1) {
+        this.currentAnimation.textures = this.framesUp;
+        this.currentAnimation.play();
+    } else if (this.player.verticalMove == 1) {
+        this.currentAnimation.textures = this.framesDown;
+        this.currentAnimation.play();
+    } else {
+        this.currentAnimation.stop();
+    }
+
+    this.currentAnimation.x = this.player.x;
+    this.currentAnimation.y = this.player.y;
     //createjs.Tween.get(this.shape).to({x: this.player.x, y: this.player.y}, 0);
     //createjs.Tween.get(this.text).to({x: this.player.x, y: this.player.y}, 0);
 };

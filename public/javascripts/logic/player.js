@@ -13,6 +13,9 @@ function Player() {
     this.inputHandler = false;
     this.isChanged = true;
     this.id = -1;
+
+    this.horizontalMove = HorizontalDir.none;
+    this.verticalMove = VerticalDir.none;
 }
 
 //create new input handler
@@ -65,12 +68,16 @@ Player.prototype.update = function (delta) {
 
 Player.prototype.serverUpdate = function (playerUpdateInfo) {
     this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
+    this.horizontalMove = playerUpdateInfo.horizontalMove;
+    this.verticalMove = playerUpdateInfo.verticalMove;
 };
 
 Player.prototype.getUpdateInfo = function () {
     var playerUpdateInfo = {};
     playerUpdateInfo.x = this.x;
     playerUpdateInfo.y = this.y;
+    playerUpdateInfo.horizontalMove = this.horizontalDir;
+    playerUpdateInfo.verticalMove = this.verticalDir;
 
     return playerUpdateInfo;
 };
