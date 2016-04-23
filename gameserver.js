@@ -33,7 +33,9 @@ function clientConnected(client) {
         console.log(c.id);
     });
     game.newPlayer(client.id);
-    update.players = game.players;
+    for (var key in game.players) {
+        update.players[key] = game.players[key].getUpdateInfo();
+    }
     update.isEmpty = false;
 }
 
@@ -63,7 +65,7 @@ function updateLoop() {
 
     for (var key in game.players) {
         if (game.players[key].isChanged) {
-            update.players[key] = game.players[key];
+            update.players[key] = game.players[key].getUpdateInfo();
             game.players[key].isChanged = false;
             update.isEmpty = false;
         }

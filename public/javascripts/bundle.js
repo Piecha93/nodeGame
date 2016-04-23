@@ -56,14 +56,9 @@
             startServerUpdateLoop();
         });
 
-        function startServerUpdateLoop() {
-            serverUpdateLoop();
-            setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
-        }
-
 //get update from server
         socket.on('serverUpdate', function (data) {
-            //console.log(data);
+            console.log(data);
             if (data.players !== undefined)
                 updatePlayers(data.players);
             if (data.disconnectedClients.length > 0)
@@ -93,12 +88,13 @@
 //updates local player depends on server data
         function updatePlayers(serverPlayers) {
             for (var key in serverPlayers) {
+                console.log(key);
                 var localPlayer = game.players[key];
                 if (typeof localPlayer !== "undefined") {
                     localPlayer.serverUpdate(serverPlayers[key]);
                 }
                 else {
-                    localPlayer = game.newPlayer(serverPlayers[key].id, serverPlayers[key]);
+                    localPlayer = game.newPlayer(key, serverPlayers[key]);
             render.newPlayer(localPlayer);
         }
             }
@@ -110,6 +106,11 @@
                 render.removePlayer(id);
                 game.removePlayer(id);
             });
+        };
+
+        function startServerUpdateLoop() {
+            serverUpdateLoop();
+            setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
         }
 
         var backgroundInterval;
@@ -118,7 +119,7 @@
         };
 
         window.onblur = function () {
-            if (localId != -1) {
+            if (localId != -1 && game.players[localId].inputHandler != undefined) {
                 game.players[localId].inputHandler.resetInput();
                 serverUpdateLoop();
             }
@@ -278,7 +279,7 @@
             }, 1 / tickRate * 1000);
         };
 
-        Game.prototype.handleInput = function (delta) {
+        Game.prototype.handleInput = function () {
             for (var key in this.players) {
                 this.players[key].handleInput();
             }
@@ -456,9 +457,16 @@
             this.y += this.verticalDir * offset;
         };
 
-        Player.prototype.serverUpdate = function (player) {
-            this.x = player.x;
-            this.y = player.y;
+        Player.prototype.serverUpdate = function (playerUpdateInfo) {
+            this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
+        };
+
+        Player.prototype.getUpdateInfo = function () {
+            var playerUpdateInfo = {};
+            playerUpdateInfo.x = this.x;
+            playerUpdateInfo.y = this.y;
+
+            return playerUpdateInfo;
         };
 
         module.exports = Player;

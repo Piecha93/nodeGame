@@ -25,7 +25,7 @@ function gameLoop(self) {
     }, 1 / tickRate * 1000);
 };
 
-Game.prototype.handleInput = function (delta) {
+Game.prototype.handleInput = function () {
     for (var key in this.players) {
         this.players[key].handleInput();
     }

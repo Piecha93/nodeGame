@@ -32,14 +32,9 @@ socket.on('onconnected', function (data) {
     startServerUpdateLoop();
 });
 
-function startServerUpdateLoop() {
-    serverUpdateLoop();
-    setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
-}
-
 //get update from server
 socket.on('serverUpdate', function (data) {
-    //console.log(data);
+    console.log(data);
     if (data.players !== undefined)
         updatePlayers(data.players);
     if (data.disconnectedClients.length > 0)
@@ -69,12 +64,13 @@ function serverUpdateLoop() {
 //updates local player depends on server data
 function updatePlayers(serverPlayers) {
     for (var key in serverPlayers) {
+        console.log(key);
         var localPlayer = game.players[key];
         if (typeof localPlayer !== "undefined") {
             localPlayer.serverUpdate(serverPlayers[key]);
         }
         else {
-            localPlayer = game.newPlayer(serverPlayers[key].id, serverPlayers[key]);
+            localPlayer = game.newPlayer(key, serverPlayers[key]);
             render.newPlayer(localPlayer);
         }
     }
@@ -86,6 +82,11 @@ function deletePlayers(disconnected) {
         render.removePlayer(id);
         game.removePlayer(id);
     });
+};
+
+function startServerUpdateLoop() {
+    serverUpdateLoop();
+    setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
 }
 
 var backgroundInterval;
@@ -94,7 +95,7 @@ window.onfocus = function () {
 };
 
 window.onblur = function () {
-    if (localId != -1) {
+    if (localId != -1 && game.players[localId].inputHandler != undefined) {
         game.players[localId].inputHandler.resetInput();
         serverUpdateLoop();
     }

@@ -63,9 +63,16 @@ Player.prototype.update = function (delta) {
     this.y += this.verticalDir * offset;
 };
 
-Player.prototype.serverUpdate = function (player) {
-    this.x = player.x;
-    this.y = player.y;
+Player.prototype.serverUpdate = function (playerUpdateInfo) {
+    this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
+};
+
+Player.prototype.getUpdateInfo = function () {
+    var playerUpdateInfo = {};
+    playerUpdateInfo.x = this.x;
+    playerUpdateInfo.y = this.y;
+
+    return playerUpdateInfo;
 };
 
 module.exports = Player;
