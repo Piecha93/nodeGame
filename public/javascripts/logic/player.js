@@ -4,12 +4,12 @@ var HorizontalDir = {none: 0, left: -1, right: 1};
 var VerticalDir = {none: 0, up: -1, down: 1};
 
 function Player() {
-    this.x = Math.random() * 300;
-    this.y = Math.random() * 300;
+    this.x = Math.random() * 800;
+    this.y = Math.random() * 600;
     this.input = [];
     this.horizontalDir = HorizontalDir.none;
     this.verticalDir = VerticalDir.none;
-    this.speed = 0.3;
+    this.speed = 0.15;
     this.inputHandler = false;
     this.isChanged = true;
     this.id = -1;
@@ -41,15 +41,19 @@ Player.prototype.handleInput = function () {
         self.isChanged = true;
         switch (i) {
             case 37:
+            case 65:
                 self.horizontalDir = HorizontalDir.left;
                 break;
             case 39:
+            case 68:
                 self.horizontalDir = HorizontalDir.right;
                 break;
             case 38:
+            case 87:
                 self.verticalDir = VerticalDir.up;
                 break;
             case 40:
+            case 83:
                 self.verticalDir = VerticalDir.down;
                 break;
         }

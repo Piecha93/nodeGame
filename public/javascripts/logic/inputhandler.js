@@ -1,8 +1,8 @@
 var validInputs = [
-    39, //right
-    37, //left
-    38, //up
-    40  //down
+    39, 68, //right
+    37, 65, //left
+    38, 83, //up
+    40, 87  //down
 ];
 
 function isInputValid(inputCode) {
@@ -36,7 +36,7 @@ InputHandler.prototype.keyPressed = function (event) {
         this.inputArray.push(event.keyCode);
         this.isChanged = true;
     }
-    //console.log('input: ' + this.inputArray);
+    console.log('input: ' + event.keyCode);
 };
 
 InputHandler.prototype.keyReleased = function (event) {
