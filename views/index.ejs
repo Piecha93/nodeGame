@@ -5,111 +5,17 @@
     <link rel='stylesheet' href='/css/style.css' />
 
     <!-- Add jquery -->
-    <!--<script src="http://code.jquery.com/jquery-latest.min.js"></script>-->
     <script src="/javascripts/libs/jquery-1.12.3.min.js"></script>
 
     <!-- Add socketio for menage socket connection -->
     <script src="/socket.io/socket.io.js"></script>
 
-    <!-- Add easeljs for menage canvas -->
-    <!--<script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>-->
-    <!--<script src="/javascripts/libs/easeljs-0.8.2.min.js"></script>-->
-    <!-- Add tween for menage animations -->
-    <!--<script src="/javascripts/libs/tweenjs-0.6.2.min.js"></script>-->
-    <!--<script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script>-->
-
-
+    <!-- Add pixi render library -->
     <script src="/javascripts/libs/pixi.min.js"></script>
-
-
     <script src="/javascripts/bundle.js"></script>
 </head>
 
 <body>
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-    }
-
-    /* to remove the top and left whitespace */
-
-    html, body {
-        width: 100%;
-        height: 100%;
-    }
-
-    /* just to be sure these are full screen*/
-
-    canvas {
-        display: block;
-    }
-
-    /* To remove the scrollbars */
-</style>
-<!--
-<canvas id="canvas"></canvas>
-<script>
-    (function () {
-        var canvas = document.getElementById('canvas'),
-                context = canvas.getContext('2d');
-
-        // resize the canvas to fill browser window dynamically
-        window.addEventListener('resize', resizeCanvas, false);
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            /**
-             * Your drawings need to be inside this function otherwise they will be reset when
-             * you resize the browser window and the canvas goes will be cleared.
-             */
-            drawStuff();
-        }
-
-        resizeCanvas();
-
-        function drawStuff() {
-            // do your drawing stuff here
-        }
-    })();
-</script>
--->
 </body>
 
 </html>
-
-
-
-
-<!--
-<body>
-
-<div id="chat"></div>
-<form id="send-message">
-    <input size="35" id="message" />
-    <input type="submit" />
-</form>
-
-
-<script>
-    jQuery(function($){
-        var socket = io.connect();
-        var $messageForm = $('#send-message');
-        var $messageBox = $('#message');
-        var $chat = $('#chat');
-
-        $messageForm.submit(function(e){
-            e.preventDefault();
-            socket.emit('send message', $messageBox.val());
-            $messageBox.val('');
-        });
-
-        socket.on('new message', function(data){
-            $chat.append(data + "<br/>");
-        });
-    });
-</script>
-</body>
--->

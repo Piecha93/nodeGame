@@ -36,7 +36,7 @@ InputHandler.prototype.keyPressed = function (event) {
         this.inputArray.push(event.keyCode);
         this.isChanged = true;
     }
-    console.log('input: ' + event.keyCode);
+    // console.log('input: ' + event.keyCode);
 };
 
 InputHandler.prototype.keyReleased = function (event) {
@@ -55,6 +55,6 @@ InputHandler.prototype.handleClientInput = function () {
 InputHandler.prototype.resetInput = function () {
     this.inputArray.splice(0, this.inputArray.length);
     this.isChanged = true;
-}
+};
 
 module.exports = InputHandler;

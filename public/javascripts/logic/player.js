@@ -76,6 +76,9 @@ Player.prototype.setPosition = function (x, y) {
 };
 
 Player.prototype.serverUpdate = function (playerUpdateInfo) {
+
+    console.log('local: ' + this.x + ' server: ' + playerUpdateInfo.x);
+
     this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
     this.horizontalMove = playerUpdateInfo.horizontalMove;
     this.verticalMove = playerUpdateInfo.verticalMove;

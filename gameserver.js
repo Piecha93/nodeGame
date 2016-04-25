@@ -2,7 +2,7 @@ var Game = require('./public/javascripts/logic/gamelogic');
 
 var game;
 
-var updateTickRate = 64;
+var updateTickRate = 20;
 var clients = [];
 var socket = null;
 var update = {
@@ -16,7 +16,7 @@ function startGameServer(sock) {
     socket = sock;
     game = new Game();
     game.startGameLoop();
-    
+
     //start update loop
     updateLoop();
     console.log('Gameserver started');
@@ -35,22 +35,26 @@ function clientConnected(client) {
     for (var key in game.players) {
         update.players[key] = game.players[key].getUpdateInfo();
     }
+
     update.isEmpty = false;
+
 }
 
 //client disconnected
 function clientDisconnected(client) {
     var indexToRemove = clients.indexOf(client);
-    clients.splice(indexToRemove, 1);
+    if (indexToRemove != -1) {
+        clients.splice(indexToRemove, 1);
 
-    console.log('Client disconnected');
-    console.log('Clients connected(' + clients.length + '):');
-    clients.forEach(function (c) {
-        console.log(c.id);
-    });
-    game.removePlayer(client.id);
-    update.disconnectedClients.push(client.id);
-    update.isEmpty = false;
+        console.log('Client disconnected');
+        console.log('Clients connected(' + clients.length + '):');
+        clients.forEach(function (c) {
+            console.log(c.id);
+        });
+        game.removePlayer(client.id);
+        update.disconnectedClients.push(client.id);
+        update.isEmpty = false;
+    }
 };
 
 //serverUpdateLoop all clients

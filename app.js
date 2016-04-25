@@ -2,13 +2,6 @@
 var port = process.env.PORT || 3000;
 var timeOut = 10; //secounds to timeot when lost connection
 
-var validInputs = [
-    39, //right
-    37, //left
-    38, //up
-    40  //down
-];
-
 var express = require('express');
 var app = express();
 var path = require('path');
@@ -33,13 +26,15 @@ var gameServer = require('./gameserver');
 gameServer.startGameServer(io.sockets);
 
 io.sockets.on('connection', function(client){
+    client.id = -1;
 
-    client.id = UUID();
+    client.on('connected', function () {
+        client.id = UUID();
+        client.emit('onconnected', {id: client.id});
 
-    client.emit('onconnected', { id :client.id });
-    
-    gameServer.clientConnected(client);
-    client.timeOutTime = timeOut;
+        gameServer.clientConnected(client);
+        client.timeOutTime = timeOut;
+    });
 
     client.on('disconnect', function () {
         gameServer.clientDisconected(client);
@@ -51,5 +46,10 @@ io.sockets.on('connection', function(client){
         }
         client.timeOutTime = timeOut;
     });
+
+    client.on('heartbeat', function (data) {
+        client.timeOutTime = timeOut;
+        client.emit('heartbeatsresponse', {id: data.id})
+    })
 });
 

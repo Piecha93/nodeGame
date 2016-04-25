@@ -3,14 +3,12 @@ var PlayerRender = require("./playerrender");
 function Render() {
     this.renderer;
     this.stage;
-    this.loader;
     this.playersRender = {};
 
 }
 
 Render.prototype.loadAssets = function (callback) {
-    PIXI.loader.add('bunny', 'resources/images/bunny.png').add('resources/images/panda.json').load(function () {
-        console.log("wczytane");
+    PIXI.loader.add('panda', 'resources/images/panda.json').load(function () {
         callback();
     });
 };
@@ -33,29 +31,11 @@ Render.prototype.newPlayer = function (player) {
 
     //set up player reference
     playerRender.player = player;
-    var framesLeft = [];
-    var framesRight = [];
-    var framesUp = [];
-    var framesDown = [];
 
-    // load the texture we need
-    playerRender.shape = new PIXI.Sprite(PIXI.loader.resources["bunny"].texture);
-    for (var i = 1; i < 5; i++) {
-        // magically works since the spritesheet was loaded with the pixi loader
-        playerRender.framesLeft.push(PIXI.Texture.fromFrame('left' + i + '.png'));
-        playerRender.framesRight.push(PIXI.Texture.fromFrame('right' + i + '.png'));
-        playerRender.framesUp.push(PIXI.Texture.fromFrame('up' + i + '.png'));
-        playerRender.framesDown.push(PIXI.Texture.fromFrame('down' + i + '.png'));
-    }
-
-    playerRender.currentAnimation = new PIXI.extras.MovieClip(playerRender.framesDown);
+    playerRender.init('panda');
+    playerRender.update();
 
     this.stage.addChild(playerRender.currentAnimation);
-
-    playerRender.init();
-    playerRender.update();
-    // Add the bunny to the scene we are building.
-    // Add player to playersRender array
     this.playersRender[player.id] = playerRender;
 };
 
