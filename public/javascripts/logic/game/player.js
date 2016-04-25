@@ -1,5 +1,3 @@
-var InputHandler = require('./inputhandler');
-
 var HorizontalDir = {none: 0, left: -1, right: 1};
 var VerticalDir = {none: 0, up: -1, down: 1};
 
@@ -10,7 +8,6 @@ function Player() {
     this.horizontalDir = HorizontalDir.none;
     this.verticalDir = VerticalDir.none;
     this.speed = 0.15;
-    this.inputHandler = false;
     this.isChanged = true;
     this.id = -1;
 
@@ -18,18 +15,7 @@ function Player() {
     this.verticalMove = VerticalDir.none;
 }
 
-//create new input handler
-Player.prototype.setUpInputHandler = function () {
-    this.inputHandler = new InputHandler();
-};
-
-
 Player.prototype.handleInput = function () {
-    //inputHandler exist only on client local player (never on server)
-    if (this.inputHandler) {
-        this.input = this.inputHandler.handleClientInput();
-    }
-
     if (this.horizontalDir != 0 || this.verticalDir != 0) {
         this.horizontalDir = HorizontalDir.none;
         this.verticalDir = VerticalDir.none;
@@ -76,9 +62,7 @@ Player.prototype.setPosition = function (x, y) {
 };
 
 Player.prototype.serverUpdate = function (playerUpdateInfo) {
-
-    console.log('local: ' + this.x + ' server: ' + playerUpdateInfo.x);
-
+    //console.log('local: ' + this.x + ' server: ' + playerUpdateInfo.x);
     this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
     this.horizontalMove = playerUpdateInfo.horizontalMove;
     this.verticalMove = playerUpdateInfo.verticalMove;
