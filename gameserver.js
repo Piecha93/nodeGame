@@ -1,85 +1,90 @@
-var Game = require('./public/javascripts/logic/gamelogic');
+var Game = require('./public/javascripts/logic/game/gamelogic');
 
-var game;
+function GameServer(id) {
+    this.game = null;
+    this.serverId = id;
+    this.updateTickRate = 25;
+    this.clients = [];
+    this.update = {
+        players: {},
+        disconnectedClients: [],
+        isEmpty: true
+    };
+}
 
-var updateTickRate = 20;
-var clients = [];
-var socket = null;
-var update = {
-    players: {},
-    disconnectedClients: [],
-    isEmpty: true
-};
-
-//start server
-function startGameServer(sock) {
-    socket = sock;
-    game = new Game();
-    game.startGameLoop();
+//start game server
+GameServer.prototype.startGameServer = function () {
+    this.game = new Game();
+    this.game.startGameLoop();
 
     //start update loop
-    updateLoop();
-    console.log('Gameserver started');
-}
+    this.updateLoop();
+    console.log('Game server ' + this.serverId + ' started');
+};
 
 //new client connected
-function clientConnected(client) {
-    clients.push(client);
+GameServer.prototype.clientConnected = function (client) {
+    this.clients.push(client);
 
     console.log('New client connected. id: ' + client.id);
-    console.log('Clients connected(' + clients.length + '):');
-    clients.forEach(function (c) {
+    console.log('Clients connected(' + this.clients.length + '):');
+    this.clients.forEach(function (c) {
         console.log(c.id);
     });
-    game.newPlayer(client.id);
-    for (var key in game.players) {
-        update.players[key] = game.players[key].getUpdateInfo();
+
+    this.game.newPlayer(client.id);
+    for (var key in this.game.players) {
+        this.update.players[key] = this.game.players[key].getUpdateInfo();
     }
 
-    update.isEmpty = false;
+    this.update.isEmpty = false;
 
-}
+};
 
 //client disconnected
-function clientDisconnected(client) {
-    var indexToRemove = clients.indexOf(client);
+GameServer.prototype.clientDisconnected = function (client) {
+    var indexToRemove = this.clients.indexOf(client);
     if (indexToRemove != -1) {
-        clients.splice(indexToRemove, 1);
+        this.clients.splice(indexToRemove, 1);
 
         console.log('Client disconnected');
-        console.log('Clients connected(' + clients.length + '):');
-        clients.forEach(function (c) {
+        console.log('Clients connected(' + this.clients.length + '):');
+        this.clients.forEach(function (c) {
             console.log(c.id);
         });
-        game.removePlayer(client.id);
-        update.disconnectedClients.push(client.id);
-        update.isEmpty = false;
+        this.game.removePlayer(client.id);
+        this.update.disconnectedClients.push(client.id);
+        this.update.isEmpty = false;
     }
 };
 
 //serverUpdateLoop all clients
-function updateLoop() {
-    //check if client not timeout
-    clients.forEach(function (c) {
-        c.timeOutTime -= 1 / updateTickRate;
+GameServer.prototype.updateLoop = function () {
+    var self = this;
+    this.clients.forEach(function (c) {
+        c.timeOutTime -= 1 / self.updateTickRate;
+        //check if client not timeouted
         if (c.timeOutTime < 0) {
-            clientDisconnected(c);
+            self.clientDisconnected(c);
         }
     });
 
     //get players who need update
-    for (var key in game.players) {
-        if (game.players[key].isChanged) {
-            update.players[key] = game.players[key].getUpdateInfo();
-            game.players[key].isChanged = false;
-            update.isEmpty = false;
+    for (var key in this.game.players) {
+        if (this.game.players[key].isChanged) {
+            this.update.players[key] = this.game.players[key].getUpdateInfo();
+            this.game.players[key].isChanged = false;
+            this.update.isEmpty = false;
         }
     }
 
     //if update is not empty send it to clients
-    if (!update.isEmpty) {
-        socket.emit('serverUpdate', update);
-        update = {
+    if (!this.update.isEmpty) {
+        this.clients.forEach(function (c) {
+            c.emit('serverUpdate', self.update);
+        });
+        //this.socket.emit('serverUpdate', this.update);
+        this.update = {
             players: {},
             disconnectedClients: [],
             isEmpty: true
@@ -87,15 +92,16 @@ function updateLoop() {
     }
 
     //set next update time
-    setTimeout(updateLoop, 1 / updateTickRate * 1000);
+    setTimeout(function () {
+        self.updateLoop();
+    }, 1 / this.updateTickRate * 1000);
 };
 
-function handleClientInput(id, input) {
+GameServer.prototype.handleClientInput = function (id, input) {
     //console.log('client: ' + id + ' sent: ' + input);
-    game.players[id].input = input;
-}
+    var player = this.game.getPlayer(id);
+    if (player != null)
+        player.input = input;
+};
 
-module.exports.clientConnected = clientConnected;
-module.exports.clientDisconected = clientDisconnected;
-module.exports.startGameServer = startGameServer;
-module.exports.handleClientInput = handleClientInput;
+module.exports = GameServer;

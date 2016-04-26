@@ -9,7 +9,7 @@ function PlayerRender() {
     this.framesDown = [];
 
     //1 - no lerp, >1 - lerp, do not set this to <1
-    this.lerpRate = 6;
+    this.lerpRate = 10;
 }
 
 PlayerRender.prototype.init = function (spriteName) {
@@ -27,7 +27,6 @@ PlayerRender.prototype.init = function (spriteName) {
     this.text.x -= this.text.texture.width / 2;
     this.text.y -= 30;
     this.currentAnimation.addChild(this.text);
-
 };
 
 PlayerRender.prototype.update = function () {

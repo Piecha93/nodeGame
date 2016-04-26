@@ -13,7 +13,7 @@ function isInputValid(inputCode) {
     return false;
 }
 
-function InputHandler() {
+function InputHandler(callback) {
     this.isChanged = false;
     this.inputArray = [];
     var self = this;
@@ -26,6 +26,8 @@ function InputHandler() {
             self.keyReleased(event);
         }
     }
+
+    this.callback = callback;
 };
 
 //event listener for press key
@@ -35,8 +37,9 @@ InputHandler.prototype.keyPressed = function (event) {
     if (this.inputArray.indexOf(event.keyCode) == -1 && isInputValid(event.keyCode)) {
         this.inputArray.push(event.keyCode);
         this.isChanged = true;
+        this.callback(this.inputArray);
     }
-    // console.log('input: ' + event.keyCode);
+    console.log('input: ' + event.keyCode);
 };
 
 InputHandler.prototype.keyReleased = function (event) {
@@ -44,6 +47,7 @@ InputHandler.prototype.keyReleased = function (event) {
     if (index > -1) {
         this.inputArray.splice(index, 1);
         this.isChanged = true;
+        this.callback(this.inputArray);
     }
     //console.log('input: ' + this.inputArray);
 };

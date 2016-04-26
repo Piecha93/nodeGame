@@ -1,4 +1,4 @@
-function DeltaTimer() {
+function DeltaTimer(id) {
     this.currentTime;
     this.delta;
     this.lastUpdate = new Date().getTime();

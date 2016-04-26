@@ -1,27 +1,27 @@
 var Player = require('./player');
 var DeltaTimer = require('./detlatimer');
 
-var timer = new DeltaTimer();
-
-var tickRate = 128;
+var tickRate = 64;
 
 function Game() {
     this.players = {};
     this.renderHandler = null;
+    this.timer = new DeltaTimer();
 }
 
 Game.prototype.startGameLoop = function () {
-    gameLoop(this);
+    this.gameLoop();
 };
 
-function gameLoop(self) {
-    var delta = timer.getDelta();
-    self.handleInput(delta);
-    self.update(delta);
-    self.render(delta);
+Game.prototype.gameLoop = function () {
+    var delta = this.timer.getDelta();
+    this.handleInput(delta);
+    this.update(delta);
+    this.render(delta);
 
+    var self = this;
     setTimeout(function () {
-        gameLoop(self);
+        self.gameLoop();
     }, 1 / tickRate * 1000);
 };
 
@@ -46,7 +46,7 @@ Game.prototype.render = function (delta) {
 
 Game.prototype.setRender = function (render) {
     this.renderHandler = render;
-}
+};
 
 //creates new player
 Game.prototype.newPlayer = function (id, newPlayer) {
@@ -72,6 +72,13 @@ Game.prototype.setTickRate = function (tr) {
 
 Game.prototype.getTickRate = function () {
     return tickRate;
+};
+
+Game.prototype.getPlayer = function (id) {
+    if (this.players[id] != undefined) {
+        return this.players[id];
+    }
+    return null;
 };
 
 module.exports = Game;

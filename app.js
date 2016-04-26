@@ -8,9 +8,10 @@ var path = require('path');
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 var UUID = require('node-uuid');
+var GameServer = require('./gameserver');
 
 server.listen(port);
-console.log("Server started on port: " + port);
+console.log("Node server started on port: " + port);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -21,28 +22,40 @@ var routes = require('./routes/index');
 
 app.use('/', routes);
 
-var gameServer = require('./gameserver');
+var gameServers = {};
 
-gameServer.startGameServer(io.sockets);
+function startNewServer() {
+    var id = UUID();
+    gameServers[id] = new GameServer(id);
+    gameServers[id].startGameServer();
+}
+
+startNewServer();
 
 io.sockets.on('connection', function(client){
     client.id = -1;
 
     client.on('connected', function () {
         client.id = UUID();
-        client.emit('onconnected', {id: client.id});
 
-        gameServer.clientConnected(client);
+        client.serverId = chooseServer();
+        gameServers[client.serverId].clientConnected(client);
+
         client.timeOutTime = timeOut;
+
+        client.emit('onconnected', {id: client.id});
     });
 
     client.on('disconnect', function () {
-        gameServer.clientDisconected(client);
+        gameServers[client.serverId].clientDisconnected(client);
     });
 
     client.on('clientUpdate', function (data) {
         if (data.input !== undefined) {
-            gameServer.handleClientInput(client.id, data.input);
+            gameServers[client.serverId].handleClientInput(client.id, data.input);
+        }
+        if (data.message != undefined) {
+            //  messenger.pushMessage
         }
         client.timeOutTime = timeOut;
     });
@@ -50,6 +63,15 @@ io.sockets.on('connection', function(client){
     client.on('heartbeat', function (data) {
         client.timeOutTime = timeOut;
         client.emit('heartbeatsresponse', {id: data.id})
-    })
+    });
 });
 
+function chooseServer() {
+    return randomServer();
+}
+
+//Temp funciton. In future server would be choosen depends on other servers load
+function randomServer() {
+    var keys = Object.keys(gameServers);
+    return keys[keys.length * Math.random() << 0];
+}

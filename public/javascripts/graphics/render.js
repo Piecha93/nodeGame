@@ -3,10 +3,10 @@ var PlayerRender = require("./playerrender");
 function Render() {
     this.renderer;
     this.stage;
-    this.playersRender = {};
-
+    this.objects = {};
 }
 
+//load images
 Render.prototype.loadAssets = function (callback) {
     PIXI.loader.add('panda', 'resources/images/panda.json').load(function () {
         callback();
@@ -18,11 +18,19 @@ Render.prototype.init = function () {
     // which will try to choose the best renderer for the environment you are in.
     this.renderer = new PIXI.autoDetectRenderer(800, 600);
 
-// The renderer will create a canvas element for you that you can then insert into the DOM.
+    // The renderer will create a canvas element for you that you can then insert into the DOM.
     document.body.appendChild(this.renderer.view);
 
-// You need to create a root container that will hold the scene you want to draw.
+    // You need to create a root container that will hold the scene you want to draw.
     this.stage = new PIXI.Container();
+};
+
+Render.prototype.update = function (delta) {
+    for (var key in this.objects) {
+        this.objects[key].update();
+    }
+
+    this.renderer.render(this.stage);
 };
 
 Render.prototype.newPlayer = function (player) {
@@ -36,26 +44,18 @@ Render.prototype.newPlayer = function (player) {
     playerRender.update();
 
     this.stage.addChild(playerRender.currentAnimation);
-    this.playersRender[player.id] = playerRender;
+    this.objects[player.id] = playerRender;
 };
 
 Render.prototype.removePlayer = function (id) {
-    if (id in this.playersRender) {
+    if (id in this.objects) {
         //remove from stage
-        this.stage.removeChild(this.playersRender[id].currentAnimation);
-        //remove from playersRender array
-        delete this.playersRender[id];
+        this.stage.removeChild(this.objects[id].currentAnimation);
+        //remove from objects array
+        delete this.objects[id];
 
         console.log('player removed from render');
     }
-};
-
-Render.prototype.update = function (delta) {
-    for (var key in this.playersRender) {
-        this.playersRender[key].update();
-    }
-
-    this.renderer.render(this.stage);
 };
 
 module.exports = Render;

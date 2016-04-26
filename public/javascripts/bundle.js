@@ -22,22 +22,27 @@
     return s
 })({
     1: [function (require, module, exports) {
-        var Game = require('./logic/gamelogic');
+        var Game = require('./logic/game/gamelogic');
         var Render = require('./graphics/render');
+        var InputHandler = require('./logic/inputhandler');
+        var Messenger = require('./logic/chat/messenger');
 
 //number of times per secound sending packets to server
         var updateTickRate = 20;
 
+//variables to check server response time (ping)
         var heartBeatsRate = 1;
         var heartBeatsTimer = 0;
-        var heartBeat = {};
-
-//variables to check server response time (ping)
-        heartBeat.id = 1;
-        heartBeat.time = 0;
+        var heartBeat = {
+            id: 1,
+            time: 0
+        };
+        var ping = 0;
 
         var render = new Render();
         var game = new Game();
+        var inputHandler = new InputHandler(inputHandlerCallback);
+        var messenger = new Messenger();
 
         var localId = -1;
         var socket = io.connect();
@@ -59,7 +64,7 @@
             game.setRender(render);
             //create local player with id from server
             var localPlayer = game.newPlayer(localId);
-            localPlayer.setUpInputHandler();
+
             startServerUpdateLoop();
             startServerHeartbeatUpdateLoop();
             //add player to render
@@ -72,10 +77,14 @@
                 updatePlayers(data.players);
             if (data.disconnectedClients.length > 0)
                 deletePlayers(data.disconnectedClients);
+            if (data.messages != undefined) {
+                messenger.pushMessages(data.messages);
+            }
         });
 
         socket.on('heartbeatsresponse', function (data) {
-            console.log(data.id + ' przyszedl nazat po ' + (new Date().getTime() - heartBeat.time));
+            ping = new Date().getTime() - heartBeat.time;
+            //console.log('Packet ' + data.id + ' reciver after ' + ping + ' (ms)');
         });
 
 //send heartbeats
@@ -88,14 +97,14 @@
             } else {
                 heartBeatsTimer += 1 / heartBeatsRate * 1000
             }
-        }
+        };
 
 //send update to server
         function serverUpdateLoop() {
             var update = {};
             //if local player exist and has new input to send
-            if (game.players[localId] != undefined && game.players[localId].inputHandler.isChanged) {
-                game.players[localId].inputHandler.isChanged = false;
+            if (inputHandler.isChanged) {
+                inputHandler.isChanged = false;
                 update.input = game.players[localId].input;
             }
 
@@ -113,7 +122,6 @@
                     localPlayer.serverUpdate(serverPlayers[key]);
         }
                 else {
-                    console.log("playerrrrr")
                     localPlayer = game.newPlayer(key, serverPlayers[key]);
                     render.newPlayer(localPlayer);
                 }
@@ -138,6 +146,16 @@
             setTimeout(startServerHeartbeatUpdateLoop, 1 / heartBeatsRate * 1000);
         };
 
+        window.onblur = function () {
+            inputHandler.resetInput();
+            serverUpdateLoop();
+        };
+
+        function inputHandlerCallback(input) {
+            var player = game.getPlayer(localId);
+            if (player != null)
+                player.input = input;
+        }
 
         /*
          var backgroundInterval;
@@ -157,7 +175,8 @@
          };
          */
 
-    }, {"./graphics/render": 3, "./logic/gamelogic": 5}], 2: [function (require, module, exports) {
+    }, {"./graphics/render": 3, "./logic/chat/messenger": 5, "./logic/game/gamelogic": 7, "./logic/inputhandler": 9}],
+    2: [function (require, module, exports) {
         function PlayerRender() {
             this.currentAnimation = null;
             this.text = null;
@@ -169,7 +188,7 @@
             this.framesDown = [];
 
             //1 - no lerp, >1 - lerp, do not set this to <1
-            this.lerpRate = 6;
+            this.lerpRate = 10;
         }
 
         PlayerRender.prototype.init = function (spriteName) {
@@ -187,7 +206,6 @@
             this.text.x -= this.text.texture.width / 2;
             this.text.y -= 30;
             this.currentAnimation.addChild(this.text);
-
         };
 
         PlayerRender.prototype.update = function () {
@@ -214,16 +232,17 @@
         };
 
         module.exports = PlayerRender;
-    }, {}], 3: [function (require, module, exports) {
+    }, {}],
+    3: [function (require, module, exports) {
         var PlayerRender = require("./playerrender");
 
         function Render() {
             this.renderer;
             this.stage;
-            this.playersRender = {};
-
+            this.objects = {};
         }
 
+//load images
         Render.prototype.loadAssets = function (callback) {
             PIXI.loader.add('panda', 'resources/images/panda.json').load(function () {
                 callback();
@@ -235,11 +254,19 @@
             // which will try to choose the best renderer for the environment you are in.
             this.renderer = new PIXI.autoDetectRenderer(800, 600);
 
-// The renderer will create a canvas element for you that you can then insert into the DOM.
+            // The renderer will create a canvas element for you that you can then insert into the DOM.
             document.body.appendChild(this.renderer.view);
 
-// You need to create a root container that will hold the scene you want to draw.
+            // You need to create a root container that will hold the scene you want to draw.
             this.stage = new PIXI.Container();
+        };
+
+        Render.prototype.update = function (delta) {
+            for (var key in this.objects) {
+                this.objects[key].update();
+            }
+
+            this.renderer.render(this.stage);
         };
 
         Render.prototype.newPlayer = function (player) {
@@ -253,31 +280,59 @@
             playerRender.update();
 
             this.stage.addChild(playerRender.currentAnimation);
-            this.playersRender[player.id] = playerRender;
+            this.objects[player.id] = playerRender;
         };
 
         Render.prototype.removePlayer = function (id) {
-            if (id in this.playersRender) {
+            if (id in this.objects) {
                 //remove from stage
-                this.stage.removeChild(this.playersRender[id].currentAnimation);
-                //remove from playersRender array
-                delete this.playersRender[id];
+                this.stage.removeChild(this.objects[id].currentAnimation);
+                //remove from objects array
+                delete this.objects[id];
 
                 console.log('player removed from render');
             }
         };
 
-        Render.prototype.update = function (delta) {
-            for (var key in this.playersRender) {
-                this.playersRender[key].update();
-            }
+        module.exports = Render;
+    }, {"./playerrender": 2}],
+    4: [function (require, module, exports) {
+        function Message(content, authorId, authorName, sendTime) {
+            this.content = content;
+            this.authorId = authorId;
+            this.authorName = authorName;
+            this.sendTime = sendTime;
+        }
 
-            this.renderer.render(this.stage);
+        module.exports = Message;
+    }, {}],
+    5: [function (require, module, exports) {
+        var Message = require("./message");
+
+        function Messenger() {
+            this.messageArray = [];
+        }
+
+        Messenger.prototype.addMessage = function (content, authorId, authorName) {
+            this.messageArray.push(new Message(content, authorId, authorName));
         };
 
-        module.exports = Render;
-    }, {"./playerrender": 2}], 4: [function (require, module, exports) {
-        function DeltaTimer() {
+        Messenger.prototype.pushMessages = function (messages) {
+            this.messageArray.concat(messages);
+        };
+
+        Messenger.prototype.getLast = function (number) {
+            var arrayLength = this.messageArray.length;
+            if (number > arrayLength) {
+                number = arrayLength;
+            }
+            this.messageArray.slice(arrayLength - number, arrayLength);
+        };
+
+        module.exports = Messenger;
+    }, {"./message": 4}],
+    6: [function (require, module, exports) {
+        function DeltaTimer(id) {
             this.currentTime;
             this.delta;
             this.lastUpdate = new Date().getTime();
@@ -292,31 +347,32 @@
         };
 
         module.exports = DeltaTimer;
-    }, {}], 5: [function (require, module, exports) {
+    }, {}],
+    7: [function (require, module, exports) {
         var Player = require('./player');
         var DeltaTimer = require('./detlatimer');
 
-        var timer = new DeltaTimer();
-
-        var tickRate = 128;
+        var tickRate = 64;
 
         function Game() {
             this.players = {};
             this.renderHandler = null;
+            this.timer = new DeltaTimer();
         }
 
         Game.prototype.startGameLoop = function () {
-            gameLoop(this);
+            this.gameLoop();
         };
 
-        function gameLoop(self) {
-            var delta = timer.getDelta();
-            self.handleInput(delta);
-            self.update(delta);
-            self.render(delta);
+        Game.prototype.gameLoop = function () {
+            var delta = this.timer.getDelta();
+            this.handleInput(delta);
+            this.update(delta);
+            this.render(delta);
 
+            var self = this;
             setTimeout(function () {
-                gameLoop(self);
+                self.gameLoop();
             }, 1 / tickRate * 1000);
         };
 
@@ -341,7 +397,7 @@
 
         Game.prototype.setRender = function (render) {
             this.renderHandler = render;
-        }
+        };
 
 //creates new player
         Game.prototype.newPlayer = function (id, newPlayer) {
@@ -369,83 +425,27 @@
             return tickRate;
         };
 
+        Game.prototype.getPlayer = function (id) {
+            if (this.players[id] != undefined) {
+                return this.players[id];
+            }
+            return null;
+        };
+
         module.exports = Game;
 
-    }, {"./detlatimer": 4, "./player": 7}], 6: [function (require, module, exports) {
-        var validInputs = [
-            39, 68, //right
-            37, 65, //left
-            38, 83, //up
-            40, 87  //down
-        ];
-
-        function isInputValid(inputCode) {
-            if (validInputs.indexOf(inputCode) != -1) {
-                return true;
-            }
-
-            return false;
-        }
-
-        function InputHandler() {
-            this.isChanged = false;
-            this.inputArray = [];
-            var self = this;
-            //if document if undefined we are on server and dont need read keys
-            if (typeof document !== 'undefined') {
-                document.onkeydown = function (event) {
-                    self.keyPressed(event);
-        };
-                document.onkeyup = function (event) {
-                    self.keyReleased(event);
-                }
-            }
-        };
-
-//event listener for press key
-//add keycode to input array
-        InputHandler.prototype.keyPressed = function (event) {
-            //accepy only input code that is not in array already
-            if (this.inputArray.indexOf(event.keyCode) == -1 && isInputValid(event.keyCode)) {
-                this.inputArray.push(event.keyCode);
-                this.isChanged = true;
-            }
-            // console.log('input: ' + event.keyCode);
-        };
-
-        InputHandler.prototype.keyReleased = function (event) {
-            var index = this.inputArray.indexOf(event.keyCode);
-            if (index > -1) {
-                this.inputArray.splice(index, 1);
-                this.isChanged = true;
-            }
-            //console.log('input: ' + this.inputArray);
-        };
-
-        InputHandler.prototype.handleClientInput = function () {
-            return this.inputArray;
-        };
-
-        InputHandler.prototype.resetInput = function () {
-            this.inputArray.splice(0, this.inputArray.length);
-            this.isChanged = true;
-        };
-
-        module.exports = InputHandler;
-    }, {}], 7: [function (require, module, exports) {
-        var InputHandler = require('./inputhandler');
-
+    }, {"./detlatimer": 6, "./player": 8}],
+    8: [function (require, module, exports) {
         var HorizontalDir = {none: 0, left: -1, right: 1};
         var VerticalDir = {none: 0, up: -1, down: 1};
 
         function Player() {
-            this.x = Math.random() * 800;
-            this.y = Math.random() * 600;
+            this.x = 0;
+            this.y = 0;
             this.input = [];
             this.horizontalDir = HorizontalDir.none;
             this.verticalDir = VerticalDir.none;
             this.speed = 0.15;
-            this.inputHandler = false;
             this.isChanged = true;
             this.id = -1;
 
@@ -453,18 +453,7 @@
             this.verticalMove = VerticalDir.none;
         }
 
-//create new input handler
-        Player.prototype.setUpInputHandler = function () {
-            this.inputHandler = new InputHandler();
-        };
-
-
         Player.prototype.handleInput = function () {
-            //inputHandler exist only on client local player (never on server)
-            if (this.inputHandler) {
-                this.input = this.inputHandler.handleClientInput();
-            }
-
             if (this.horizontalDir != 0 || this.verticalDir != 0) {
                 this.horizontalDir = HorizontalDir.none;
                 this.verticalDir = VerticalDir.none;
@@ -491,7 +480,7 @@
                     case 83:
                         self.verticalDir = VerticalDir.down;
                         break;
-        }
+                }
             });
         };
 
@@ -511,9 +500,7 @@
         };
 
         Player.prototype.serverUpdate = function (playerUpdateInfo) {
-
             console.log('local: ' + this.x + ' server: ' + playerUpdateInfo.x);
-
             this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
             this.horizontalMove = playerUpdateInfo.horizontalMove;
             this.verticalMove = playerUpdateInfo.verticalMove;
@@ -530,5 +517,71 @@
         };
 
         module.exports = Player;
-    }, {"./inputhandler": 6}]
+    }, {}],
+    9: [function (require, module, exports) {
+        var validInputs = [
+            39, 68, //right
+            37, 65, //left
+            38, 83, //up
+            40, 87  //down
+        ];
+
+        function isInputValid(inputCode) {
+            if (validInputs.indexOf(inputCode) != -1) {
+                return true;
+            }
+
+            return false;
+        }
+
+        function InputHandler(callback) {
+            this.isChanged = false;
+            this.inputArray = [];
+            var self = this;
+            //if document if undefined we are on server and dont need read keys
+            if (typeof document !== 'undefined') {
+                document.onkeydown = function (event) {
+                    self.keyPressed(event);
+        };
+                document.onkeyup = function (event) {
+                    self.keyReleased(event);
+                }
+            }
+
+            this.callback = callback;
+        };
+
+//event listener for press key
+//add keycode to input array
+        InputHandler.prototype.keyPressed = function (event) {
+            //accepy only input code that is not in array already
+            if (this.inputArray.indexOf(event.keyCode) == -1 && isInputValid(event.keyCode)) {
+                this.inputArray.push(event.keyCode);
+                this.isChanged = true;
+                this.callback(this.inputArray);
+            }
+            console.log('input: ' + event.keyCode);
+        };
+
+        InputHandler.prototype.keyReleased = function (event) {
+            var index = this.inputArray.indexOf(event.keyCode);
+            if (index > -1) {
+                this.inputArray.splice(index, 1);
+                this.isChanged = true;
+                this.callback(this.inputArray);
+            }
+            //console.log('input: ' + this.inputArray);
+        };
+
+        InputHandler.prototype.handleClientInput = function () {
+            return this.inputArray;
+        };
+
+        InputHandler.prototype.resetInput = function () {
+            this.inputArray.splice(0, this.inputArray.length);
+            this.isChanged = true;
+        };
+
+        module.exports = InputHandler;
+    }, {}]
 }, {}, [1]);

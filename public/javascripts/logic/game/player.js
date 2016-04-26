@@ -2,8 +2,8 @@ var HorizontalDir = {none: 0, left: -1, right: 1};
 var VerticalDir = {none: 0, up: -1, down: 1};
 
 function Player() {
-    this.x = Math.random() * 800;
-    this.y = Math.random() * 600;
+    this.x = 0;
+    this.y = 0;
     this.input = [];
     this.horizontalDir = HorizontalDir.none;
     this.verticalDir = VerticalDir.none;
@@ -62,7 +62,7 @@ Player.prototype.setPosition = function (x, y) {
 };
 
 Player.prototype.serverUpdate = function (playerUpdateInfo) {
-    //console.log('local: ' + this.x + ' server: ' + playerUpdateInfo.x);
+    console.log('local: ' + this.x + ' server: ' + playerUpdateInfo.x);
     this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
     this.horizontalMove = playerUpdateInfo.horizontalMove;
     this.verticalMove = playerUpdateInfo.verticalMove;
