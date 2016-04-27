@@ -1,25 +1,35 @@
 var Game = require('./public/javascripts/logic/game/gamelogic');
+var Messenger = require('./public/javascripts/logic/chat/messenger');
 
 function GameServer(id) {
     this.game = null;
+    this.messenger = null;
     this.serverId = id;
-    this.updateTickRate = 25;
+    this.updateTickRate = 20;
     this.clients = [];
+    this.update = {};
+    this.clearUpdate();
+}
+
+GameServer.prototype.clearUpdate = function () {
     this.update = {
         players: {},
+        messages: [],
         disconnectedClients: [],
         isEmpty: true
     };
-}
+};
 
 //start game server
 GameServer.prototype.startGameServer = function () {
     this.game = new Game();
+    this.messenger = new Messenger();
+    
     this.game.startGameLoop();
 
     //start update loop
     this.updateLoop();
-    console.log('Game server ' + this.serverId + ' started');
+    console.log('Game server ' + this.serverId + ' started with id ' + this.serverId);
 };
 
 //new client connected
@@ -81,14 +91,10 @@ GameServer.prototype.updateLoop = function () {
     //if update is not empty send it to clients
     if (!this.update.isEmpty) {
         this.clients.forEach(function (c) {
-            c.emit('serverUpdate', self.update);
+            c.emit('serverupdate', self.update);
         });
         //this.socket.emit('serverUpdate', this.update);
-        this.update = {
-            players: {},
-            disconnectedClients: [],
-            isEmpty: true
-        };
+        this.clearUpdate();
     }
 
     //set next update time
@@ -102,6 +108,16 @@ GameServer.prototype.handleClientInput = function (id, input) {
     var player = this.game.getPlayer(id);
     if (player != null)
         player.input = input;
+};
+
+GameServer.prototype.handleClientMessage = function (message) {
+    // console.log('przyszla wiadomosc ' + message.content + ' dddddddddddd ');
+    //console.log('client: ' + id + ' sent: ' + input);
+    message.sendTime = new Date().getTime();
+    console.log(message.sendTime);
+    this.messenger.pushMessage(message);
+    this.update.messages.push(message);
+    this.update.isEmpty = false;
 };
 
 module.exports = GameServer;

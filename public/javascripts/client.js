@@ -5,6 +5,8 @@ var Messenger = require('./logic/chat/messenger');
 
 //number of times per secound sending packets to server
 var updateTickRate = 20;
+var update;
+resetUpdate();
 
 //variables to check server response time (ping)
 var heartBeatsRate = 1;
@@ -23,7 +25,7 @@ var messenger = new Messenger();
 var localId = -1;
 var socket = io.connect();
 
-//make callback when loaded
+//connect to server when images loaded (callback)
 render.loadAssets(function () {
     socket.emit('connected');
 });
@@ -48,13 +50,13 @@ socket.on('onconnected', function (data) {
 });
 
 //get update from server
-socket.on('serverUpdate', function (data) {
+socket.on('serverupdate', function (data) {
     if (data.players !== undefined)
         updatePlayers(data.players);
     if (data.disconnectedClients.length > 0)
         deletePlayers(data.disconnectedClients);
-    if (data.messages != undefined) {
-        messenger.pushMessages(data.messages);
+    if (data.messages.length > 0) {
+        updateMessenger(data.messages);
     }
 });
 
@@ -63,7 +65,7 @@ socket.on('heartbeatsresponse', function (data) {
     //console.log('Packet ' + data.id + ' reciver after ' + ping + ' (ms)');
 });
 
-//send heartbeats
+//send heartbeats to keep connection alive
 function serverHeartbeatsLoop() {
     if (heartBeatsTimer >= 1 / heartBeatsRate * 1000) {
         heartBeatsTimer = 0;
@@ -73,22 +75,16 @@ function serverHeartbeatsLoop() {
     } else {
         heartBeatsTimer += 1 / heartBeatsRate * 1000
     }
-};
+}
 
 //send update to server
 function serverUpdateLoop() {
-    var update = {};
-    //if local player exist and has new input to send
-    if (inputHandler.isChanged) {
-        inputHandler.isChanged = false;
-        update.input = game.players[localId].input;
-    }
-
-    if (Object.keys(update).length !== 0) {
-        socket.emit('clientUpdate', update);
+    if (!update.isEmpty) {
+        socket.emit('clientupdate', update);
+        resetUpdate();
     }
     //console.log('updating clients' + new Date().getTime());
-};
+}
 
 //updates local player depends on server data
 function updatePlayers(serverPlayers) {
@@ -102,7 +98,13 @@ function updatePlayers(serverPlayers) {
             render.newPlayer(localPlayer);
         }
     }
-};
+}
+
+function updateMessenger(messages) {
+    messages.forEach(function (m) {
+        messenger.addMessage(m.content, m.authorId, m.authorName);
+    });
+}
 
 //delete disconnected players
 function deletePlayers(disconnected) {
@@ -110,43 +112,56 @@ function deletePlayers(disconnected) {
         render.removePlayer(id);
         game.removePlayer(id);
     });
-};
+}
 
 function startServerUpdateLoop() {
     serverUpdateLoop();
     setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
-};
+}
 
 function startServerHeartbeatUpdateLoop() {
     serverHeartbeatsLoop();
     setTimeout(startServerHeartbeatUpdateLoop, 1 / heartBeatsRate * 1000);
-};
+}
 
+function resetUpdate() {
+    update = {
+        input: [],
+        message: null,
+        isEmpty: true
+    };
+}
+
+//clear input when tab inactive
 window.onblur = function () {
-    inputHandler.resetInput();
+    inputHandler.clearInput();
     serverUpdateLoop();
 };
 
+var chatMode = false;
+var message = "";
 function inputHandlerCallback(input) {
-    var player = game.getPlayer(localId);
-    if (player != null)
-        player.input = input;
-}
-
-/*
- var backgroundInterval;
- window.onfocus = function () {
- clearInterval(backgroundInterval);
- };
-
- window.onblur = function () {
- if (localId != -1 && game.players[localId].inputHandler != undefined) {
- game.players[localId].inputHandler.resetInput();
-        serverUpdateLoop();
+    //if enter pressed
+    if (input[input.length - 1] == 13) {
+        if (chatMode == true) {
+            update.message = messenger.addMessage(message, "nick");
+            update.isEmpty = false;
+            chatMode = false;
+        }
+        else {
+            chatMode = true;
+            message = "";
+            input.pop();
+        }
+    } else if (chatMode == true) {
+        message += String.fromCharCode(input.pop());
+        console.log(message);
+    } else {
+        var player = game.getPlayer(localId);
+        if (player != null) {
+            player.input = input;
+            update.input = input;
+            update.isEmpty = false;
+        }
     }
- backgroundInterval = setInterval(function () {
- socket.emit('clientUpdate', {});
- }, 1000);
-
- };
- */
+}

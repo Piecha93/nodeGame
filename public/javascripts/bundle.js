@@ -29,6 +29,8 @@
 
 //number of times per secound sending packets to server
         var updateTickRate = 20;
+        var update;
+        resetUpdate();
 
 //variables to check server response time (ping)
         var heartBeatsRate = 1;
@@ -47,7 +49,7 @@
         var localId = -1;
         var socket = io.connect();
 
-//make callback when loaded
+//connect to server when images loaded (callback)
         render.loadAssets(function () {
             socket.emit('connected');
         });
@@ -72,13 +74,13 @@
         });
 
 //get update from server
-        socket.on('serverUpdate', function (data) {
+        socket.on('serverupdate', function (data) {
             if (data.players !== undefined)
                 updatePlayers(data.players);
             if (data.disconnectedClients.length > 0)
                 deletePlayers(data.disconnectedClients);
-            if (data.messages != undefined) {
-                messenger.pushMessages(data.messages);
+            if (data.messages.length > 0) {
+                updateMessenger(data.messages);
             }
         });
 
@@ -87,7 +89,7 @@
             //console.log('Packet ' + data.id + ' reciver after ' + ping + ' (ms)');
         });
 
-//send heartbeats
+//send heartbeats to keep connection alive
         function serverHeartbeatsLoop() {
             if (heartBeatsTimer >= 1 / heartBeatsRate * 1000) {
                 heartBeatsTimer = 0;
@@ -97,22 +99,16 @@
             } else {
                 heartBeatsTimer += 1 / heartBeatsRate * 1000
             }
-        };
+        }
 
 //send update to server
         function serverUpdateLoop() {
-            var update = {};
-            //if local player exist and has new input to send
-            if (inputHandler.isChanged) {
-                inputHandler.isChanged = false;
-                update.input = game.players[localId].input;
-            }
-
-            if (Object.keys(update).length !== 0) {
-                socket.emit('clientUpdate', update);
+            if (!update.isEmpty) {
+                socket.emit('clientupdate', update);
+                resetUpdate();
             }
             //console.log('updating clients' + new Date().getTime());
-        };
+        }
 
 //updates local player depends on server data
         function updatePlayers(serverPlayers) {
@@ -126,7 +122,13 @@
                     render.newPlayer(localPlayer);
                 }
             }
-        };
+        }
+
+        function updateMessenger(messages) {
+            messages.forEach(function (m) {
+                messenger.addMessage(m.content, m.authorId, m.authorName);
+            });
+        }
 
 //delete disconnected players
         function deletePlayers(disconnected) {
@@ -134,47 +136,60 @@
                 render.removePlayer(id);
                 game.removePlayer(id);
             });
-        };
+        }
 
         function startServerUpdateLoop() {
             serverUpdateLoop();
             setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
-        };
+        }
 
         function startServerHeartbeatUpdateLoop() {
             serverHeartbeatsLoop();
             setTimeout(startServerHeartbeatUpdateLoop, 1 / heartBeatsRate * 1000);
-        };
+        }
 
+        function resetUpdate() {
+            update = {
+                input: [],
+                message: null,
+                isEmpty: true
+            };
+        }
+
+//clear input when tab inactive
         window.onblur = function () {
-            inputHandler.resetInput();
+            inputHandler.clearInput();
             serverUpdateLoop();
         };
 
+        var chatMode = false;
+        var message = "";
+
         function inputHandlerCallback(input) {
-            var player = game.getPlayer(localId);
-            if (player != null)
-                player.input = input;
+            //if enter pressed
+            if (input[input.length - 1] == 13) {
+                if (chatMode == true) {
+                    update.message = messenger.addMessage(message, "nick");
+                    update.isEmpty = false;
+                    chatMode = false;
         }
-
-        /*
-         var backgroundInterval;
-         window.onfocus = function () {
-         clearInterval(backgroundInterval);
-         };
-
-         window.onblur = function () {
-         if (localId != -1 && game.players[localId].inputHandler != undefined) {
-         game.players[localId].inputHandler.resetInput();
-         serverUpdateLoop();
-         }
-         backgroundInterval = setInterval(function () {
-         socket.emit('clientUpdate', {});
-         }, 1000);
-
-         };
-         */
-
+                else {
+                    chatMode = true;
+                    message = "";
+                    input.pop();
+                }
+            } else if (chatMode == true) {
+                message += String.fromCharCode(input.pop());
+                console.log(message);
+            } else {
+                var player = game.getPlayer(localId);
+                if (player != null) {
+                    player.input = input;
+                    update.input = input;
+                    update.isEmpty = false;
+                }
+            }
+        }
     }, {"./graphics/render": 3, "./logic/chat/messenger": 5, "./logic/game/gamelogic": 7, "./logic/inputhandler": 9}],
     2: [function (require, module, exports) {
         function PlayerRender() {
@@ -297,12 +312,19 @@
         module.exports = Render;
     }, {"./playerrender": 2}],
     4: [function (require, module, exports) {
-        function Message(content, authorId, authorName, sendTime) {
+        function Message(content, authorName) {
             this.content = content;
-            this.authorId = authorId;
             this.authorName = authorName;
-            this.sendTime = sendTime;
+            this.sendTime = -1;
         }
+
+        Message.prototype.append = function (content) {
+            this.content = this.content + connect;
+        };
+
+        Message.prototype.setContent = function (content) {
+            this.content = content;
+        };
 
         module.exports = Message;
     }, {}],
@@ -313,12 +335,28 @@
             this.messageArray = [];
         }
 
-        Messenger.prototype.addMessage = function (content, authorId, authorName) {
-            this.messageArray.push(new Message(content, authorId, authorName));
+//create and return message
+        Messenger.prototype.createMessage = function (content, authorName) {
+            return new Message(content, authorName);
+        };
+
+//create and add message to list
+        Messenger.prototype.addMessage = function (content, authorName) {
+            var message = this.createMessage(content, authorName);
+            this.messageArray.push(message);
+
+            return message;
+        };
+
+        Messenger.prototype.pushMessage = function (message) {
+            this.messageArray.push(message);
+            console.log(this.messageArray);
         };
 
         Messenger.prototype.pushMessages = function (messages) {
             this.messageArray.concat(messages);
+            console.log('concat  ');
+            console.log(this.messageArray);
         };
 
         Messenger.prototype.getLast = function (number) {
@@ -352,7 +390,7 @@
         var Player = require('./player');
         var DeltaTimer = require('./detlatimer');
 
-        var tickRate = 64;
+        var tickRate = 128;
 
         function Game() {
             this.players = {};
@@ -500,7 +538,7 @@
         };
 
         Player.prototype.serverUpdate = function (playerUpdateInfo) {
-            console.log('local: ' + this.x + ' server: ' + playerUpdateInfo.x);
+            //console.log('local: ' + this.x + ' server: ' + playerUpdateInfo.x);
             this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
             this.horizontalMove = playerUpdateInfo.horizontalMove;
             this.verticalMove = playerUpdateInfo.verticalMove;
@@ -530,22 +568,20 @@
             if (validInputs.indexOf(inputCode) != -1) {
                 return true;
             }
-
             return false;
         }
 
         function InputHandler(callback) {
-            this.isChanged = false;
             this.inputArray = [];
             var self = this;
             //if document if undefined we are on server and dont need read keys
             if (typeof document !== 'undefined') {
                 document.onkeydown = function (event) {
                     self.keyPressed(event);
-        };
+                };
                 document.onkeyup = function (event) {
                     self.keyReleased(event);
-                }
+        }
             }
 
             this.callback = callback;
@@ -555,31 +591,25 @@
 //add keycode to input array
         InputHandler.prototype.keyPressed = function (event) {
             //accepy only input code that is not in array already
-            if (this.inputArray.indexOf(event.keyCode) == -1 && isInputValid(event.keyCode)) {
+            if (this.inputArray.indexOf(event.keyCode) == -1) {// && isInputValid(event.keyCode)) {
                 this.inputArray.push(event.keyCode);
-                this.isChanged = true;
                 this.callback(this.inputArray);
             }
-            console.log('input: ' + event.keyCode);
+            // console.log('input: ' + event.keyCode);
         };
 
         InputHandler.prototype.keyReleased = function (event) {
             var index = this.inputArray.indexOf(event.keyCode);
             if (index > -1) {
                 this.inputArray.splice(index, 1);
-                this.isChanged = true;
                 this.callback(this.inputArray);
             }
             //console.log('input: ' + this.inputArray);
         };
 
-        InputHandler.prototype.handleClientInput = function () {
-            return this.inputArray;
-        };
-
-        InputHandler.prototype.resetInput = function () {
+        InputHandler.prototype.clearInput = function () {
             this.inputArray.splice(0, this.inputArray.length);
-            this.isChanged = true;
+            this.callback(this.inputArray);
         };
 
         module.exports = InputHandler;

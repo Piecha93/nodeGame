@@ -32,7 +32,7 @@ function startNewServer() {
 
 startNewServer();
 
-io.sockets.on('connection', function(client){
+io.sockets.on('connection', function (client) {
     client.id = -1;
 
     client.on('connected', function () {
@@ -47,17 +47,23 @@ io.sockets.on('connection', function(client){
     });
 
     client.on('disconnect', function () {
-        gameServers[client.serverId].clientDisconnected(client);
+        if (gameServers[client.serverId] != undefined) {
+            if (client !== undefined) {
+                gameServers[client.serverId].clientDisconnected(client);
+            }
+        }
     });
 
-    client.on('clientUpdate', function (data) {
-        if (data.input !== undefined) {
-            gameServers[client.serverId].handleClientInput(client.id, data.input);
+    client.on('clientupdate', function (data) {
+        if (gameServers[client.serverId] != undefined) {
+            if (data.input !== undefined) {
+                gameServers[client.serverId].handleClientInput(client.id, data.input);
+            }
+            if (data.message !== null) {
+                gameServers[client.serverId].handleClientMessage(data.message);
+            }
+            client.timeOutTime = timeOut;
         }
-        if (data.message != undefined) {
-            //  messenger.pushMessage
-        }
-        client.timeOutTime = timeOut;
     });
 
     client.on('heartbeat', function (data) {

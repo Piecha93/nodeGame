@@ -9,12 +9,10 @@ function isInputValid(inputCode) {
     if (validInputs.indexOf(inputCode) != -1) {
         return true;
     }
-
     return false;
 }
 
 function InputHandler(callback) {
-    this.isChanged = false;
     this.inputArray = [];
     var self = this;
     //if document if undefined we are on server and dont need read keys
@@ -34,31 +32,25 @@ function InputHandler(callback) {
 //add keycode to input array
 InputHandler.prototype.keyPressed = function (event) {
     //accepy only input code that is not in array already
-    if (this.inputArray.indexOf(event.keyCode) == -1 && isInputValid(event.keyCode)) {
+    if (this.inputArray.indexOf(event.keyCode) == -1) {// && isInputValid(event.keyCode)) {
         this.inputArray.push(event.keyCode);
-        this.isChanged = true;
         this.callback(this.inputArray);
     }
-    console.log('input: ' + event.keyCode);
+    // console.log('input: ' + event.keyCode);
 };
 
 InputHandler.prototype.keyReleased = function (event) {
     var index = this.inputArray.indexOf(event.keyCode);
     if (index > -1) {
         this.inputArray.splice(index, 1);
-        this.isChanged = true;
         this.callback(this.inputArray);
     }
     //console.log('input: ' + this.inputArray);
 };
 
-InputHandler.prototype.handleClientInput = function () {
-    return this.inputArray;
-};
-
-InputHandler.prototype.resetInput = function () {
+InputHandler.prototype.clearInput = function () {
     this.inputArray.splice(0, this.inputArray.length);
-    this.isChanged = true;
+    this.callback(this.inputArray);
 };
 
 module.exports = InputHandler;

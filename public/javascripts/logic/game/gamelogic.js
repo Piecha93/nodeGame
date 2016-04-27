@@ -1,7 +1,7 @@
 var Player = require('./player');
 var DeltaTimer = require('./detlatimer');
 
-var tickRate = 64;
+var tickRate = 128;
 
 function Game() {
     this.players = {};
