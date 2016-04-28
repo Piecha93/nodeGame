@@ -23,9 +23,12 @@ PlayerRender.prototype.init = function (spriteName) {
     this.currentAnimation = new PIXI.extras.MovieClip(this.framesDown);
     this.currentAnimation.animationSpeed = this.player.speed / 2;
 
-    this.text = new PIXI.Text(this.player.id, {fill: 0xff1010, align: 'center', font: '22px Arial'});
-    this.text.x -= this.text.texture.width / 2;
-    this.text.y -= 30;
+
+    this.text = new PIXI.Text(this.player.name, {fill: 0xff1010, align: 'center', font: '15px Arial'});
+    console.log("render name " + this.text.texture.width);
+    //TODO align name
+    this.text.x -= this.player.name.length * 3;
+    this.text.y -= 20;
     this.currentAnimation.addChild(this.text);
 };
 

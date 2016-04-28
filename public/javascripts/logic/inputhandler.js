@@ -25,6 +25,7 @@ function InputHandler(callback) {
         }
     }
 
+    //callback is function to call when new input came
     this.callback = callback;
 };
 

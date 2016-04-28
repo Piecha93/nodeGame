@@ -1,5 +1,4 @@
 var Game = require('./public/javascripts/logic/game/gamelogic');
-var Messenger = require('./public/javascripts/logic/chat/messenger');
 
 function GameServer(id) {
     this.game = null;
@@ -14,7 +13,7 @@ function GameServer(id) {
 GameServer.prototype.clearUpdate = function () {
     this.update = {
         players: {},
-        messages: [],
+        message: null,
         disconnectedClients: [],
         isEmpty: true
     };
@@ -23,8 +22,6 @@ GameServer.prototype.clearUpdate = function () {
 //start game server
 GameServer.prototype.startGameServer = function () {
     this.game = new Game();
-    this.messenger = new Messenger();
-    
     this.game.startGameLoop();
 
     //start update loop
@@ -39,10 +36,11 @@ GameServer.prototype.clientConnected = function (client) {
     console.log('New client connected. id: ' + client.id);
     console.log('Clients connected(' + this.clients.length + '):');
     this.clients.forEach(function (c) {
-        console.log(c.id);
+        console.log(c.id + ' ' + c.name);
     });
 
-    this.game.newPlayer(client.id);
+    var newPlayer = this.game.newPlayer(client.id);
+    newPlayer.name = client.name;
     for (var key in this.game.players) {
         this.update.players[key] = this.game.players[key].getUpdateInfo();
     }
@@ -60,7 +58,7 @@ GameServer.prototype.clientDisconnected = function (client) {
         console.log('Client disconnected');
         console.log('Clients connected(' + this.clients.length + '):');
         this.clients.forEach(function (c) {
-            console.log(c.id);
+            console.log(c.id + ' ' + c.name);
         });
         this.game.removePlayer(client.id);
         this.update.disconnectedClients.push(client.id);
@@ -113,11 +111,9 @@ GameServer.prototype.handleClientInput = function (id, input) {
 GameServer.prototype.handleClientMessage = function (message) {
     // console.log('przyszla wiadomosc ' + message.content + ' dddddddddddd ');
     //console.log('client: ' + id + ' sent: ' + input);
-    message.sendTime = new Date().getTime();
-    console.log(message.sendTime);
-    this.messenger.pushMessage(message);
-    this.update.messages.push(message);
-    this.update.isEmpty = false;
+    this.clients.forEach(function (c) {
+        c.emit('servermessage', message);
+    });
 };
 
 module.exports = GameServer;

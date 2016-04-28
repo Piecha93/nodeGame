@@ -23,6 +23,7 @@ var inputHandler = new InputHandler(inputHandlerCallback);
 var messenger = new Messenger();
 
 var localId = -1;
+var name = "";
 var socket = io.connect();
 
 //connect to server when images loaded (callback)
@@ -30,11 +31,12 @@ render.loadAssets(function () {
     socket.emit('connected');
 });
 
-socket.on('onconnected', function (data) {
+socket.on('onconnected', function (client) {
     render.init();
 
-    console.log('Connection to server succesfull. Your id is: ' + data.id);
-    localId = data.id;
+    console.log('Connection to server succesfull. Your id is: ' + client.id);
+    localId = client.id;
+    name = client.name;
 
     //start game loop when connected to server
     game.startGameLoop();
@@ -42,6 +44,7 @@ socket.on('onconnected', function (data) {
     game.setRender(render);
     //create local player with id from server
     var localPlayer = game.newPlayer(localId);
+    localPlayer.name = name;
 
     startServerUpdateLoop();
     startServerHeartbeatUpdateLoop();
@@ -55,9 +58,12 @@ socket.on('serverupdate', function (data) {
         updatePlayers(data.players);
     if (data.disconnectedClients.length > 0)
         deletePlayers(data.disconnectedClients);
-    if (data.messages.length > 0) {
-        updateMessenger(data.messages);
-    }
+});
+
+socket.on('servermessage', function (message) {
+    console.log("ms");
+    console.log(message);
+    updateMessenger(message);
 });
 
 socket.on('heartbeatsresponse', function (data) {
@@ -100,10 +106,8 @@ function updatePlayers(serverPlayers) {
     }
 }
 
-function updateMessenger(messages) {
-    messages.forEach(function (m) {
-        messenger.addMessage(m.content, m.authorId, m.authorName);
-    });
+function updateMessenger(message) {
+    messenger.addMessage(message.content, message.authorName);
 }
 
 //delete disconnected players
@@ -127,7 +131,6 @@ function startServerHeartbeatUpdateLoop() {
 function resetUpdate() {
     update = {
         input: [],
-        message: null,
         isEmpty: true
     };
 }
@@ -140,12 +143,15 @@ window.onblur = function () {
 
 var chatMode = false;
 var message = "";
+
+//this function is called when input handler got something
 function inputHandlerCallback(input) {
     //if enter pressed
     if (input[input.length - 1] == 13) {
         if (chatMode == true) {
-            update.message = messenger.addMessage(message, "nick");
-            update.isEmpty = false;
+            var m = messenger.createMessage(message, name);
+            m.parseAddressee();
+            socket.emit('clientmessage', m);
             chatMode = false;
         }
         else {

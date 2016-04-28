@@ -23,27 +23,27 @@ var routes = require('./routes/index');
 app.use('/', routes);
 
 var gameServers = {};
-
-function startNewServer() {
-    var id = UUID();
-    gameServers[id] = new GameServer(id);
-    gameServers[id].startGameServer();
-}
+var clients = [];
 
 startNewServer();
+
+var names = "A";
 
 io.sockets.on('connection', function (client) {
     client.id = -1;
 
     client.on('connected', function () {
         client.id = UUID();
-
         client.serverId = chooseServer();
+        client.name = names;
+        names = names + "A";
+
+        clients.push(client);
         gameServers[client.serverId].clientConnected(client);
 
         client.timeOutTime = timeOut;
 
-        client.emit('onconnected', {id: client.id});
+        client.emit('onconnected', {id: client.id, name: client.name});
     });
 
     client.on('disconnect', function () {
@@ -59,10 +59,43 @@ io.sockets.on('connection', function (client) {
             if (data.input !== undefined) {
                 gameServers[client.serverId].handleClientInput(client.id, data.input);
             }
-            if (data.message !== null) {
-                gameServers[client.serverId].handleClientMessage(data.message);
-            }
             client.timeOutTime = timeOut;
+        }
+    });
+
+    client.on('clientmessage', function (message) {
+        if (message !== null) {
+            message.sendTime = new Date().getTime();
+            if (message.addressee == "all") {
+                gameServers[client.serverId].handleClientMessage(message);
+            } else if (message.addressee == "shout") {
+                //TODO shout chat
+            } else if (message.addressee == "trade") {
+                //TODO trade chat
+            } else if (message.addressee == "party") {
+                //TODO party chat
+            } else if (message.addressee == "command") {
+                //TODO command system
+            } else {
+                var addresseeClient = null;
+                //whisper
+
+                //find client addressee
+                for (var i = 0; i < clients.length; i++) {
+                    if (clients[i].name == message.addressee) {
+                        addresseeClient = clients[i];
+                        break;
+                    }
+                }
+
+                //if addressee found send him message. Author get the same message or information about failure
+                if (addresseeClient !== null) {
+                    addresseeClient.emit('servermessage', message);
+                    client.emit('servermessage', message);
+                } else {
+                    client.emit('servermessage', "Player " + message.addressee + " is not online");
+                }
+            }
         }
     });
 
@@ -72,11 +105,17 @@ io.sockets.on('connection', function (client) {
     });
 });
 
+function startNewServer() {
+    var id = UUID();
+    gameServers[id] = new GameServer(id);
+    gameServers[id].startGameServer();
+}
+
 function chooseServer() {
     return randomServer();
 }
 
-//Temp funciton. In future server would be choosen depends on other servers load
+//Temp function. In future server would be chosen depends on other servers load
 function randomServer() {
     var keys = Object.keys(gameServers);
     return keys[keys.length * Math.random() << 0];

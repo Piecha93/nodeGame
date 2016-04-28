@@ -1,9 +1,9 @@
 var Player = require('./player');
 var DeltaTimer = require('./detlatimer');
 
-var tickRate = 128;
-
 function Game() {
+    this.tickrate = 128;
+    
     this.players = {};
     this.renderHandler = null;
     this.timer = new DeltaTimer();
@@ -22,7 +22,7 @@ Game.prototype.gameLoop = function () {
     var self = this;
     setTimeout(function () {
         self.gameLoop();
-    }, 1 / tickRate * 1000);
+    }, 1 / this.tickRate * 1000);
 };
 
 Game.prototype.handleInput = function () {
@@ -49,13 +49,14 @@ Game.prototype.setRender = function (render) {
 };
 
 //creates new player
-Game.prototype.newPlayer = function (id, newPlayer) {
+Game.prototype.newPlayer = function (id, playerCopy) {
     var player = new Player();
     player.id = id;
 
-    if (typeof newPlayer !== "undefined") {
-        player.x = newPlayer.x;
-        player.y = newPlayer.y;
+    if (typeof playerCopy !== "undefined") {
+        player.x = playerCopy.x;
+        player.y = playerCopy.y;
+        player.name = playerCopy.name;
     }
     this.players[player.id] = player;
 
@@ -67,11 +68,11 @@ Game.prototype.removePlayer = function (id) {
 };
 
 Game.prototype.setTickRate = function (tr) {
-    tickRate = tr;
+    this.tickRate = tr;
 };
 
 Game.prototype.getTickRate = function () {
-    return tickRate;
+    return this.tickRate;
 };
 
 Game.prototype.getPlayer = function (id) {

@@ -9,7 +9,7 @@ function Player() {
     this.verticalDir = VerticalDir.none;
     this.speed = 0.15;
     this.isChanged = true;
-    this.id = -1;
+    this.name = "";
 
     this.horizontalMove = HorizontalDir.none;
     this.verticalMove = VerticalDir.none;
@@ -66,6 +66,7 @@ Player.prototype.serverUpdate = function (playerUpdateInfo) {
     this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
     this.horizontalMove = playerUpdateInfo.horizontalMove;
     this.verticalMove = playerUpdateInfo.verticalMove;
+    this.name = playerUpdateInfo.name;
 };
 
 Player.prototype.getUpdateInfo = function () {
@@ -74,6 +75,7 @@ Player.prototype.getUpdateInfo = function () {
     playerUpdateInfo.y = this.y;
     playerUpdateInfo.horizontalMove = this.horizontalDir;
     playerUpdateInfo.verticalMove = this.verticalDir;
+    playerUpdateInfo.name = this.name;
 
     return playerUpdateInfo;
 };

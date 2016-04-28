@@ -47,6 +47,7 @@
         var messenger = new Messenger();
 
         var localId = -1;
+        var name = "";
         var socket = io.connect();
 
 //connect to server when images loaded (callback)
@@ -54,11 +55,12 @@
             socket.emit('connected');
         });
 
-        socket.on('onconnected', function (data) {
+        socket.on('onconnected', function (client) {
             render.init();
 
-            console.log('Connection to server succesfull. Your id is: ' + data.id);
-            localId = data.id;
+            console.log('Connection to server succesfull. Your id is: ' + client.id);
+            localId = client.id;
+            name = client.name;
 
             //start game loop when connected to server
             game.startGameLoop();
@@ -66,6 +68,7 @@
             game.setRender(render);
             //create local player with id from server
             var localPlayer = game.newPlayer(localId);
+            localPlayer.name = name;
 
             startServerUpdateLoop();
             startServerHeartbeatUpdateLoop();
@@ -79,9 +82,12 @@
                 updatePlayers(data.players);
             if (data.disconnectedClients.length > 0)
                 deletePlayers(data.disconnectedClients);
-            if (data.messages.length > 0) {
-                updateMessenger(data.messages);
-            }
+        });
+
+        socket.on('servermessage', function (message) {
+            console.log("ms");
+            console.log(message);
+            updateMessenger(message);
         });
 
         socket.on('heartbeatsresponse', function (data) {
@@ -120,14 +126,12 @@
                 else {
                     localPlayer = game.newPlayer(key, serverPlayers[key]);
                     render.newPlayer(localPlayer);
-                }
+        }
             }
         }
 
-        function updateMessenger(messages) {
-            messages.forEach(function (m) {
-                messenger.addMessage(m.content, m.authorId, m.authorName);
-            });
+        function updateMessenger(message) {
+            messenger.addMessage(message.content, message.authorName);
         }
 
 //delete disconnected players
@@ -151,7 +155,6 @@
         function resetUpdate() {
             update = {
                 input: [],
-                message: null,
                 isEmpty: true
             };
         }
@@ -165,19 +168,21 @@
         var chatMode = false;
         var message = "";
 
+//this function is called when input handler got something
         function inputHandlerCallback(input) {
             //if enter pressed
             if (input[input.length - 1] == 13) {
                 if (chatMode == true) {
-                    update.message = messenger.addMessage(message, "nick");
-                    update.isEmpty = false;
+                    var m = messenger.createMessage(message, name);
+                    m.parseAddressee();
+                    socket.emit('clientmessage', m);
                     chatMode = false;
         }
                 else {
                     chatMode = true;
                     message = "";
                     input.pop();
-                }
+        }
             } else if (chatMode == true) {
                 message += String.fromCharCode(input.pop());
                 console.log(message);
@@ -217,9 +222,12 @@
             this.currentAnimation = new PIXI.extras.MovieClip(this.framesDown);
             this.currentAnimation.animationSpeed = this.player.speed / 2;
 
-            this.text = new PIXI.Text(this.player.id, {fill: 0xff1010, align: 'center', font: '22px Arial'});
-            this.text.x -= this.text.texture.width / 2;
-            this.text.y -= 30;
+
+            this.text = new PIXI.Text(this.player.name, {fill: 0xff1010, align: 'center', font: '15px Arial'});
+            console.log("render name " + this.text.texture.width);
+            //TODO
+            this.text.x -= this.player.name.length * 3;
+            this.text.y -= 20;
             this.currentAnimation.addChild(this.text);
         };
 
@@ -319,14 +327,37 @@
         }
 
         Message.prototype.append = function (content) {
-            this.content = this.content + connect;
+            this.content = this.content + content;
         };
 
         Message.prototype.setContent = function (content) {
             this.content = content;
         };
 
+        Message.prototype.parseAddressee = function () {
+            var firstChar = this.content.charAt(0);
+            if (firstChar == '!') {
+                this.addressee = "shout";
+            } else if (firstChar == '$') {
+                this.addressee = "trade";
+            } else if (firstChar == '#') {
+                this.addressee = "party";
+            } else if (firstChar == 'Q') {
+                this.addressee = this.content.substr(1, this.content.indexOf(" ") - 1);
+            } else if (firstChar == '/') {
+                this.addressee = "command";
+            } else {
+                this.addressee = "all";
+            }
+            if (this.addressee != "all") {
+                this.content = this.content.substr(1, this.content.length);
+            }
+            return this.addressee;
+        };
+
         module.exports = Message;
+
+
     }, {}],
     5: [function (require, module, exports) {
         var Message = require("./message");
@@ -348,23 +379,19 @@
             return message;
         };
 
-        Messenger.prototype.pushMessage = function (message) {
-            this.messageArray.push(message);
-            console.log(this.messageArray);
-        };
-
         Messenger.prototype.pushMessages = function (messages) {
             this.messageArray.concat(messages);
             console.log('concat  ');
             console.log(this.messageArray);
         };
 
-        Messenger.prototype.getLast = function (number) {
+//return x last messages
+        Messenger.prototype.getLast = function (count) {
             var arrayLength = this.messageArray.length;
-            if (number > arrayLength) {
-                number = arrayLength;
+            if (count > arrayLength) {
+                count = arrayLength;
             }
-            this.messageArray.slice(arrayLength - number, arrayLength);
+            this.messageArray.slice(arrayLength - count, arrayLength);
         };
 
         module.exports = Messenger;
@@ -390,9 +417,9 @@
         var Player = require('./player');
         var DeltaTimer = require('./detlatimer');
 
-        var tickRate = 128;
-
         function Game() {
+            this.tickrate = 128;
+
             this.players = {};
             this.renderHandler = null;
             this.timer = new DeltaTimer();
@@ -411,7 +438,7 @@
             var self = this;
             setTimeout(function () {
                 self.gameLoop();
-            }, 1 / tickRate * 1000);
+            }, 1 / this.tickRate * 1000);
         };
 
         Game.prototype.handleInput = function () {
@@ -438,13 +465,14 @@
         };
 
 //creates new player
-        Game.prototype.newPlayer = function (id, newPlayer) {
+        Game.prototype.newPlayer = function (id, playerCopy) {
             var player = new Player();
             player.id = id;
 
-            if (typeof newPlayer !== "undefined") {
-                player.x = newPlayer.x;
-                player.y = newPlayer.y;
+            if (typeof playerCopy !== "undefined") {
+                player.x = playerCopy.x;
+                player.y = playerCopy.y;
+                player.name = playerCopy.name;
             }
             this.players[player.id] = player;
 
@@ -456,11 +484,11 @@
         };
 
         Game.prototype.setTickRate = function (tr) {
-            tickRate = tr;
+            this.tickRate = tr;
         };
 
         Game.prototype.getTickRate = function () {
-            return tickRate;
+            return this.tickRate;
         };
 
         Game.prototype.getPlayer = function (id) {
@@ -485,7 +513,7 @@
             this.verticalDir = VerticalDir.none;
             this.speed = 0.15;
             this.isChanged = true;
-            this.id = -1;
+            this.name = "";
 
             this.horizontalMove = HorizontalDir.none;
             this.verticalMove = VerticalDir.none;
@@ -518,7 +546,7 @@
                     case 83:
                         self.verticalDir = VerticalDir.down;
                         break;
-                }
+        }
             });
         };
 
@@ -542,6 +570,7 @@
             this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
             this.horizontalMove = playerUpdateInfo.horizontalMove;
             this.verticalMove = playerUpdateInfo.verticalMove;
+            this.name = playerUpdateInfo.name;
         };
 
         Player.prototype.getUpdateInfo = function () {
@@ -550,6 +579,7 @@
             playerUpdateInfo.y = this.y;
             playerUpdateInfo.horizontalMove = this.horizontalDir;
             playerUpdateInfo.verticalMove = this.verticalDir;
+            playerUpdateInfo.name = this.name;
 
             return playerUpdateInfo;
         };
@@ -584,6 +614,7 @@
         }
             }
 
+            //callback is function to call when new input came
             this.callback = callback;
         };
 

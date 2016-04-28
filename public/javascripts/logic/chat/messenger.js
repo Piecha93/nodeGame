@@ -17,23 +17,19 @@ Messenger.prototype.addMessage = function (content, authorName) {
     return message;
 };
 
-Messenger.prototype.pushMessage = function (message) {
-    this.messageArray.push(message);
-    console.log(this.messageArray);
-};
-
 Messenger.prototype.pushMessages = function (messages) {
     this.messageArray.concat(messages);
     console.log('concat  ');
     console.log(this.messageArray);
 };
 
-Messenger.prototype.getLast = function (number) {
+//return x last messages
+Messenger.prototype.getLast = function (count) {
     var arrayLength = this.messageArray.length;
-    if (number > arrayLength) {
-        number = arrayLength;
+    if (count > arrayLength) {
+        count = arrayLength;
     }
-    this.messageArray.slice(arrayLength - number, arrayLength);
+    this.messageArray.slice(arrayLength - count, arrayLength);
 };
 
 module.exports = Messenger;

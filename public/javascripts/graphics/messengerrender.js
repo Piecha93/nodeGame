@@ -5,7 +5,7 @@ function MessengerRender() {
 
 }
 
-MessengerRender.prototype.init = function (spriteName) {
+MessengerRender.prototype.init = function (font) {
 
 };
 
