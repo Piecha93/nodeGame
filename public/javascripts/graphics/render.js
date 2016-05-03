@@ -1,28 +1,25 @@
 var PlayerRender = require("./playerrender");
 
-function Render() {
-    this.renderer;
-    this.stage;
+function Render(callback) {
+    this.onLoadCallback = callback;
+    this.game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example',
+        {preload: this.preload.bind(this), create: this.create, render: this.update});
+
     this.objects = {};
 }
 
 //load images
-Render.prototype.loadAssets = function (callback) {
-    PIXI.loader.add('panda', 'resources/images/panda.json').load(function () {
-        callback();
-    });
+Render.prototype.preload = function () {
+    //load assets
+    this.game.load.atlasJSONHash('panda', 'resources/images/panda.png', 'resources/images/panda.json');
+    //set callback
+    this.game.load.onLoadComplete.add(this.onLoadCallback);
 };
 
-Render.prototype.init = function () {
-    // You can use either `new PIXI.WebGLRenderer`, `new PIXI.CanvasRenderer`, or `PIXI.autoDetectRenderer`
-    // which will try to choose the best renderer for the environment you are in.
-    this.renderer = new PIXI.autoDetectRenderer(800, 600);
+Render.prototype.create = function () {
+    this.game.add.plugin(Fabrique.Plugins.InputField);
 
-    // The renderer will create a canvas element for you that you can then insert into the DOM.
-    document.body.appendChild(this.renderer.view);
 
-    // You need to create a root container that will hold the scene you want to draw.
-    this.stage = new PIXI.Container();
 };
 
 Render.prototype.update = function (delta) {
@@ -30,7 +27,7 @@ Render.prototype.update = function (delta) {
         this.objects[key].update();
     }
 
-    this.renderer.render(this.stage);
+    //this.renderer.render(this.stage);
 };
 
 Render.prototype.newPlayer = function (player) {
@@ -40,17 +37,16 @@ Render.prototype.newPlayer = function (player) {
     //set up player reference
     playerRender.player = player;
 
-    playerRender.init('panda');
+    playerRender.init(this.game.add.sprite(0, 0, 'panda'));
     playerRender.update();
 
-    this.stage.addChild(playerRender.currentAnimation);
     this.objects[player.id] = playerRender;
 };
 
 Render.prototype.removePlayer = function (id) {
     if (id in this.objects) {
-        //remove from stage
-        this.stage.removeChild(this.objects[id].currentAnimation);
+        //remove form game
+        this.objects[id].sprite.destroy();
         //remove from objects array
         delete this.objects[id];
 

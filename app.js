@@ -43,7 +43,7 @@ io.sockets.on('connection', function (client) {
 
         client.timeOutTime = timeOut;
 
-        client.emit('onconnected', {id: client.id, name: client.name});
+        client.emit('startgame', {id: client.id, name: client.name});
     });
 
     client.on('disconnect', function () {

@@ -1,58 +1,37 @@
 function PlayerRender() {
-    this.currentAnimation = null;
-    this.text = null;
     this.player = null;
-
-    this.framesLeft = [];
-    this.framesRight = [];
-    this.framesUp = [];
-    this.framesDown = [];
-
+    this.sprite = null;
+    this.text = null;
     //1 - no lerp, >1 - lerp, do not set this to <1
     this.lerpRate = 10;
 }
 
-PlayerRender.prototype.init = function (spriteName) {
-    for (var i = 1; i < 5; i++) {
-        this.framesLeft.push(PIXI.Texture.fromFrame(spriteName + 'left' + i + '.png'));
-        this.framesRight.push(PIXI.Texture.fromFrame(spriteName + 'right' + i + '.png'));
-        this.framesUp.push(PIXI.Texture.fromFrame(spriteName + 'up' + i + '.png'));
-        this.framesDown.push(PIXI.Texture.fromFrame(spriteName + 'down' + i + '.png'));
-    }
-
-    this.currentAnimation = new PIXI.extras.MovieClip(this.framesDown);
-    this.currentAnimation.animationSpeed = this.player.speed / 2;
-
-
-    this.text = new PIXI.Text(this.player.name, {fill: 0xff1010, align: 'center', font: '15px Arial'});
-    console.log("render name " + this.text.texture.width);
-    //TODO align name
-    this.text.x -= this.player.name.length * 3;
-    this.text.y -= 20;
-    this.currentAnimation.addChild(this.text);
+PlayerRender.prototype.init = function (sprite) {
+    this.animationSpeed = this.player.speed * 30;
+    this.sprite = sprite;
+    this.sprite.animations.add('left', ['left1.png', 'left2.png', 'left3.png', 'left4.png'], this.animationSpeed, true);
+    this.sprite.animations.add('right', ['right1.png', 'right2.png', 'right3.png', 'right4.png'], this.animationSpeed, true);
+    this.sprite.animations.add('up', ['up1.png', 'up2.png', 'up3.png', 'up4.png'], this.animationSpeed, true);
+    this.sprite.animations.add('down', ['down1.png', 'down2.png', 'down3.png', 'down4.png'], this.animationSpeed, true);
 };
 
 PlayerRender.prototype.update = function () {
     //animation update
     if (this.player.horizontalDir == -1 || this.player.horizontalMove == -1) {
-        this.currentAnimation.textures = this.framesLeft;
-        this.currentAnimation.play();
+        this.sprite.animations.play('left');
     } else if (this.player.horizontalDir == 1 || this.player.horizontalMove == 1) {
-        this.currentAnimation.textures = this.framesRight;
-        this.currentAnimation.play();
+        this.sprite.animations.play('right');
     } else if (this.player.verticalDir == -1 || this.player.verticalMove == -1) {
-        this.currentAnimation.textures = this.framesUp;
-        this.currentAnimation.play();
+        this.sprite.animations.play('up');
     } else if (this.player.verticalDir == 1 || this.player.verticalMove == 1) {
-        this.currentAnimation.textures = this.framesDown;
-        this.currentAnimation.play();
+        this.sprite.animations.play('down');
     } else {
-        this.currentAnimation.stop();
+        this.sprite.animations.stop();
     }
 
     //position update
-    this.currentAnimation.x += (this.player.x - this.currentAnimation.x) / this.lerpRate;
-    this.currentAnimation.y += (this.player.y - this.currentAnimation.y) / this.lerpRate;
+    this.sprite.x += (this.player.x - this.sprite.x) / this.lerpRate;
+    this.sprite.y += (this.player.y - this.sprite.y) / this.lerpRate;
 };
 
 module.exports = PlayerRender;

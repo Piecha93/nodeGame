@@ -17,7 +17,7 @@ var heartBeat = {
 };
 var ping = 0;
 
-var render = new Render();
+var render = new Render(assetsLoadedCallback);
 var game = new Game();
 var inputHandler = new InputHandler(inputHandlerCallback);
 var messenger = new Messenger();
@@ -26,15 +26,11 @@ var localId = -1;
 var name = "";
 var socket = io.connect();
 
-//connect to server when images loaded (callback)
-render.loadAssets(function () {
+function assetsLoadedCallback() {
     socket.emit('connected');
-});
+}
 
-socket.on('onconnected', function (client) {
-    render.init();
-
-    console.log('Connection to server succesfull. Your id is: ' + client.id);
+socket.on('startgame', function (client) {
     localId = client.id;
     name = client.name;
 
@@ -50,6 +46,8 @@ socket.on('onconnected', function (client) {
     startServerHeartbeatUpdateLoop();
     //add player to render
     render.newPlayer(localPlayer);
+
+    console.log('Connection to server succesfull. Your id is: ' + client.id);
 });
 
 //get update from server
@@ -135,7 +133,7 @@ function resetUpdate() {
     };
 }
 
-//clear input when tab inactive
+//clear input and send update when tab inactive
 window.onblur = function () {
     inputHandler.clearInput();
     serverUpdateLoop();
