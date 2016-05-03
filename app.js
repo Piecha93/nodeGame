@@ -64,7 +64,7 @@ io.sockets.on('connection', function (client) {
     });
 
     client.on('clientmessage', function (message) {
-        if (message !== null) {
+        if (message !== null && message.content != "") {
             message.sendTime = new Date().getTime();
             if (message.addressee == "all") {
                 gameServers[client.serverId].handleClientMessage(message);
@@ -76,10 +76,10 @@ io.sockets.on('connection', function (client) {
                 //TODO party chat
             } else if (message.addressee == "command") {
                 //TODO command system
+
+                //if addressee is different then it must be whisper    
             } else {
                 var addresseeClient = null;
-                //whisper
-
                 //find client addressee
                 for (var i = 0; i < clients.length; i++) {
                     if (clients[i].name == message.addressee) {

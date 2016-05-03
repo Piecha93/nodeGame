@@ -83,7 +83,6 @@
         });
 
         socket.on('servermessage', function (message) {
-            console.log("ms");
             console.log(message);
             updateMessenger(message);
         });
@@ -164,27 +163,29 @@
         };
 
         var chatMode = false;
-        var message = "";
 
 //this function is called when input handler got something
+//input is copy od inputhandler inputArray
         function inputHandlerCallback(input) {
             //if enter pressed
             if (input[input.length - 1] == 13) {
+                //if chat mode if true we need to get message from canvas and send it to server
                 if (chatMode == true) {
+                    var message = render.endChat();
+                    if (message == "") {
+                        console.log("pusta");
+            }
                     var m = messenger.createMessage(message, name);
                     m.parseAddressee();
                     socket.emit('clientmessage', m);
                     chatMode = false;
-        }
-                else {
+                    inputHandler.clearInput();
+                    //if chat mode is false we entering chat mode
+                } else {
+                    render.enterChat();
                     chatMode = true;
-                    message = "";
-                    input.pop();
         }
-            } else if (chatMode == true) {
-                message += String.fromCharCode(input.pop());
-                console.log(message);
-            } else {
+            } else if (chatMode == false) {
                 var player = game.getPlayer(localId);
                 if (player != null) {
                     player.input = input;
@@ -193,8 +194,48 @@
         }
             }
         }
-    }, {"./graphics/render": 3, "./logic/chat/messenger": 5, "./logic/game/gamelogic": 7, "./logic/inputhandler": 9}],
+    }, {"./graphics/render": 4, "./logic/chat/messenger": 6, "./logic/game/gamelogic": 8, "./logic/inputhandler": 10}],
     2: [function (require, module, exports) {
+        function MessengerRender() {
+            this.messenger = null;
+        }
+
+        MessengerRender.prototype.init = function (inputSprite, canvas) {
+            this.inputSprite = inputSprite;
+            this.inputSprite.canvasInput = new CanvasInput({
+                canvas: canvas,
+                fontSize: 14,
+                fontFamily: 'Arial',
+                fontColor: '#212121',
+                fontWeight: 'bold',
+                width: 400,
+                padding: 8,
+                borderWidth: 1,
+                borderColor: '#000',
+                borderRadius: 3,
+                boxShadow: '1px 1px 0px #fff',
+                innerShadow: '0px 0px 5px rgba(0, 0, 0, 0.5)',
+                placeHolder: 'Enter message here...'
+            });
+
+            this.inputSprite.canvasInput.focus();
+        };
+
+        MessengerRender.prototype.update = function () {
+
+        };
+
+        MessengerRender.prototype.getTextAndDestroy = function () {
+            var text = this.inputSprite.canvasInput.value();
+            this.inputSprite.canvasInput.destroy();
+            this.inputSprite.destroy();
+
+            return text;
+        };
+
+        module.exports = MessengerRender;
+    }, {}],
+    3: [function (require, module, exports) {
         function PlayerRender() {
             this.player = null;
             this.sprite = null;
@@ -233,13 +274,15 @@
 
         module.exports = PlayerRender;
     }, {}],
-    3: [function (require, module, exports) {
+    4: [function (require, module, exports) {
         var PlayerRender = require("./playerrender");
+        var MessageRender = require("./messengerrender");
 
         function Render(callback) {
             this.onLoadCallback = callback;
-            this.game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example',
-                {preload: this.preload.bind(this), create: this.create, render: this.update});
+            this.text = null;
+            this.game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example',
+                {preload: this.preload.bind(this), create: this.create.bind(this)});
 
             this.objects = {};
         }
@@ -253,26 +296,24 @@
         };
 
         Render.prototype.create = function () {
-            this.game.add.plugin(Fabrique.Plugins.InputField);
 
-            var password = this.game.add.inputField(10, 90, {
-                font: '18px Arial',
-                fill: '#212121',
-                fontWeight: 'bold',
-                width: 150,
-                padding: 8,
-                borderWidth: 1,
-                borderColor: '#000',
-                borderRadius: 6,
-            });
         };
+
+        Render.prototype.enterChat = function () {
+            this.messageRender = new MessageRender();
+            var bitmap = this.game.add.bitmapData(400, 100);
+            this.messageRender.init(this.game.add.sprite(0, this.game.height - 40, bitmap), bitmap.canvas);
+        };
+
+        Render.prototype.endChat = function () {
+            return this.messageRender.getTextAndDestroy();
+        };
+
 
         Render.prototype.update = function (delta) {
             for (var key in this.objects) {
                 this.objects[key].update();
             }
-
-            //this.renderer.render(this.stage);
         };
 
         Render.prototype.newPlayer = function (player) {
@@ -300,8 +341,8 @@
         };
 
         module.exports = Render;
-    }, {"./playerrender": 2}],
-    4: [function (require, module, exports) {
+    }, {"./messengerrender": 2, "./playerrender": 3}],
+    5: [function (require, module, exports) {
         function Message(content, authorName) {
             this.content = content;
             this.authorName = authorName;
@@ -324,13 +365,14 @@
                 this.addressee = "trade";
             } else if (firstChar == '#') {
                 this.addressee = "party";
-            } else if (firstChar == 'Q') {
+            } else if (firstChar == '"') {
                 this.addressee = this.content.substr(1, this.content.indexOf(" ") - 1);
             } else if (firstChar == '/') {
                 this.addressee = "command";
             } else {
                 this.addressee = "all";
             }
+
             if (this.addressee != "all") {
                 this.content = this.content.substr(1, this.content.length);
             }
@@ -341,7 +383,7 @@
 
 
     }, {}],
-    5: [function (require, module, exports) {
+    6: [function (require, module, exports) {
         var Message = require("./message");
 
         function Messenger() {
@@ -377,8 +419,8 @@
         };
 
         module.exports = Messenger;
-    }, {"./message": 4}],
-    6: [function (require, module, exports) {
+    }, {"./message": 5}],
+    7: [function (require, module, exports) {
         function DeltaTimer(id) {
             this.currentTime;
             this.delta;
@@ -395,7 +437,7 @@
 
         module.exports = DeltaTimer;
     }, {}],
-    7: [function (require, module, exports) {
+    8: [function (require, module, exports) {
         var Player = require('./player');
         var DeltaTimer = require('./detlatimer');
 
@@ -482,8 +524,8 @@
 
         module.exports = Game;
 
-    }, {"./detlatimer": 6, "./player": 8}],
-    8: [function (require, module, exports) {
+    }, {"./detlatimer": 7, "./player": 9}],
+    9: [function (require, module, exports) {
         var HorizontalDir = {none: 0, left: -1, right: 1};
         var VerticalDir = {none: 0, up: -1, down: 1};
 
@@ -568,37 +610,35 @@
 
         module.exports = Player;
     }, {}],
-    9: [function (require, module, exports) {
-        var validInputs = [
-            39, 68, //right
-            37, 65, //left
-            38, 83, //up
-            40, 87  //down
-        ];
+    10: [function (require, module, exports) {
+        /*var validInputs = [
+         39, 68, //right
+         37, 65, //left
+         38, 83, //up
+         40, 87  //down
+         ];
 
-        function isInputValid(inputCode) {
-            if (validInputs.indexOf(inputCode) != -1) {
-                return true;
-            }
-            return false;
-        }
+         function isInputValid(inputCode) {
+         if (validInputs.indexOf(inputCode) != -1) {
+         return true;
+         }
+         return false;
+         }*/
 
         function InputHandler(callback) {
             this.inputArray = [];
             var self = this;
-            //if document if undefined we are on server and dont need read keys
-            if (typeof document !== 'undefined') {
-                document.onkeydown = function (event) {
-                    self.keyPressed(event);
-                };
-                document.onkeyup = function (event) {
-                    self.keyReleased(event);
-        }
-            }
+
+            document.onkeydown = function (event) {
+                self.keyPressed(event);
+            };
+            document.onkeyup = function (event) {
+                self.keyReleased(event);
+            };
 
             //callback is function to call when new input came
             this.callback = callback;
-        };
+        }
 
 //event listener for press key
 //add keycode to input array
@@ -606,7 +646,7 @@
             //accepy only input code that is not in array already
             if (this.inputArray.indexOf(event.keyCode) == -1) {// && isInputValid(event.keyCode)) {
                 this.inputArray.push(event.keyCode);
-                this.callback(this.inputArray);
+                this.callback(this.inputArray.slice());
             }
             // console.log('input: ' + event.keyCode);
         };
@@ -615,14 +655,14 @@
             var index = this.inputArray.indexOf(event.keyCode);
             if (index > -1) {
                 this.inputArray.splice(index, 1);
-                this.callback(this.inputArray);
+                this.callback(this.inputArray.slice());
             }
             //console.log('input: ' + this.inputArray);
         };
 
         InputHandler.prototype.clearInput = function () {
             this.inputArray.splice(0, this.inputArray.length);
-            this.callback(this.inputArray);
+            this.callback([]);
         };
 
         module.exports = InputHandler;

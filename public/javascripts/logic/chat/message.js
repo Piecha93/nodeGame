@@ -20,13 +20,14 @@ Message.prototype.parseAddressee = function () {
         this.addressee = "trade";
     } else if (firstChar == '#') {
         this.addressee = "party";
-    } else if (firstChar == 'Q') {
+    } else if (firstChar == '"') {
         this.addressee = this.content.substr(1, this.content.indexOf(" ") - 1);
     } else if (firstChar == '/') {
         this.addressee = "command";
     } else {
         this.addressee = "all";
     }
+
     if (this.addressee != "all") {
         this.content = this.content.substr(1, this.content.length);
     }

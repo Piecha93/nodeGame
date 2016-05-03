@@ -1,9 +1,11 @@
 var PlayerRender = require("./playerrender");
+var MessageRender = require("./messengerrender");
 
 function Render(callback) {
     this.onLoadCallback = callback;
-    this.game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-example',
-        {preload: this.preload.bind(this), create: this.create, render: this.update});
+    this.text = null;
+    this.game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example',
+        {preload: this.preload.bind(this), create: this.create.bind(this)});
 
     this.objects = {};
 }
@@ -17,17 +19,24 @@ Render.prototype.preload = function () {
 };
 
 Render.prototype.create = function () {
-    this.game.add.plugin(Fabrique.Plugins.InputField);
-
 
 };
+
+Render.prototype.enterChat = function () {
+    this.messageRender = new MessageRender();
+    var bitmap = this.game.add.bitmapData(400, 100);
+    this.messageRender.init(this.game.add.sprite(0, this.game.height - 40, bitmap), bitmap.canvas);
+};
+
+Render.prototype.endChat = function () {
+    return this.messageRender.getTextAndDestroy();
+};
+
 
 Render.prototype.update = function (delta) {
     for (var key in this.objects) {
         this.objects[key].update();
     }
-
-    //this.renderer.render(this.stage);
 };
 
 Render.prototype.newPlayer = function (player) {

@@ -59,7 +59,6 @@ socket.on('serverupdate', function (data) {
 });
 
 socket.on('servermessage', function (message) {
-    console.log("ms");
     console.log(message);
     updateMessenger(message);
 });
@@ -140,27 +139,28 @@ window.onblur = function () {
 };
 
 var chatMode = false;
-var message = "";
 
 //this function is called when input handler got something
+//input is copy od inputhandler inputArray
 function inputHandlerCallback(input) {
     //if enter pressed
     if (input[input.length - 1] == 13) {
+        //if chat mode if true we need to get message from canvas and send it to server
         if (chatMode == true) {
-            var m = messenger.createMessage(message, name);
-            m.parseAddressee();
-            socket.emit('clientmessage', m);
+            var message = render.endChat();
+            if (message != "") {
+                var m = messenger.createMessage(message, name);
+                m.parseAddressee();
+                socket.emit('clientmessage', m);
+            }
             chatMode = false;
-        }
-        else {
+            inputHandler.clearInput();
+            //if chat mode is false we entering chat mode
+        } else {
+            render.enterChat();
             chatMode = true;
-            message = "";
-            input.pop();
         }
-    } else if (chatMode == true) {
-        message += String.fromCharCode(input.pop());
-        console.log(message);
-    } else {
+    } else if (chatMode == false) {
         var player = game.getPlayer(localId);
         if (player != null) {
             player.input = input;
