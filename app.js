@@ -24,10 +24,9 @@ app.use('/', routes);
 
 var gameServers = {};
 var clients = [];
+var names = 0;
 
 startNewServer();
-
-var names = "A";
 
 io.sockets.on('connection', function (client) {
     client.id = -1;
@@ -35,8 +34,8 @@ io.sockets.on('connection', function (client) {
     client.on('connected', function () {
         client.id = UUID();
         client.serverId = chooseServer();
-        client.name = names;
-        names = names + "A";
+        client.name = 'Guest' + names.toString();
+        names++;
 
         clients.push(client);
         gameServers[client.serverId].clientConnected(client);
@@ -82,7 +81,7 @@ io.sockets.on('connection', function (client) {
                 var addresseeClient = null;
                 //find client addressee
                 for (var i = 0; i < clients.length; i++) {
-                    if (clients[i].name == message.addressee) {
+                    if (clients[i].name == message.addressee && clients[i].name != client.name) {
                         addresseeClient = clients[i];
                         break;
                     }
@@ -93,7 +92,11 @@ io.sockets.on('connection', function (client) {
                     addresseeClient.emit('servermessage', message);
                     client.emit('servermessage', message);
                 } else {
-                    client.emit('servermessage', "Player " + message.addressee + " is not online");
+                    //chage message to system info
+                    message.content = "Player " + message.addressee + " is not online";
+                    message.addressee = "system";
+                    message.authorName = "";
+                    client.emit('servermessage', message);
                 }
             }
         }

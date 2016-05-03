@@ -2,7 +2,7 @@ var Game = require('./public/javascripts/logic/game/gamelogic');
 
 function GameServer(id) {
     this.game = null;
-    this.messenger = null;
+    this.messageBox = null;
     this.serverId = id;
     this.updateTickRate = 20;
     this.clients = [];

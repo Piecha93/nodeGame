@@ -1,7 +1,12 @@
-function Message(content, authorName) {
+function Message(content, authorName, addressee) {
     this.content = content;
     this.authorName = authorName;
     this.sendTime = -1;
+    if (addressee != undefined) {
+        this.addressee = addressee;
+    } else {
+        this.addressee = "";
+    }
 }
 
 Message.prototype.append = function (content) {
@@ -22,6 +27,7 @@ Message.prototype.parseAddressee = function () {
         this.addressee = "party";
     } else if (firstChar == '"') {
         this.addressee = this.content.substr(1, this.content.indexOf(" ") - 1);
+        this.content = this.content.substr(this.content.indexOf(" "), this.content.length);
     } else if (firstChar == '/') {
         this.addressee = "command";
     } else {

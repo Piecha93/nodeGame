@@ -1,7 +1,7 @@
 var Game = require('./logic/game/gamelogic');
 var Render = require('./graphics/render');
 var InputHandler = require('./logic/inputhandler');
-var Messenger = require('./logic/chat/messenger');
+var MessageBox = require('./logic/chat/messagebox');
 
 //number of times per secound sending packets to server
 var updateTickRate = 20;
@@ -20,7 +20,7 @@ var ping = 0;
 var render = new Render(assetsLoadedCallback);
 var game = new Game();
 var inputHandler = new InputHandler(inputHandlerCallback);
-var messenger = new Messenger();
+var messageBox = new MessageBox();
 
 var localId = -1;
 var name = "";
@@ -46,6 +46,7 @@ socket.on('startgame', function (client) {
     startServerHeartbeatUpdateLoop();
     //add player to render
     render.newPlayer(localPlayer);
+    render.createMessageBox(messageBox);
 
     console.log('Connection to server succesfull. Your id is: ' + client.id);
 });
@@ -59,7 +60,9 @@ socket.on('serverupdate', function (data) {
 });
 
 socket.on('servermessage', function (message) {
-    console.log(message);
+    if (message.addressee == name) {
+        message.addressee = name;
+    }
     updateMessenger(message);
 });
 
@@ -104,7 +107,7 @@ function updatePlayers(serverPlayers) {
 }
 
 function updateMessenger(message) {
-    messenger.addMessage(message.content, message.authorName);
+    messageBox.addMessage(message.content, message.authorName, message.addressee);
 }
 
 //delete disconnected players
@@ -149,7 +152,7 @@ function inputHandlerCallback(input) {
         if (chatMode == true) {
             var message = render.endChat();
             if (message != "") {
-                var m = messenger.createMessage(message, name);
+                var m = messageBox.createMessage(message, name);
                 m.parseAddressee();
                 socket.emit('clientmessage', m);
             }

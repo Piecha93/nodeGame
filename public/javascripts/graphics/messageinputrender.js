@@ -1,8 +1,8 @@
-function MessengerRender() {
-    this.messenger = null;
+function MessageInputRender() {
+    this.messageBox = null;
 }
 
-MessengerRender.prototype.init = function (inputSprite, canvas) {
+MessageInputRender.prototype.init = function (inputSprite, canvas) {
     this.inputSprite = inputSprite;
     this.inputSprite.canvasInput = new CanvasInput({
         canvas: canvas,
@@ -23,11 +23,11 @@ MessengerRender.prototype.init = function (inputSprite, canvas) {
     this.inputSprite.canvasInput.focus();
 };
 
-MessengerRender.prototype.update = function () {
+MessageInputRender.prototype.update = function () {
 
 };
 
-MessengerRender.prototype.getTextAndDestroy = function () {
+MessageInputRender.prototype.getTextAndDestroy = function () {
     var text = this.inputSprite.canvasInput.value();
     this.inputSprite.canvasInput.destroy();
     this.inputSprite.destroy();
@@ -35,4 +35,4 @@ MessengerRender.prototype.getTextAndDestroy = function () {
     return text;
 };
 
-module.exports = MessengerRender;
+module.exports = MessageInputRender;

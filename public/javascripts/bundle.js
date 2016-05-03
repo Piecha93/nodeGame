@@ -25,7 +25,7 @@
         var Game = require('./logic/game/gamelogic');
         var Render = require('./graphics/render');
         var InputHandler = require('./logic/inputhandler');
-        var Messenger = require('./logic/chat/messenger');
+        var MessageBox = require('./logic/chat/messagebox');
 
 //number of times per secound sending packets to server
         var updateTickRate = 20;
@@ -44,7 +44,7 @@
         var render = new Render(assetsLoadedCallback);
         var game = new Game();
         var inputHandler = new InputHandler(inputHandlerCallback);
-        var messenger = new Messenger();
+        var messageBox = new MessageBox();
 
         var localId = -1;
         var name = "";
@@ -70,6 +70,7 @@
             startServerHeartbeatUpdateLoop();
             //add player to render
             render.newPlayer(localPlayer);
+            render.createMessageBox(messageBox);
 
             console.log('Connection to server succesfull. Your id is: ' + client.id);
         });
@@ -83,7 +84,9 @@
         });
 
         socket.on('servermessage', function (message) {
-            console.log(message);
+            if (message.addressee == name) {
+                message.addressee = name;
+            }
             updateMessenger(message);
         });
 
@@ -128,7 +131,7 @@
         }
 
         function updateMessenger(message) {
-            messenger.addMessage(message.content, message.authorName);
+            messageBox.addMessage(message.content, message.authorName, message.addressee);
         }
 
 //delete disconnected players
@@ -172,12 +175,11 @@
                 //if chat mode if true we need to get message from canvas and send it to server
                 if (chatMode == true) {
                     var message = render.endChat();
-                    if (message == "") {
-                        console.log("pusta");
+                    if (message != "") {
+                        var m = messageBox.createMessage(message, name);
+                        m.parseAddressee();
+                        socket.emit('clientmessage', m);
             }
-                    var m = messenger.createMessage(message, name);
-                    m.parseAddressee();
-                    socket.emit('clientmessage', m);
                     chatMode = false;
                     inputHandler.clearInput();
                     //if chat mode is false we entering chat mode
@@ -194,13 +196,59 @@
         }
             }
         }
-    }, {"./graphics/render": 4, "./logic/chat/messenger": 6, "./logic/game/gamelogic": 8, "./logic/inputhandler": 10}],
+    }, {"./graphics/render": 5, "./logic/chat/messagebox": 7, "./logic/game/gamelogic": 9, "./logic/inputhandler": 11}],
     2: [function (require, module, exports) {
-        function MessengerRender() {
-            this.messenger = null;
+        function MessageInputRender(messageBox) {
+            this.messageBox = messageBox;
+            this.textGroup = null;
+
+            this.colors = {
+                all: 0xffffff,
+                shout: 0xC65B08,
+                whisper: 0x7A378B,
+                system: 0xFF0000
+            }
         }
 
-        MessengerRender.prototype.init = function (inputSprite, canvas) {
+        MessageInputRender.prototype.init = function (textGroup) {
+            this.textGroup = textGroup;
+        };
+
+        MessageInputRender.prototype.update = function () {
+            var messages = this.messageBox.getLast(10);
+
+            for (var i = 0; i < messages.length; i++) {
+                var textHolder = this.textGroup.children[messages.length - i - 1];
+                textHolder.text = messages[i].authorName + ': ' + messages[i].content;
+                switch (messages[i].addressee) {
+                    case 'all':
+                        textHolder.fill = hexToString(this.colors.all);
+                        break;
+                    case 'system':
+                        textHolder.fill = hexToString(this.colors.system);
+                        break;
+                    default:
+                        //for whisper
+                        textHolder.text = messages[i].addressee + ': ' + messages[i].content;
+                        textHolder.fill = hexToString(this.colors.whisper);
+                        break;
+        }
+            }
+
+        };
+
+        function hexToString(hex) {
+            return '#' + hex.toString(16);
+        }
+
+        module.exports = MessageInputRender;
+    }, {}],
+    3: [function (require, module, exports) {
+        function MessageInputRender() {
+            this.messageBox = null;
+        }
+
+        MessageInputRender.prototype.init = function (inputSprite, canvas) {
             this.inputSprite = inputSprite;
             this.inputSprite.canvasInput = new CanvasInput({
                 canvas: canvas,
@@ -221,11 +269,11 @@
             this.inputSprite.canvasInput.focus();
         };
 
-        MessengerRender.prototype.update = function () {
+        MessageInputRender.prototype.update = function () {
 
         };
 
-        MessengerRender.prototype.getTextAndDestroy = function () {
+        MessageInputRender.prototype.getTextAndDestroy = function () {
             var text = this.inputSprite.canvasInput.value();
             this.inputSprite.canvasInput.destroy();
             this.inputSprite.destroy();
@@ -233,24 +281,28 @@
             return text;
         };
 
-        module.exports = MessengerRender;
+        module.exports = MessageInputRender;
     }, {}],
-    3: [function (require, module, exports) {
+    4: [function (require, module, exports) {
         function PlayerRender() {
             this.player = null;
             this.sprite = null;
-            this.text = null;
+            this.name = null;
             //1 - no lerp, >1 - lerp, do not set this to <1
             this.lerpRate = 10;
         }
 
-        PlayerRender.prototype.init = function (sprite) {
+        PlayerRender.prototype.init = function (sprite, name) {
             this.animationSpeed = this.player.speed * 30;
             this.sprite = sprite;
             this.sprite.animations.add('left', ['left1.png', 'left2.png', 'left3.png', 'left4.png'], this.animationSpeed, true);
             this.sprite.animations.add('right', ['right1.png', 'right2.png', 'right3.png', 'right4.png'], this.animationSpeed, true);
             this.sprite.animations.add('up', ['up1.png', 'up2.png', 'up3.png', 'up4.png'], this.animationSpeed, true);
             this.sprite.animations.add('down', ['down1.png', 'down2.png', 'down3.png', 'down4.png'], this.animationSpeed, true);
+
+            this.name = name;
+            this.name.text = this.player.name;
+            this.name.anchor.set(0.4)
         };
 
         PlayerRender.prototype.update = function () {
@@ -270,13 +322,17 @@
             //position update
             this.sprite.x += (this.player.x - this.sprite.x) / this.lerpRate;
             this.sprite.y += (this.player.y - this.sprite.y) / this.lerpRate;
+
+            this.name.x += (this.player.x - this.name.x) / this.lerpRate;
+            this.name.y += (this.player.y - 10 - this.name.y) / this.lerpRate;
         };
 
         module.exports = PlayerRender;
     }, {}],
-    4: [function (require, module, exports) {
+    5: [function (require, module, exports) {
         var PlayerRender = require("./playerrender");
-        var MessageRender = require("./messengerrender");
+        var MessageInputRender = require("./messageinputrender");
+        var MessageBoxRender = require("./messageboxrender");
 
         function Render(callback) {
             this.onLoadCallback = callback;
@@ -285,6 +341,7 @@
                 {preload: this.preload.bind(this), create: this.create.bind(this)});
 
             this.objects = {};
+            this.messageBoxRender = null;
         }
 
 //load images
@@ -299,21 +356,28 @@
 
         };
 
+        Render.prototype.createMessageBox = function (messageBox) {
+            this.messageBoxRender = new MessageBoxRender(messageBox);
+
+            var textGroup = this.game.add.group();
+            for (var i = 0; i < 10; i++) {
+                textGroup.add(this.game.make.text(0, this.game.height - i * 16 - 50, "", {
+                    font: "16px Arial",
+                    fill: '#' + (0xffffff).toString(16)
+                }));
+            }
+
+            this.messageBoxRender.init(textGroup);
+        };
+
         Render.prototype.enterChat = function () {
-            this.messageRender = new MessageRender();
+            this.messageRender = new MessageInputRender();
             var bitmap = this.game.add.bitmapData(400, 100);
-            this.messageRender.init(this.game.add.sprite(0, this.game.height - 40, bitmap), bitmap.canvas);
+            this.messageRender.init(this.game.add.sprite(0, this.game.height - 35, bitmap), bitmap.canvas);
         };
 
         Render.prototype.endChat = function () {
             return this.messageRender.getTextAndDestroy();
-        };
-
-
-        Render.prototype.update = function (delta) {
-            for (var key in this.objects) {
-                this.objects[key].update();
-            }
         };
 
         Render.prototype.newPlayer = function (player) {
@@ -323,7 +387,10 @@
             //set up player reference
             playerRender.player = player;
 
-            playerRender.init(this.game.add.sprite(0, 0, 'panda'));
+            playerRender.init(this.game.add.sprite(0, 0, 'panda'), this.game.add.text(player.x, player.y, "", {
+                font: "bold 16px Arial",
+                fill: "#fff"
+            }));
             playerRender.update();
 
             this.objects[player.id] = playerRender;
@@ -340,13 +407,27 @@
             }
         };
 
+        Render.prototype.update = function (delta) {
+            for (var key in this.objects) {
+                this.objects[key].update();
+            }
+            if (this.messageBoxRender != null) {
+                this.messageBoxRender.update();
+            }
+        };
+
         module.exports = Render;
-    }, {"./messengerrender": 2, "./playerrender": 3}],
-    5: [function (require, module, exports) {
-        function Message(content, authorName) {
+    }, {"./messageboxrender": 2, "./messageinputrender": 3, "./playerrender": 4}],
+    6: [function (require, module, exports) {
+        function Message(content, authorName, addressee) {
             this.content = content;
             this.authorName = authorName;
             this.sendTime = -1;
+            if (addressee != undefined) {
+                this.addressee = addressee;
+            } else {
+                this.addressee = "";
+            }
         }
 
         Message.prototype.append = function (content) {
@@ -367,6 +448,7 @@
                 this.addressee = "party";
             } else if (firstChar == '"') {
                 this.addressee = this.content.substr(1, this.content.indexOf(" ") - 1);
+                this.content = this.content.substr(this.content.indexOf(" "), this.content.length);
             } else if (firstChar == '/') {
                 this.addressee = "command";
             } else {
@@ -383,44 +465,44 @@
 
 
     }, {}],
-    6: [function (require, module, exports) {
+    7: [function (require, module, exports) {
         var Message = require("./message");
 
-        function Messenger() {
+        function MessageBox() {
             this.messageArray = [];
         }
 
 //create and return message
-        Messenger.prototype.createMessage = function (content, authorName) {
-            return new Message(content, authorName);
+        MessageBox.prototype.createMessage = function (content, authorName, addressee) {
+            return new Message(content, authorName, addressee);
         };
 
 //create and add message to list
-        Messenger.prototype.addMessage = function (content, authorName) {
-            var message = this.createMessage(content, authorName);
+        MessageBox.prototype.addMessage = function (content, authorName, addressee) {
+            var message = this.createMessage(content, authorName, addressee);
             this.messageArray.push(message);
 
             return message;
         };
 
-        Messenger.prototype.pushMessages = function (messages) {
+        MessageBox.prototype.pushMessages = function (messages) {
             this.messageArray.concat(messages);
             console.log('concat  ');
             console.log(this.messageArray);
         };
 
 //return x last messages
-        Messenger.prototype.getLast = function (count) {
+        MessageBox.prototype.getLast = function (count) {
             var arrayLength = this.messageArray.length;
             if (count > arrayLength) {
                 count = arrayLength;
             }
-            this.messageArray.slice(arrayLength - count, arrayLength);
+            return this.messageArray.slice(arrayLength - count, arrayLength);
         };
 
-        module.exports = Messenger;
-    }, {"./message": 5}],
-    7: [function (require, module, exports) {
+        module.exports = MessageBox;
+    }, {"./message": 6}],
+    8: [function (require, module, exports) {
         function DeltaTimer(id) {
             this.currentTime;
             this.delta;
@@ -437,7 +519,7 @@
 
         module.exports = DeltaTimer;
     }, {}],
-    8: [function (require, module, exports) {
+    9: [function (require, module, exports) {
         var Player = require('./player');
         var DeltaTimer = require('./detlatimer');
 
@@ -524,8 +606,8 @@
 
         module.exports = Game;
 
-    }, {"./detlatimer": 7, "./player": 9}],
-    9: [function (require, module, exports) {
+    }, {"./detlatimer": 8, "./player": 10}],
+    10: [function (require, module, exports) {
         var HorizontalDir = {none: 0, left: -1, right: 1};
         var VerticalDir = {none: 0, up: -1, down: 1};
 
@@ -610,7 +692,7 @@
 
         module.exports = Player;
     }, {}],
-    10: [function (require, module, exports) {
+    11: [function (require, module, exports) {
         /*var validInputs = [
          39, 68, //right
          37, 65, //left
