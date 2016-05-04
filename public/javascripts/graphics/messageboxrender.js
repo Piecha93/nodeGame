@@ -1,4 +1,5 @@
-function MessageInputRender(messageBox) {
+function MessageBoxRender(game, messageBox) {
+    this.game = game;
     this.messageBox = messageBox;
     this.textGroup = null;
 
@@ -10,11 +11,16 @@ function MessageInputRender(messageBox) {
     }
 }
 
-MessageInputRender.prototype.init = function (textGroup) {
-    this.textGroup = textGroup;
+MessageBoxRender.prototype.init = function () {
+    this.textGroup = this.game.add.group();
+    for (var i = 0; i < 10; i++) {
+        this.textGroup.add(this.game.add.text(0, this.game.height - i * 16 - 50, "", {
+            font: "14px Courier"
+        }));
+    }
 };
 
-MessageInputRender.prototype.update = function () {
+MessageBoxRender.prototype.update = function () {
     var messages = this.messageBox.getLast(10);
 
     for (var i = 0; i < messages.length; i++) {
@@ -29,7 +35,6 @@ MessageInputRender.prototype.update = function () {
                 break;
             default:
                 //for whisper
-                textHolder.text = messages[i].addressee + ': ' + messages[i].content;
                 textHolder.fill = hexToString(this.colors.whisper);
                 break;
         }
@@ -37,8 +42,12 @@ MessageInputRender.prototype.update = function () {
 
 };
 
+MessageBoxRender.prototype.destroy = function () {
+    this.textGroup.destroy(true, false);
+}
+
 function hexToString(hex) {
     return '#' + hex.toString(16);
 }
 
-module.exports = MessageInputRender;
+module.exports = MessageBoxRender;

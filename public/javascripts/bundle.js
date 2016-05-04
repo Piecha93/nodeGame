@@ -39,7 +39,9 @@
             id: 1,
             time: 0
         };
-        var ping = 0;
+        var ping = {
+            value: 0
+        };
 
         var render = new Render(assetsLoadedCallback);
         var game = new Game();
@@ -70,7 +72,10 @@
             startServerHeartbeatUpdateLoop();
             //add player to render
             render.newPlayer(localPlayer);
+            //add messageBox to render
             render.createMessageBox(messageBox);
+            //add stats (ping) to render
+            render.createStatsRender(ping);
 
             console.log('Connection to server succesfull. Your id is: ' + client.id);
         });
@@ -84,15 +89,12 @@
         });
 
         socket.on('servermessage', function (message) {
-            if (message.addressee == name) {
-                message.addressee = name;
-            }
             updateMessenger(message);
         });
 
         socket.on('heartbeatsresponse', function (data) {
-            ping = new Date().getTime() - heartBeat.time;
-            //console.log('Packet ' + data.id + ' reciver after ' + ping + ' (ms)');
+            ping.value = new Date().getTime() - heartBeat.time;
+            //console.log('Packet ' + data.id + ' reciver after ' + ping.value + ' (ms)');
         });
 
 //send heartbeats to keep connection alive
@@ -196,9 +198,17 @@
         }
             }
         }
-    }, {"./graphics/render": 5, "./logic/chat/messagebox": 7, "./logic/game/gamelogic": 9, "./logic/inputhandler": 11}],
+
+
+    }, {
+        "./graphics/render": 5,
+        "./logic/chat/messagebox": 8,
+        "./logic/game/gamelogic": 10,
+        "./logic/inputhandler": 12
+    }],
     2: [function (require, module, exports) {
-        function MessageInputRender(messageBox) {
+        function MessageBoxRender(game, messageBox) {
+            this.game = game;
             this.messageBox = messageBox;
             this.textGroup = null;
 
@@ -210,11 +220,16 @@
             }
         }
 
-        MessageInputRender.prototype.init = function (textGroup) {
-            this.textGroup = textGroup;
+        MessageBoxRender.prototype.init = function () {
+            this.textGroup = this.game.add.group();
+            for (var i = 0; i < 10; i++) {
+                this.textGroup.add(this.game.add.text(0, this.game.height - i * 16 - 50, "", {
+                    font: "14px Courier"
+                }));
+            }
         };
 
-        MessageInputRender.prototype.update = function () {
+        MessageBoxRender.prototype.update = function () {
             var messages = this.messageBox.getLast(10);
 
             for (var i = 0; i < messages.length; i++) {
@@ -229,7 +244,6 @@
                         break;
                     default:
                         //for whisper
-                        textHolder.text = messages[i].addressee + ': ' + messages[i].content;
                         textHolder.fill = hexToString(this.colors.whisper);
                         break;
         }
@@ -237,21 +251,31 @@
 
         };
 
+        MessageBoxRender.prototype.destroy = function () {
+            this.textGroup.destroy(true, false);
+        }
+
         function hexToString(hex) {
             return '#' + hex.toString(16);
         }
 
-        module.exports = MessageInputRender;
+        module.exports = MessageBoxRender;
     }, {}],
     3: [function (require, module, exports) {
-        function MessageInputRender() {
-            this.messageBox = null;
+        /*
+         render textarea for chat
+         using CanvasInput library
+         */
+        function MessageInputRender(game) {
+            this.game = game;
         }
 
-        MessageInputRender.prototype.init = function (inputSprite, canvas) {
-            this.inputSprite = inputSprite;
+        MessageInputRender.prototype.init = function () {
+            var bitmap = this.game.add.bitmapData(300, 100);
+            this.inputSprite = this.game.add.sprite(0, this.game.height - 35, bitmap);
+
             this.inputSprite.canvasInput = new CanvasInput({
-                canvas: canvas,
+                canvas: bitmap.canvas,
                 fontSize: 14,
                 fontFamily: 'Arial',
                 fontColor: '#212121',
@@ -263,46 +287,62 @@
                 borderRadius: 3,
                 boxShadow: '1px 1px 0px #fff',
                 innerShadow: '0px 0px 5px rgba(0, 0, 0, 0.5)',
-                placeHolder: 'Enter message here...'
+                placeHolder: 'Press enter to write...'
             });
-
-            this.inputSprite.canvasInput.focus();
         };
 
         MessageInputRender.prototype.update = function () {
 
         };
 
-        MessageInputRender.prototype.getTextAndDestroy = function () {
+        MessageInputRender.prototype.startTyping = function () {
+            this.inputSprite.canvasInput.focus();
+        };
+
+        MessageInputRender.prototype.getTextAndReset = function () {
             var text = this.inputSprite.canvasInput.value();
-            this.inputSprite.canvasInput.destroy();
-            this.inputSprite.destroy();
+
+            this.inputSprite.canvasInput.blur();
+            this.inputSprite.canvasInput.value("");
 
             return text;
+        };
+
+        MessageInputRender.prototype.destroy = function () {
+            this.inputSprite.canvasInput.destroy();
+            this.inputSprite.destroy();
         };
 
         module.exports = MessageInputRender;
     }, {}],
     4: [function (require, module, exports) {
-        function PlayerRender() {
+        /*
+         player render
+         */
+
+        function PlayerRender(game) {
+            this.game = game;
             this.player = null;
             this.sprite = null;
-            this.name = null;
+            this.nameText = null;
             //1 - no lerp, >1 - lerp, do not set this to <1
             this.lerpRate = 10;
         }
 
-        PlayerRender.prototype.init = function (sprite, name) {
+        PlayerRender.prototype.init = function () {
+            this.sprite = this.game.add.sprite(0, 0, 'panda');
             this.animationSpeed = this.player.speed * 30;
-            this.sprite = sprite;
             this.sprite.animations.add('left', ['left1.png', 'left2.png', 'left3.png', 'left4.png'], this.animationSpeed, true);
             this.sprite.animations.add('right', ['right1.png', 'right2.png', 'right3.png', 'right4.png'], this.animationSpeed, true);
             this.sprite.animations.add('up', ['up1.png', 'up2.png', 'up3.png', 'up4.png'], this.animationSpeed, true);
             this.sprite.animations.add('down', ['down1.png', 'down2.png', 'down3.png', 'down4.png'], this.animationSpeed, true);
 
-            this.name = name;
-            this.name.text = this.player.name;
-            this.name.anchor.set(0.4)
+            this.nameText = this.game.add.text(this.player.x, this.player.y, this.player.name, {
+                font: "bold 16px Arial",
+                fill: "#ffffff"
+            });
+
+            this.nameText.anchor.set(0.4)
         };
 
         PlayerRender.prototype.update = function () {
@@ -323,8 +363,14 @@
             this.sprite.x += (this.player.x - this.sprite.x) / this.lerpRate;
             this.sprite.y += (this.player.y - this.sprite.y) / this.lerpRate;
 
-            this.name.x += (this.player.x - this.name.x) / this.lerpRate;
-            this.name.y += (this.player.y - 10 - this.name.y) / this.lerpRate;
+            this.nameText.text = this.player.name;
+            this.nameText.x += (this.player.x - this.nameText.x) / this.lerpRate;
+            this.nameText.y += (this.player.y - 10 - this.nameText.y) / this.lerpRate;
+        };
+
+        PlayerRender.prototype.destroy = function () {
+            this.sprite.destroy();
+            this.nameText.destroy();
         };
 
         module.exports = PlayerRender;
@@ -333,6 +379,7 @@
         var PlayerRender = require("./playerrender");
         var MessageInputRender = require("./messageinputrender");
         var MessageBoxRender = require("./messageboxrender");
+        var StatsRender = require("./statsrender");
 
         function Render(callback) {
             this.onLoadCallback = callback;
@@ -342,6 +389,8 @@
 
             this.objects = {};
             this.messageBoxRender = null;
+            this.messageInputRender = null;
+            this.statsRender = null;
         }
 
 //load images
@@ -353,45 +402,57 @@
         };
 
         Render.prototype.create = function () {
-
         };
 
         Render.prototype.createMessageBox = function (messageBox) {
-            this.messageBoxRender = new MessageBoxRender(messageBox);
+            //create MessengerBox
+            this.messageBoxRender = new MessageBoxRender(this.game, messageBox);
 
-            var textGroup = this.game.add.group();
-            for (var i = 0; i < 10; i++) {
-                textGroup.add(this.game.make.text(0, this.game.height - i * 16 - 50, "", {
-                    font: "16px Arial",
-                    fill: '#' + (0xffffff).toString(16)
-                }));
-            }
+            this.messageBoxRender.init();
 
-            this.messageBoxRender.init(textGroup);
+            //create messageInputRender
+            this.messageInputRender = new MessageInputRender(this.game);
+            this.messageInputRender.init();
         };
 
+        Render.prototype.destroyMessageBox = function () {
+            this.messageBoxRender.destroy();
+            this.messageInputRender.destroy();
+
+            this.messageInputRender = null;
+            this.messageBoxRender = null;
+        }
+
         Render.prototype.enterChat = function () {
-            this.messageRender = new MessageInputRender();
-            var bitmap = this.game.add.bitmapData(400, 100);
-            this.messageRender.init(this.game.add.sprite(0, this.game.height - 35, bitmap), bitmap.canvas);
+            if (this.messageInputRender != null) {
+                this.messageInputRender.startTyping();
+            }
         };
 
         Render.prototype.endChat = function () {
-            return this.messageRender.getTextAndDestroy();
+            if (this.messageInputRender != null) {
+                return this.messageInputRender.getTextAndReset();
+            }
+        };
+
+        Render.prototype.createStatsRender = function (ping) {
+            this.statsRender = new StatsRender(this.game, ping);
+            this.statsRender.init();
+        };
+
+        Render.prototype.destroyStatsRender = function () {
+            this.statsRender.destroy();
+            this.statsRender = null;
         };
 
         Render.prototype.newPlayer = function (player) {
             //create new player render
-            var playerRender = new PlayerRender();
+            var playerRender = new PlayerRender(this.game);
 
             //set up player reference
             playerRender.player = player;
 
-            playerRender.init(this.game.add.sprite(0, 0, 'panda'), this.game.add.text(player.x, player.y, "", {
-                font: "bold 16px Arial",
-                fill: "#fff"
-            }));
-            playerRender.update();
+            playerRender.init();
 
             this.objects[player.id] = playerRender;
         };
@@ -399,7 +460,7 @@
         Render.prototype.removePlayer = function (id) {
             if (id in this.objects) {
                 //remove form game
-                this.objects[id].sprite.destroy();
+                this.objects[id].destroy();
                 //remove from objects array
                 delete this.objects[id];
 
@@ -414,11 +475,42 @@
             if (this.messageBoxRender != null) {
                 this.messageBoxRender.update();
             }
+            if (this.statsRender != null) {
+                this.statsRender.update();
+            }
         };
 
         module.exports = Render;
-    }, {"./messageboxrender": 2, "./messageinputrender": 3, "./playerrender": 4}],
+    }, {"./messageboxrender": 2, "./messageinputrender": 3, "./playerrender": 4, "./statsrender": 6}],
     6: [function (require, module, exports) {
+        /*
+         render textarea for chat
+         using CanvasInput library
+         */
+        function StarsRender(game, ping) {
+            this.pingText = null;
+            this.ping = ping
+            this.game = game;
+        }
+
+        StarsRender.prototype.init = function (pingText) {
+            this.pingText = this.game.add.text(this.game.width - 100, 0, "", {
+                font: "bold 16px Arial",
+                fill: "#ffffff"
+            });
+        };
+
+        StarsRender.prototype.update = function () {
+            this.pingText.text = "Ping: " + this.ping.value.toString(10) + "ms";
+        };
+
+        StarsRender.prototype.destroy = function () {
+            this.pingText.destroy();
+        };
+
+        module.exports = StarsRender;
+    }, {}],
+    7: [function (require, module, exports) {
         function Message(content, authorName, addressee) {
             this.content = content;
             this.authorName = authorName;
@@ -465,7 +557,7 @@
 
 
     }, {}],
-    7: [function (require, module, exports) {
+    8: [function (require, module, exports) {
         var Message = require("./message");
 
         function MessageBox() {
@@ -501,8 +593,8 @@
         };
 
         module.exports = MessageBox;
-    }, {"./message": 6}],
-    8: [function (require, module, exports) {
+    }, {"./message": 7}],
+    9: [function (require, module, exports) {
         function DeltaTimer(id) {
             this.currentTime;
             this.delta;
@@ -519,7 +611,7 @@
 
         module.exports = DeltaTimer;
     }, {}],
-    9: [function (require, module, exports) {
+    10: [function (require, module, exports) {
         var Player = require('./player');
         var DeltaTimer = require('./detlatimer');
 
@@ -606,8 +698,8 @@
 
         module.exports = Game;
 
-    }, {"./detlatimer": 8, "./player": 10}],
-    10: [function (require, module, exports) {
+    }, {"./detlatimer": 9, "./player": 11}],
+    11: [function (require, module, exports) {
         var HorizontalDir = {none: 0, left: -1, right: 1};
         var VerticalDir = {none: 0, up: -1, down: 1};
 
@@ -692,7 +784,7 @@
 
         module.exports = Player;
     }, {}],
-    11: [function (require, module, exports) {
+    12: [function (require, module, exports) {
         /*var validInputs = [
          39, 68, //right
          37, 65, //left

@@ -15,7 +15,9 @@ var heartBeat = {
     id: 1,
     time: 0
 };
-var ping = 0;
+var ping = {
+    value: 0
+};
 
 var render = new Render(assetsLoadedCallback);
 var game = new Game();
@@ -46,7 +48,10 @@ socket.on('startgame', function (client) {
     startServerHeartbeatUpdateLoop();
     //add player to render
     render.newPlayer(localPlayer);
+    //add messageBox to render
     render.createMessageBox(messageBox);
+    //add stats (ping) to render
+    render.createStatsRender(ping);
 
     console.log('Connection to server succesfull. Your id is: ' + client.id);
 });
@@ -60,15 +65,12 @@ socket.on('serverupdate', function (data) {
 });
 
 socket.on('servermessage', function (message) {
-    if (message.addressee == name) {
-        message.addressee = name;
-    }
     updateMessenger(message);
 });
 
 socket.on('heartbeatsresponse', function (data) {
-    ping = new Date().getTime() - heartBeat.time;
-    //console.log('Packet ' + data.id + ' reciver after ' + ping + ' (ms)');
+    ping.value = new Date().getTime() - heartBeat.time;
+    //console.log('Packet ' + data.id + ' reciver after ' + ping.value + ' (ms)');
 });
 
 //send heartbeats to keep connection alive
@@ -172,3 +174,4 @@ function inputHandlerCallback(input) {
         }
     }
 }
+

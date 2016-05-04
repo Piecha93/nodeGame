@@ -38,10 +38,18 @@ io.sockets.on('connection', function (client) {
         names++;
 
         clients.push(client);
-        gameServers[client.serverId].clientConnected(client);
-
         client.timeOutTime = timeOut;
 
+        //send message to all ppl on server
+        var message = {
+            authorName: "server",
+            addressee: "system",
+            content: client.name + " connected"
+        };
+        gameServers[client.serverId].sendMessageToAll(message);
+
+        //add client to server
+        gameServers[client.serverId].clientConnected(client);
         client.emit('startgame', {id: client.id, name: client.name});
     });
 
@@ -63,43 +71,7 @@ io.sockets.on('connection', function (client) {
     });
 
     client.on('clientmessage', function (message) {
-        if (message !== null && message.content != "") {
-            message.sendTime = new Date().getTime();
-            if (message.addressee == "all") {
-                gameServers[client.serverId].handleClientMessage(message);
-            } else if (message.addressee == "shout") {
-                //TODO shout chat
-            } else if (message.addressee == "trade") {
-                //TODO trade chat
-            } else if (message.addressee == "party") {
-                //TODO party chat
-            } else if (message.addressee == "command") {
-                //TODO command system
-
-                //if addressee is different then it must be whisper    
-            } else {
-                var addresseeClient = null;
-                //find client addressee
-                for (var i = 0; i < clients.length; i++) {
-                    if (clients[i].name == message.addressee && clients[i].name != client.name) {
-                        addresseeClient = clients[i];
-                        break;
-                    }
-                }
-
-                //if addressee found send him message. Author get the same message or information about failure
-                if (addresseeClient !== null) {
-                    addresseeClient.emit('servermessage', message);
-                    client.emit('servermessage', message);
-                } else {
-                    //chage message to system info
-                    message.content = "Player " + message.addressee + " is not online";
-                    message.addressee = "system";
-                    message.authorName = "";
-                    client.emit('servermessage', message);
-                }
-            }
-        }
+        handleClientMessage(client, message);
     });
 
     client.on('heartbeat', function (data) {
@@ -107,6 +79,51 @@ io.sockets.on('connection', function (client) {
         client.emit('heartbeatsresponse', {id: data.id})
     });
 });
+
+function handleClientMessage(client, message) {
+    console.log(message.authorName + " - " + message.addressee + " : " + message.content);
+    if (message !== null && message.content != "") {
+        message.sendTime = new Date().getTime();
+        if (message.addressee == "all") {
+            gameServers[client.serverId].sendMessageToAll(message);
+        } else if (message.addressee == "shout") {
+            //TODO shout chat
+        } else if (message.addressee == "trade") {
+            //TODO trade chat
+        } else if (message.addressee == "party") {
+            //TODO party chat
+        } else if (message.addressee == "command") {
+            //TODO command system
+
+            //if addressee is different then it must be whisper
+        } else {
+            var addresseeClient = null;
+            //find client addressee
+            for (var i = 0; i < clients.length; i++) {
+                if (clients[i].name.toUpperCase() == message.addressee.toUpperCase() && clients[i].name.toUpperCase() != client.name.toUpperCase()) {
+                    addresseeClient = clients[i];
+                    //to keep original letters case
+                    message.addressee = clients[i].name;
+                    break;
+                }
+            }
+
+            //if addressee found send him message. Author get the same message or information about failure
+            if (addresseeClient !== null) {
+                addresseeClient.emit('servermessage', message);
+                //swap addressee and authorName
+                message.addressee = [message.authorName, message.authorName = "->" + message.addressee][0];
+                client.emit('servermessage', message);
+            } else {
+                //chage message to system info
+                message.content = "Player " + message.addressee + " is not online";
+                message.addressee = "system";
+                message.authorName = "system";
+                client.emit('servermessage', message);
+            }
+        }
+    }
+}
 
 function startNewServer() {
     var id = UUID();

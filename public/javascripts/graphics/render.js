@@ -1,6 +1,7 @@
 var PlayerRender = require("./playerrender");
 var MessageInputRender = require("./messageinputrender");
 var MessageBoxRender = require("./messageboxrender");
+var StatsRender = require("./statsrender");
 
 function Render(callback) {
     this.onLoadCallback = callback;
@@ -10,6 +11,8 @@ function Render(callback) {
 
     this.objects = {};
     this.messageBoxRender = null;
+    this.messageInputRender = null;
+    this.statsRender = null;
 }
 
 //load images
@@ -21,53 +24,63 @@ Render.prototype.preload = function () {
 };
 
 Render.prototype.create = function () {
-
 };
 
 Render.prototype.createMessageBox = function (messageBox) {
-    this.messageBoxRender = new MessageBoxRender(messageBox);
+    //create MessengerBox
+    this.messageBoxRender = new MessageBoxRender(this.game, messageBox);
 
-    var textGroup = this.game.add.group();
-    for (var i = 0; i < 10; i++) {
-        textGroup.add(this.game.make.text(0, this.game.height - i * 16 - 50, "", {
-            font: "16px Arial",
-            fill: '#' + (0xffffff).toString(16)
-        }));
-    }
+    this.messageBoxRender.init();
 
-    this.messageBoxRender.init(textGroup);
+    //create messageInputRender
+    this.messageInputRender = new MessageInputRender(this.game);
+    this.messageInputRender.init();
 };
 
+Render.prototype.destroyMessageBox = function () {
+    this.messageBoxRender.destroy();
+    this.messageInputRender.destroy();
+
+    this.messageInputRender = null;
+    this.messageBoxRender = null;
+}
+
 Render.prototype.enterChat = function () {
-    this.messageRender = new MessageInputRender();
-    var bitmap = this.game.add.bitmapData(400, 100);
-    this.messageRender.init(this.game.add.sprite(0, this.game.height - 35, bitmap), bitmap.canvas);
+    if (this.messageInputRender != null) {
+        this.messageInputRender.startTyping();
+    }
 };
 
 Render.prototype.endChat = function () {
-    return this.messageRender.getTextAndDestroy();
+    if (this.messageInputRender != null) {
+        return this.messageInputRender.getTextAndReset();
+    }
+};
+
+Render.prototype.createStatsRender = function (ping) {
+    this.statsRender = new StatsRender(this.game, ping);
+    this.statsRender.init();
+};
+
+Render.prototype.destroyStatsRender = function () {
+    this.statsRender.destroy();
+    this.statsRender = null;
 };
 
 Render.prototype.newPlayer = function (player) {
     //create new player render
-    var playerRender = new PlayerRender();
+    var playerRender = new PlayerRender(this.game, player);
 
-    //set up player reference
-    playerRender.player = player;
+    playerRender.init();
 
-    playerRender.init(this.game.add.sprite(0, 0, 'panda'), this.game.add.text(player.x, player.y, "", {
-        font: "bold 16px Arial",
-        fill: "#fff"
-    }));
-    playerRender.update();
-
+    //add playerrender to objects array
     this.objects[player.id] = playerRender;
 };
 
 Render.prototype.removePlayer = function (id) {
     if (id in this.objects) {
         //remove form game
-        this.objects[id].sprite.destroy();
+        this.objects[id].destroy();
         //remove from objects array
         delete this.objects[id];
 
@@ -81,6 +94,9 @@ Render.prototype.update = function (delta) {
     }
     if (this.messageBoxRender != null) {
         this.messageBoxRender.update();
+    }
+    if (this.statsRender != null) {
+        this.statsRender.update();
     }
 };
 

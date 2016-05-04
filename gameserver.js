@@ -91,7 +91,6 @@ GameServer.prototype.updateLoop = function () {
         this.clients.forEach(function (c) {
             c.emit('serverupdate', self.update);
         });
-        //this.socket.emit('serverUpdate', this.update);
         this.clearUpdate();
     }
 
@@ -108,7 +107,7 @@ GameServer.prototype.handleClientInput = function (id, input) {
         player.input = input;
 };
 
-GameServer.prototype.handleClientMessage = function (message) {
+GameServer.prototype.sendMessageToAll = function (message) {
     // console.log('przyszla wiadomosc ' + message.content + ' dddddddddddd ');
     //console.log('client: ' + id + ' sent: ' + input);
     this.clients.forEach(function (c) {
