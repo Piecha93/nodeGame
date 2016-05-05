@@ -10,10 +10,11 @@ function MessageBox() {
 
 //create and return message
 MessageBox.prototype.createMessage = function (content, authorName, addressee) {
+    content = content.trim();
     return new Message(content, authorName, addressee);
 };
 
-//create and add message to list
+//create, return and add message to list
 MessageBox.prototype.addMessage = function (content, authorName, addressee) {
     var message = this.createMessage(content, authorName, addressee);
     this.messageArray.push(message);
