@@ -45,8 +45,8 @@
         };
 
         var render = new Render(assetsLoadedCallback);
-        var game = new Game();
-        var inputHandler = new InputHandler(inputHandlerCallback);
+        var gameLogic = new Game();
+        var inputHandler = new InputHandler();
         var messageBox = new MessageBox();
 
         var localPlayer = null;
@@ -58,11 +58,11 @@
 
         socket.on('startgame', function (client) {
             //start game loop when connected to server
-            game.startGameLoop();
+            gameLogic.startGameLoop();
             //set render to game logic update
-            game.setRender(render);
+            gameLogic.setRender(render);
             //create local player with id from server
-            localPlayer = game.newPlayer(client.id);
+            localPlayer = gameLogic.newPlayer(client.id);
             localPlayer.id = client.id;
             localPlayer.name = client.name;
 
@@ -72,13 +72,20 @@
             render.newPlayer(localPlayer);
             //add messageBox to render
             render.createMessageBox(messageBox);
-            //add stats (ping) to render
+            //add stats (ping) to render. Ping is send by reference and has property "value" which contains ping value, so render always know if value changed
             render.createStatsRender(ping);
+
+            //set inputHandler callback
+            inputHandler.setCallback(inputHandlerCallback);
 
             console.log('Connection to server succesfull. Your id is: ' + client.id);
         });
 
-//get update from server
+        /*
+         HANDLE SERVER MESSAGES
+         */
+
+//get gamelogic update from server
         socket.on('serverupdate', function (data) {
             if (data.players !== undefined)
                 updatePlayers(data.players);
@@ -86,14 +93,56 @@
                 deletePlayers(data.disconnectedClients);
         });
 
+//get message from server
         socket.on('servermessage', function (message) {
-            updateMessenger(message);
+            updateMessageBox(message);
         });
 
+//get back heartbeat from server and calculate ping
         socket.on('heartbeatsresponse', function (data) {
             ping.value = new Date().getTime() - heartBeat.time;
             //console.log('Packet ' + data.id + ' reciver after ' + ping.value + ' (ms)');
         });
+
+//updates local player depends on server data
+        function updatePlayers(serverPlayers) {
+            for (var key in serverPlayers) {
+                var localPlayer = gameLogic.players[key];
+                if (typeof localPlayer !== "undefined") {
+                    localPlayer.serverUpdate(serverPlayers[key]);
+        }
+                else {
+                    localPlayer = gameLogic.newPlayer(key, serverPlayers[key]);
+                    render.newPlayer(localPlayer);
+        }
+            }
+        }
+
+//delete disconnected players
+        function deletePlayers(disconnected) {
+            disconnected.forEach(function (id) {
+                render.removePlayer(id);
+                gameLogic.removePlayer(id);
+            });
+        }
+
+//push new message to messageBox
+        function updateMessageBox(message) {
+            messageBox.addMessage(message.content, message.authorName, message.addressee);
+        }
+
+        /*
+         HANDLE SENDING MESSAGES TO SERVER
+         */
+
+//send update to server
+        function serverUpdateLoop() {
+            if (!update.isEmpty) {
+                socket.emit('clientupdate', update);
+                resetUpdate();
+            }
+            //console.log('updating clients' + new Date().getTime());
+        }
 
 //send heartbeats to keep connection alive
         function serverHeartbeatsLoop() {
@@ -105,41 +154,6 @@
             } else {
                 heartBeatsTimer += 1 / heartBeatsRate * 1000
             }
-        }
-
-//send update to server
-        function serverUpdateLoop() {
-            if (!update.isEmpty) {
-                socket.emit('clientupdate', update);
-                resetUpdate();
-            }
-            //console.log('updating clients' + new Date().getTime());
-        }
-
-//updates local player depends on server data
-        function updatePlayers(serverPlayers) {
-            for (var key in serverPlayers) {
-                var localPlayer = game.players[key];
-                if (typeof localPlayer !== "undefined") {
-                    localPlayer.serverUpdate(serverPlayers[key]);
-        }
-                else {
-                    localPlayer = game.newPlayer(key, serverPlayers[key]);
-                    render.newPlayer(localPlayer);
-        }
-            }
-        }
-
-        function updateMessenger(message) {
-            messageBox.addMessage(message.content, message.authorName, message.addressee);
-        }
-
-//delete disconnected players
-        function deletePlayers(disconnected) {
-            disconnected.forEach(function (id) {
-                render.removePlayer(id);
-                game.removePlayer(id);
-            });
         }
 
         function startServerUpdateLoop() {
@@ -159,16 +173,11 @@
             };
         }
 
-//clear input and send update when tab inactive
-        window.onblur = function () {
-            inputHandler.clearInput();
-            serverUpdateLoop();
-        };
-
         var chatMode = false;
 
 //this function is called when input handler got something
 //input is copy od inputhandler inputArray
+//TODO refactor this ...
         function inputHandlerCallback(input) {
             //if enter pressed
             if (input[input.length - 1] == 13) {
@@ -196,6 +205,13 @@
             }
         }
 
+//clear input and send update when tab inactive
+// TODO it stoped working and f.. don't know why
+        $(window).onblur = function () {
+            inputHandler.clearInput();
+            //we must call update because when tab is inactive all setTimeout functions under 1000ms is frozen
+            serverUpdateLoop();
+        };
 
     }, {
         "./graphics/render": 5,
@@ -204,6 +220,11 @@
         "./logic/inputhandler": 12
     }],
     2: [function (require, module, exports) {
+        /*
+         Rendering messages
+         TODO scrollbar, resize, hide, drag able
+         */
+
         function MessageBoxRender(game, messageBox) {
             this.game = game;
             this.messageBox = messageBox;
@@ -260,7 +281,7 @@
     }, {}],
     3: [function (require, module, exports) {
         /*
-         render textarea for chat
+         render text area for chat input
          using CanvasInput library
          */
         function MessageInputRender(game) {
@@ -339,11 +360,12 @@
                 fill: "#ffffff"
             });
 
+            this.nameText.text = this.player.name;
             this.nameText.anchor.set(0.4)
         };
 
         PlayerRender.prototype.update = function () {
-            //animation update
+            //select proper animation
             if (this.player.horizontalDir == -1 || this.player.horizontalMove == -1) {
                 this.sprite.animations.play('left');
             } else if (this.player.horizontalDir == 1 || this.player.horizontalMove == 1) {
@@ -356,11 +378,11 @@
                 this.sprite.animations.stop();
             }
 
-            //position update
+            //sprite position update
             this.sprite.x += (this.player.x - this.sprite.x) / this.lerpRate;
             this.sprite.y += (this.player.y - this.sprite.y) / this.lerpRate;
 
-            this.nameText.text = this.player.name;
+            //name position update
             this.nameText.x += (this.player.x - this.nameText.x) / this.lerpRate;
             this.nameText.y += (this.player.y - 10 - this.nameText.y) / this.lerpRate;
         };
@@ -380,7 +402,6 @@
 
         function Render(callback) {
             this.onLoadCallback = callback;
-            this.text = null;
             this.game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example',
                 {preload: this.preload.bind(this), create: this.create.bind(this)});
 
@@ -394,7 +415,7 @@
         Render.prototype.preload = function () {
             //load assets
             this.game.load.atlasJSONHash('panda', 'resources/images/panda.png', 'resources/images/panda.json');
-            //set callback
+            //set callback (client connect to server when all assets are loaded)
             this.game.load.onLoadComplete.add(this.onLoadCallback);
         };
 
@@ -418,7 +439,7 @@
 
             this.messageInputRender = null;
             this.messageBoxRender = null;
-        }
+        };
 
         Render.prototype.enterChat = function () {
             if (this.messageInputRender != null) {
@@ -445,7 +466,6 @@
         Render.prototype.newPlayer = function (player) {
             //create new player render
             var playerRender = new PlayerRender(this.game, player);
-
             playerRender.init();
 
             //add playerrender to objects array
@@ -483,12 +503,13 @@
          using CanvasInput library
          */
         function StarsRender(game, ping) {
-            this.pingText = null;
-            this.ping = ping
             this.game = game;
+            this.pingText = null;
+            this.ping = ping;
+            this.oldPingValue = -1;
         }
 
-        StarsRender.prototype.init = function (pingText) {
+        StarsRender.prototype.init = function () {
             this.pingText = this.game.add.text(this.game.width - 100, 0, "", {
                 font: "bold 16px Arial",
                 fill: "#ffffff"
@@ -496,7 +517,11 @@
         };
 
         StarsRender.prototype.update = function () {
-            this.pingText.text = "Ping: " + this.ping.value.toString(10) + "ms";
+            //if value of ping reference has changed we need to update text
+            if (this.oldPingValue != this.ping.value) {
+                this.oldPingValue = this.ping.value;
+                this.pingText.text = "Ping: " + this.ping.value.toString(10) + "ms";
+            }
         };
 
         StarsRender.prototype.destroy = function () {
@@ -506,6 +531,9 @@
         module.exports = StarsRender;
     }, {}],
     7: [function (require, module, exports) {
+        /*
+         message class
+         */
         function Message(content, authorName, addressee) {
             this.content = content;
             this.authorName = authorName;
@@ -525,6 +553,7 @@
             this.content = content;
         };
 
+//select proper addressee
         Message.prototype.parseAddressee = function () {
             var firstChar = this.content.charAt(0);
             if (firstChar == '!') {
@@ -553,6 +582,10 @@
 
     }, {}],
     8: [function (require, module, exports) {
+        /*
+         Class to keep all messages
+         */
+
         var Message = require("./message");
 
         function MessageBox() {
@@ -590,11 +623,15 @@
         module.exports = MessageBox;
     }, {"./message": 7}],
     9: [function (require, module, exports) {
-        function DeltaTimer(id) {
+        /*
+         class for counting delta
+         */
+
+        function DeltaTimer() {
             this.currentTime;
             this.delta;
             this.lastUpdate = new Date().getTime();
-        };
+        }
 
         DeltaTimer.prototype.getDelta = function () {
             this.currentTime = new Date().getTime();
@@ -611,7 +648,7 @@
         var DeltaTimer = require('./detlatimer');
 
         function Game() {
-            this.tickrate = 128;
+            this.tickRate = 128;
 
             this.players = {};
             this.renderHandler = null;
@@ -794,7 +831,7 @@
          return false;
          }*/
 
-        function InputHandler(callback) {
+        function InputHandler() {
             this.inputArray = [];
             var self = this;
 
@@ -805,9 +842,19 @@
                 self.keyReleased(event);
             };
 
-            //callback is function to call when new input came
-            this.callback = callback;
+            //set callback to empty function
+            this.deleteCallback();
         }
+
+        InputHandler.prototype.setCallback = function (callback) {
+            this.callback = callback;
+        };
+
+        InputHandler.prototype.deleteCallback = function () {
+            this.callback = function () {
+
+            }
+        };
 
 //event listener for press key
 //add keycode to input array

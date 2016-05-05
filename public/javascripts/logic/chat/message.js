@@ -1,3 +1,6 @@
+/*
+ message class
+ */
 function Message(content, authorName, addressee) {
     this.content = content;
     this.authorName = authorName;
@@ -17,6 +20,7 @@ Message.prototype.setContent = function (content) {
     this.content = content;
 };
 
+//select proper addressee
 Message.prototype.parseAddressee = function () {
     var firstChar = this.content.charAt(0);
     if (firstChar == '!') {

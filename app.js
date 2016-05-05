@@ -1,7 +1,9 @@
-//set up node modules
+//set port (first for production server second to local
 var port = process.env.PORT || 3000;
-var timeOut = 10; //secounds to timeot when lost connection
+//sec to timeout when client lost connection
+var timeOut = 10;
 
+//set up node modules
 var express = require('express');
 var app = express();
 var path = require('path');
@@ -19,67 +21,88 @@ app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
 var routes = require('./routes/index');
-
 app.use('/', routes);
 
+//keep game servers references (game server is single "world" instance.)
 var gameServers = {};
+//keep all connected clients
 var clients = [];
+//to count guest nicknames
 var names = 0;
 
+//start one game instance
 startNewServer();
 
+//called when client start to loading page
 io.sockets.on('connection', function (client) {
     client.id = -1;
 
+    //called when client loaded assets and is reade to "real" connection
     client.on('connected', function () {
-        client.id = UUID();
-        client.serverId = chooseServer();
-        client.name = 'Guest' + names.toString();
-        names++;
-
-        clients.push(client);
-        client.timeOutTime = timeOut;
-
-        //send message to all ppl on server
-        var message = {
-            authorName: "server",
-            addressee: "system",
-            content: client.name + " connected"
-        };
-        gameServers[client.serverId].sendMessageToAll(message);
-
-        //add client to server
-        gameServers[client.serverId].clientConnected(client);
-        client.emit('startgame', {id: client.id, name: client.name});
+        clientConnected(client);
     });
 
+    //called when client disconnected
     client.on('disconnect', function () {
-        if (gameServers[client.serverId] != undefined) {
-            if (client !== undefined) {
-                gameServers[client.serverId].clientDisconnected(client);
-            }
-        }
+        clientDisconnected(client);
     });
 
+    //called when client sends update
     client.on('clientupdate', function (data) {
-        if (gameServers[client.serverId] != undefined) {
-            if (data.input !== undefined) {
-                gameServers[client.serverId].handleClientInput(client.id, data.input);
-            }
-            client.timeOutTime = timeOut;
-        }
+        handleClientUpdate(client, data);
     });
 
+    //called when client sends message
     client.on('clientmessage', function (message) {
         handleClientMessage(client, message);
     });
 
+    //called when client sends heartbeat
     client.on('heartbeat', function (data) {
-        client.timeOutTime = timeOut;
-        client.emit('heartbeatsresponse', {id: data.id})
+        handleClientHeartbeat(client, data);
     });
 });
 
+function clientConnected(client) {
+    client.id = UUID();
+    client.serverId = selectServer();
+    client.name = 'Guest' + names.toString();
+    names++;
+
+    clients.push(client);
+    client.timeOutTime = timeOut;
+
+    //send message to all ppl on server
+    var message = {
+        authorName: "server",
+        addressee: "system",
+        content: client.name + " connected"
+    };
+    gameServers[client.serverId].sendMessageToAll(message);
+
+    //add client to server
+    gameServers[client.serverId].clientConnected(client);
+    client.emit('startgame', {id: client.id, name: client.name});
+}
+
+function clientDisconnected(client) {
+    if (gameServers[client.serverId] != undefined) {
+        if (client !== undefined) {
+            gameServers[client.serverId].clientDisconnected(client);
+        }
+    }
+}
+
+function handleClientUpdate(client, data) {
+    if (gameServers[client.serverId] != undefined) {
+        if (data.input !== undefined) {
+            gameServers[client.serverId].handleClientInput(client.id, data.input);
+        }
+        client.timeOutTime = timeOut;
+    }
+}
+
+//send client message to proper clients or handle command
 function handleClientMessage(client, message) {
     console.log(message.authorName + " - " + message.addressee + " : " + message.content);
     if (message !== null && message.content != "") {
@@ -108,14 +131,15 @@ function handleClientMessage(client, message) {
                 }
             }
 
-            //if addressee found send him message. Author get the same message or information about failure
+            //if addressee found send him message. Author get the same message but swapped authorName and addressee for correct display.
             if (addresseeClient !== null) {
                 addresseeClient.emit('servermessage', message);
-                //swap addressee and authorName
+                //swap addressee and authorName (magic xd)
                 message.addressee = [message.authorName, message.authorName = "->" + message.addressee][0];
                 client.emit('servermessage', message);
-            } else {
-                //chage message to system info
+            }
+            //if not found convert message to system info about failure
+            else {
                 message.content = "Player " + message.addressee + " is not online";
                 message.addressee = "system";
                 message.authorName = "system";
@@ -125,17 +149,23 @@ function handleClientMessage(client, message) {
     }
 }
 
+function handleClientHeartbeat(client, data) {
+    client.timeOutTime = timeOut;
+    client.emit('heartbeatsresponse', {id: data.id})
+}
+
 function startNewServer() {
     var id = UUID();
     gameServers[id] = new GameServer(id);
     gameServers[id].startGameServer();
 }
 
-function chooseServer() {
+function selectServer() {
     return randomServer();
 }
 
 //Temp function. In future server would be chosen depends on other servers load
+//TODO create server selection system
 function randomServer() {
     var keys = Object.keys(gameServers);
     return keys[keys.length * Math.random() << 0];

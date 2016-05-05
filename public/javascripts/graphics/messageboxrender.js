@@ -1,3 +1,8 @@
+/*
+ Rendering messages
+ TODO scrollbar, resize, hide, drag able
+ */
+
 function MessageBoxRender(game, messageBox) {
     this.game = game;
     this.messageBox = messageBox;

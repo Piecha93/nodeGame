@@ -21,8 +21,8 @@ var ping = {
 };
 
 var render = new Render(assetsLoadedCallback);
-var game = new Game();
-var inputHandler = new InputHandler(inputHandlerCallback);
+var gameLogic = new Game();
+var inputHandler = new InputHandler();
 var messageBox = new MessageBox();
 
 var localPlayer = null;
@@ -34,11 +34,11 @@ function assetsLoadedCallback() {
 
 socket.on('startgame', function (client) {
     //start game loop when connected to server
-    game.startGameLoop();
+    gameLogic.startGameLoop();
     //set render to game logic update
-    game.setRender(render);
+    gameLogic.setRender(render);
     //create local player with id from server
-    localPlayer = game.newPlayer(client.id);
+    localPlayer = gameLogic.newPlayer(client.id);
     localPlayer.id = client.id;
     localPlayer.name = client.name;
 
@@ -48,13 +48,20 @@ socket.on('startgame', function (client) {
     render.newPlayer(localPlayer);
     //add messageBox to render
     render.createMessageBox(messageBox);
-    //add stats (ping) to render
+    //add stats (ping) to render. Ping is send by reference and has property "value" which contains ping value, so render always know if value changed
     render.createStatsRender(ping);
+
+    //set inputHandler callback
+    inputHandler.setCallback(inputHandlerCallback);
 
     console.log('Connection to server succesfull. Your id is: ' + client.id);
 });
 
-//get update from server
+/*
+ HANDLE SERVER MESSAGES
+ */
+
+//get gamelogic update from server
 socket.on('serverupdate', function (data) {
     if (data.players !== undefined)
         updatePlayers(data.players);
@@ -62,14 +69,56 @@ socket.on('serverupdate', function (data) {
         deletePlayers(data.disconnectedClients);
 });
 
+//get message from server
 socket.on('servermessage', function (message) {
-    updateMessenger(message);
+    updateMessageBox(message);
 });
 
+//get back heartbeat from server and calculate ping
 socket.on('heartbeatsresponse', function (data) {
     ping.value = new Date().getTime() - heartBeat.time;
     //console.log('Packet ' + data.id + ' reciver after ' + ping.value + ' (ms)');
 });
+
+//updates local player depends on server data
+function updatePlayers(serverPlayers) {
+    for (var key in serverPlayers) {
+        var localPlayer = gameLogic.players[key];
+        if (typeof localPlayer !== "undefined") {
+            localPlayer.serverUpdate(serverPlayers[key]);
+        }
+        else {
+            localPlayer = gameLogic.newPlayer(key, serverPlayers[key]);
+            render.newPlayer(localPlayer);
+        }
+    }
+}
+
+//delete disconnected players
+function deletePlayers(disconnected) {
+    disconnected.forEach(function (id) {
+        render.removePlayer(id);
+        gameLogic.removePlayer(id);
+    });
+}
+
+//push new message to messageBox
+function updateMessageBox(message) {
+    messageBox.addMessage(message.content, message.authorName, message.addressee);
+}
+
+/*
+ HANDLE SENDING MESSAGES TO SERVER
+ */
+
+//send update to server
+function serverUpdateLoop() {
+    if (!update.isEmpty) {
+        socket.emit('clientupdate', update);
+        resetUpdate();
+    }
+    //console.log('updating clients' + new Date().getTime());
+}
 
 //send heartbeats to keep connection alive
 function serverHeartbeatsLoop() {
@@ -81,41 +130,6 @@ function serverHeartbeatsLoop() {
     } else {
         heartBeatsTimer += 1 / heartBeatsRate * 1000
     }
-}
-
-//send update to server
-function serverUpdateLoop() {
-    if (!update.isEmpty) {
-        socket.emit('clientupdate', update);
-        resetUpdate();
-    }
-    //console.log('updating clients' + new Date().getTime());
-}
-
-//updates local player depends on server data
-function updatePlayers(serverPlayers) {
-    for (var key in serverPlayers) {
-        var localPlayer = game.players[key];
-        if (typeof localPlayer !== "undefined") {
-            localPlayer.serverUpdate(serverPlayers[key]);
-        }
-        else {
-            localPlayer = game.newPlayer(key, serverPlayers[key]);
-            render.newPlayer(localPlayer);
-        }
-    }
-}
-
-function updateMessenger(message) {
-    messageBox.addMessage(message.content, message.authorName, message.addressee);
-}
-
-//delete disconnected players
-function deletePlayers(disconnected) {
-    disconnected.forEach(function (id) {
-        render.removePlayer(id);
-        game.removePlayer(id);
-    });
 }
 
 function startServerUpdateLoop() {
@@ -135,16 +149,11 @@ function resetUpdate() {
     };
 }
 
-//clear input and send update when tab inactive
-window.onblur = function () {
-    inputHandler.clearInput();
-    serverUpdateLoop();
-};
-
 var chatMode = false;
 
 //this function is called when input handler got something
 //input is copy od inputhandler inputArray
+//TODO refactor this ...
 function inputHandlerCallback(input) {
     //if enter pressed
     if (input[input.length - 1] == 13) {
@@ -172,3 +181,10 @@ function inputHandlerCallback(input) {
     }
 }
 
+//clear input and send update when tab inactive
+// TODO it stoped working and f.. don't know why
+$(window).onblur = function () {
+    inputHandler.clearInput();
+    //we must call update because when tab is inactive all setTimeout functions under 1000ms is frozen
+    serverUpdateLoop();
+};

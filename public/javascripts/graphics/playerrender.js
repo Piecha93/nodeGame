@@ -24,11 +24,12 @@ PlayerRender.prototype.init = function () {
         fill: "#ffffff"
     });
 
+    this.nameText.text = this.player.name;
     this.nameText.anchor.set(0.4)
 };
 
 PlayerRender.prototype.update = function () {
-    //animation update
+    //select proper animation
     if (this.player.horizontalDir == -1 || this.player.horizontalMove == -1) {
         this.sprite.animations.play('left');
     } else if (this.player.horizontalDir == 1 || this.player.horizontalMove == 1) {
@@ -41,11 +42,11 @@ PlayerRender.prototype.update = function () {
         this.sprite.animations.stop();
     }
 
-    //position update
+    //sprite position update
     this.sprite.x += (this.player.x - this.sprite.x) / this.lerpRate;
     this.sprite.y += (this.player.y - this.sprite.y) / this.lerpRate;
 
-    this.nameText.text = this.player.name;
+    //name position update
     this.nameText.x += (this.player.x - this.nameText.x) / this.lerpRate;
     this.nameText.y += (this.player.y - 10 - this.nameText.y) / this.lerpRate;
 };

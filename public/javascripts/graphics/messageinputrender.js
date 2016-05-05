@@ -1,5 +1,5 @@
 /*
- render textarea for chat
+ render text area for chat input
  using CanvasInput library
  */
 function MessageInputRender(game) {

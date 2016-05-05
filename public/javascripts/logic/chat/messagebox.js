@@ -1,3 +1,7 @@
+/*
+ Class to keep all messages
+ */
+
 var Message = require("./message");
 
 function MessageBox() {

@@ -12,7 +12,7 @@ function isInputValid(inputCode) {
     return false;
  }*/
 
-function InputHandler(callback) {
+function InputHandler() {
     this.inputArray = [];
     var self = this;
 
@@ -23,9 +23,19 @@ function InputHandler(callback) {
         self.keyReleased(event);
     };
 
-    //callback is function to call when new input came
-    this.callback = callback;
+    //set callback to empty function
+    this.deleteCallback();
 }
+
+InputHandler.prototype.setCallback = function (callback) {
+    this.callback = callback;
+};
+
+InputHandler.prototype.deleteCallback = function () {
+    this.callback = function () {
+
+    }
+};
 
 //event listener for press key
 //add keycode to input array

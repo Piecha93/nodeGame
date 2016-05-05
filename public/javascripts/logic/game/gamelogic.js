@@ -2,7 +2,7 @@ var Player = require('./player');
 var DeltaTimer = require('./detlatimer');
 
 function Game() {
-    this.tickrate = 128;
+    this.tickRate = 128;
     
     this.players = {};
     this.renderHandler = null;

@@ -5,7 +5,6 @@ var StatsRender = require("./statsrender");
 
 function Render(callback) {
     this.onLoadCallback = callback;
-    this.text = null;
     this.game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example',
         {preload: this.preload.bind(this), create: this.create.bind(this)});
 
@@ -19,7 +18,7 @@ function Render(callback) {
 Render.prototype.preload = function () {
     //load assets
     this.game.load.atlasJSONHash('panda', 'resources/images/panda.png', 'resources/images/panda.json');
-    //set callback
+    //set callback (client connect to server when all assets are loaded)
     this.game.load.onLoadComplete.add(this.onLoadCallback);
 };
 
@@ -43,7 +42,7 @@ Render.prototype.destroyMessageBox = function () {
 
     this.messageInputRender = null;
     this.messageBoxRender = null;
-}
+};
 
 Render.prototype.enterChat = function () {
     if (this.messageInputRender != null) {
@@ -70,7 +69,6 @@ Render.prototype.destroyStatsRender = function () {
 Render.prototype.newPlayer = function (player) {
     //create new player render
     var playerRender = new PlayerRender(this.game, player);
-
     playerRender.init();
 
     //add playerrender to objects array
