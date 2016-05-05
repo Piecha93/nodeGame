@@ -732,6 +732,10 @@
 
     }, {"./detlatimer": 9, "./player": 11}],
     11: [function (require, module, exports) {
+        /*
+         player class
+         */
+
         var HorizontalDir = {none: 0, left: -1, right: 1};
         var VerticalDir = {none: 0, up: -1, down: 1};
 
@@ -758,7 +762,6 @@
 
             var self = this;
             this.input.forEach(function (i) {
-                self.isChanged = true;
                 switch (i) {
                     case 37:
                     case 65:
@@ -780,13 +783,17 @@
             });
         };
 
-//update player position depends on delta and movedir
+//update player position depends on delta and move direction
         Player.prototype.update = function (delta) {
             var offset = this.speed * delta;
             if (this.verticalDir != 0 && this.horizontalDir != 0)
                 offset = offset * Math.sin(45 * (180 / Math.PI));
             this.x += this.horizontalDir * offset;
             this.y += this.verticalDir * offset;
+
+            if (this.verticalDir != 0 || this.horizontalDir != 0) {
+                this.isChanged = true;
+            }
         };
 
 //set player position to x, y

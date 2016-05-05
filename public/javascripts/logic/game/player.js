@@ -28,7 +28,6 @@ Player.prototype.handleInput = function () {
 
     var self = this;
     this.input.forEach(function (i) {
-        self.isChanged = true;
         switch (i) {
             case 37:
             case 65:
@@ -57,6 +56,10 @@ Player.prototype.update = function (delta) {
         offset = offset * Math.sin(45 * (180 / Math.PI));
     this.x += this.horizontalDir * offset;
     this.y += this.verticalDir * offset;
+
+    if (this.verticalDir != 0 || this.horizontalDir != 0) {
+        this.isChanged = true;
+    }
 };
 
 //set player position to x, y

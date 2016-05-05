@@ -71,9 +71,9 @@ GameServer.prototype.clientDisconnected = function (client) {
 //serverUpdateLoop all clients
 GameServer.prototype.updateLoop = function () {
     var self = this;
+    //check if client not timeouted
     this.clients.forEach(function (c) {
         c.timeOutTime -= 1 / self.updateTickRate;
-        //check if client not timeouted
         if (c.timeOutTime < 0) {
             self.clientDisconnected(c);
         }
@@ -90,6 +90,7 @@ GameServer.prototype.updateLoop = function () {
 
     //if update is not empty send it to clients
     if (!this.update.isEmpty) {
+        console.log("update");
         this.clients.forEach(function (c) {
             c.emit('serverupdate', self.update);
         });
