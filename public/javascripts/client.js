@@ -15,6 +15,7 @@ var heartBeat = {
     id: 1,
     time: 0
 };
+
 var ping = {
     value: 0
 };
@@ -24,8 +25,7 @@ var game = new Game();
 var inputHandler = new InputHandler(inputHandlerCallback);
 var messageBox = new MessageBox();
 
-var localId = -1;
-var name = "";
+var localPlayer = null;
 var socket = io.connect();
 
 function assetsLoadedCallback() {
@@ -33,16 +33,14 @@ function assetsLoadedCallback() {
 }
 
 socket.on('startgame', function (client) {
-    localId = client.id;
-    name = client.name;
-
     //start game loop when connected to server
     game.startGameLoop();
     //set render to game logic update
     game.setRender(render);
     //create local player with id from server
-    var localPlayer = game.newPlayer(localId);
-    localPlayer.name = name;
+    localPlayer = game.newPlayer(client.id);
+    localPlayer.id = client.id;
+    localPlayer.name = client.name;
 
     startServerUpdateLoop();
     startServerHeartbeatUpdateLoop();
@@ -154,7 +152,7 @@ function inputHandlerCallback(input) {
         if (chatMode == true) {
             var message = render.endChat();
             if (message != "") {
-                var m = messageBox.createMessage(message, name);
+                var m = messageBox.createMessage(message, localPlayer.name);
                 m.parseAddressee();
                 socket.emit('clientmessage', m);
             }
@@ -166,9 +164,8 @@ function inputHandlerCallback(input) {
             chatMode = true;
         }
     } else if (chatMode == false) {
-        var player = game.getPlayer(localId);
-        if (player != null) {
-            player.input = input;
+        if (localPlayer != null) {
+            localPlayer.input = input;
             update.input = input;
             update.isEmpty = false;
         }
