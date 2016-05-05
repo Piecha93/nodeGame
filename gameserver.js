@@ -90,7 +90,6 @@ GameServer.prototype.updateLoop = function () {
 
     //if update is not empty send it to clients
     if (!this.update.isEmpty) {
-        console.log("update");
         this.clients.forEach(function (c) {
             c.emit('serverupdate', self.update);
         });

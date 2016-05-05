@@ -18,6 +18,7 @@ function Render(callback) {
 Render.prototype.preload = function () {
     //load assets
     this.game.load.atlasJSONHash('panda', 'resources/images/panda.png', 'resources/images/panda.json');
+    this.game.load.bitmapFont('gem', 'resources/fonts/gem.png', 'resources/fonts/gem.xml');
     //set callback (client connect to server when all assets are loaded)
     this.game.load.onLoadComplete.add(this.onLoadCallback);
 };

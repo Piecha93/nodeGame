@@ -182,7 +182,11 @@
             //if enter pressed
             if (input[input.length - 1] == 13) {
                 //if chat mode if true we need to get message from canvas and send it to server
-                if (chatMode == true) {
+                if (chatMode == false) {
+                    render.enterChat();
+                    chatMode = true;
+                    //if chat mode is false we entering chat mode
+                } else {
                     var message = render.endChat();
                     if (message != "") {
                         var m = messageBox.createMessage(message, localPlayer.name);
@@ -191,10 +195,6 @@
             }
                     chatMode = false;
                     inputHandler.clearInput();
-                    //if chat mode is false we entering chat mode
-                } else {
-                    render.enterChat();
-                    chatMode = true;
         }
             } else if (chatMode == false) {
                 if (localPlayer != null) {
@@ -206,7 +206,7 @@
         }
 
 //clear input and send update when tab inactive
-// TODO it stoped working and f.. don't know why
+// TODO it stoped working and don't know why
         $(window).onblur = function () {
             inputHandler.clearInput();
             //we must call update because when tab is inactive all setTimeout functions under 1000ms is frozen
@@ -228,7 +228,13 @@
         function MessageBoxRender(game, messageBox) {
             this.game = game;
             this.messageBox = messageBox;
-            this.textGroup = null;
+            this.textHolder = null;
+
+
+            //size of message box
+            this.heigth = 400;
+            this.width = 300;
+
 
             this.colors = {
                 all: 0xffffff,
@@ -239,39 +245,44 @@
         }
 
         MessageBoxRender.prototype.init = function () {
-            this.textGroup = this.game.add.group();
-            for (var i = 0; i < 10; i++) {
-                this.textGroup.add(this.game.add.text(0, this.game.height - i * 16 - 50, "", {
-                    font: "14px Courier"
-                }));
-            }
+            this.textHolder = this.game.add.text(0, 0, "", {
+                font: "13px Courier",
+                wordWrap: true,
+                wordWrapWidth: this.width
+            });
         };
 
         MessageBoxRender.prototype.update = function () {
             var messages = this.messageBox.getLast(10);
 
+            this.textHolder.text = "";
+            this.textHolder.clearColors();
             for (var i = 0; i < messages.length; i++) {
-                var textHolder = this.textGroup.children[messages.length - i - 1];
-                textHolder.text = messages[i].authorName + ': ' + messages[i].content;
+                var startColorIndex = this.textHolder.text.length;
+                //TODO wrap to long single words
+                this.textHolder.text += "\n" + messages[i].authorName + ': ' + messages[i].content;
                 switch (messages[i].addressee) {
                     case 'all':
-                        textHolder.fill = hexToString(this.colors.all);
+                        this.textHolder.addColor(hexToString(this.colors.all), startColorIndex);
                         break;
                     case 'system':
-                        textHolder.fill = hexToString(this.colors.system);
+                        this.textHolder.addColor(hexToString(this.colors.system), startColorIndex);
                         break;
                     default:
                         //for whisper
-                        textHolder.fill = hexToString(this.colors.whisper);
+                        this.textHolder.addColor(hexToString(this.colors.whisper), startColorIndex);
                         break;
         }
+                if (this.textHolder.height > this.heigth)
+                    return;
             }
 
+            this.textHolder.y = this.game.height - this.textHolder.height - 50;
         };
 
         MessageBoxRender.prototype.destroy = function () {
-            this.textGroup.destroy(true, false);
-        }
+            this.textHolder.destroy(true, false);
+        };
 
         function hexToString(hex) {
             return '#' + hex.toString(16);
@@ -289,7 +300,7 @@
         }
 
         MessageInputRender.prototype.init = function () {
-            var bitmap = this.game.add.bitmapData(300, 100);
+            var bitmap = this.game.add.bitmapData(250, 40);
             this.inputSprite = this.game.add.sprite(0, this.game.height - 35, bitmap);
 
             this.inputSprite.canvasInput = new CanvasInput({
@@ -298,7 +309,7 @@
                 fontFamily: 'Arial',
                 fontColor: '#212121',
                 fontWeight: 'bold',
-                width: 400,
+                width: 200,
                 padding: 8,
                 borderWidth: 1,
                 borderColor: '#000',
@@ -415,6 +426,7 @@
         Render.prototype.preload = function () {
             //load assets
             this.game.load.atlasJSONHash('panda', 'resources/images/panda.png', 'resources/images/panda.json');
+            this.game.load.bitmapFont('gem', 'resources/fonts/gem.png', 'resources/fonts/gem.xml');
             //set callback (client connect to server when all assets are loaded)
             this.game.load.onLoadComplete.add(this.onLoadCallback);
         };

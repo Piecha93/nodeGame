@@ -104,7 +104,17 @@ function handleClientUpdate(client, data) {
 
 //send client message to proper clients or handle command
 function handleClientMessage(client, message) {
+    message.content = message.content.trim();
     console.log(message.authorName + " - " + message.addressee + " : " + message.content);
+    //if message is to long send info client
+    if (message.content.length > 250) {
+        message.content = "Message to long. Max mesage length is 250";
+        message.addressee = "system";
+        message.authorName = "system";
+        client.emit('servermessage', message);
+
+        return;
+    }
     if (message !== null && message.content != "") {
         message.sendTime = new Date().getTime();
         if (message.addressee == "all") {

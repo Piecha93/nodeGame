@@ -158,7 +158,11 @@ function inputHandlerCallback(input) {
     //if enter pressed
     if (input[input.length - 1] == 13) {
         //if chat mode if true we need to get message from canvas and send it to server
-        if (chatMode == true) {
+        if (chatMode == false) {
+            render.enterChat();
+            chatMode = true;
+            //if chat mode is false we entering chat mode
+        } else {
             var message = render.endChat();
             if (message != "") {
                 var m = messageBox.createMessage(message, localPlayer.name);
@@ -167,10 +171,6 @@ function inputHandlerCallback(input) {
             }
             chatMode = false;
             inputHandler.clearInput();
-            //if chat mode is false we entering chat mode
-        } else {
-            render.enterChat();
-            chatMode = true;
         }
     } else if (chatMode == false) {
         if (localPlayer != null) {
@@ -182,7 +182,7 @@ function inputHandlerCallback(input) {
 }
 
 //clear input and send update when tab inactive
-// TODO it stoped working and f.. don't know why
+// TODO it stoped working and don't know why
 $(window).onblur = function () {
     inputHandler.clearInput();
     //we must call update because when tab is inactive all setTimeout functions under 1000ms is frozen

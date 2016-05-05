@@ -7,7 +7,7 @@ function MessageInputRender(game) {
 }
 
 MessageInputRender.prototype.init = function () {
-    var bitmap = this.game.add.bitmapData(300, 100);
+    var bitmap = this.game.add.bitmapData(250, 40);
     this.inputSprite = this.game.add.sprite(0, this.game.height - 35, bitmap);
 
     this.inputSprite.canvasInput = new CanvasInput({
@@ -16,7 +16,7 @@ MessageInputRender.prototype.init = function () {
         fontFamily: 'Arial',
         fontColor: '#212121',
         fontWeight: 'bold',
-        width: 400,
+        width: 200,
         padding: 8,
         borderWidth: 1,
         borderColor: '#000',

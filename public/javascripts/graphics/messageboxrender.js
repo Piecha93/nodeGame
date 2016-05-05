@@ -6,7 +6,13 @@
 function MessageBoxRender(game, messageBox) {
     this.game = game;
     this.messageBox = messageBox;
-    this.textGroup = null;
+    this.textHolder = null;
+
+
+    //size of message box
+    this.heigth = 400;
+    this.width = 300;
+
 
     this.colors = {
         all: 0xffffff,
@@ -17,39 +23,44 @@ function MessageBoxRender(game, messageBox) {
 }
 
 MessageBoxRender.prototype.init = function () {
-    this.textGroup = this.game.add.group();
-    for (var i = 0; i < 10; i++) {
-        this.textGroup.add(this.game.add.text(0, this.game.height - i * 16 - 50, "", {
-            font: "14px Courier"
-        }));
-    }
+    this.textHolder = this.game.add.text(0, 0, "", {
+        font: "13px Courier",
+        wordWrap: true,
+        wordWrapWidth: this.width
+    });
 };
 
 MessageBoxRender.prototype.update = function () {
     var messages = this.messageBox.getLast(10);
 
+    this.textHolder.text = "";
+    this.textHolder.clearColors();
     for (var i = 0; i < messages.length; i++) {
-        var textHolder = this.textGroup.children[messages.length - i - 1];
-        textHolder.text = messages[i].authorName + ': ' + messages[i].content;
+        var startColorIndex = this.textHolder.text.length;
+        //TODO wrap to long single words
+        this.textHolder.text += "\n" + messages[i].authorName + ': ' + messages[i].content;
         switch (messages[i].addressee) {
             case 'all':
-                textHolder.fill = hexToString(this.colors.all);
+                this.textHolder.addColor(hexToString(this.colors.all), startColorIndex);
                 break;
             case 'system':
-                textHolder.fill = hexToString(this.colors.system);
+                this.textHolder.addColor(hexToString(this.colors.system), startColorIndex);
                 break;
             default:
                 //for whisper
-                textHolder.fill = hexToString(this.colors.whisper);
+                this.textHolder.addColor(hexToString(this.colors.whisper), startColorIndex);
                 break;
         }
+        if (this.textHolder.height > this.heigth)
+            return;
     }
 
+    this.textHolder.y = this.game.height - this.textHolder.height - 50;
 };
 
 MessageBoxRender.prototype.destroy = function () {
-    this.textGroup.destroy(true, false);
-}
+    this.textHolder.destroy(true, false);
+};
 
 function hexToString(hex) {
     return '#' + hex.toString(16);
