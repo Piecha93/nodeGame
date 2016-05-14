@@ -14,6 +14,8 @@ StarsRender.prototype.init = function () {
         font: "bold 16px Arial",
         fill: "#ffffff"
     });
+
+    this.pingText.fixedToCamera = true;
 };
 
 StarsRender.prototype.update = function () {

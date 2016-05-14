@@ -6,14 +6,15 @@ var HorizontalDir = {none: 0, left: -1, right: 1};
 var VerticalDir = {none: 0, up: -1, down: 1};
 
 function Player() {
-    this.x = 0;
-    this.y = 0;
+    this.body = null;
     this.input = [];
     this.horizontalDir = HorizontalDir.none;
     this.verticalDir = VerticalDir.none;
     this.speed = 0.15;
     this.isChanged = true;
     this.name = "";
+
+    this.isMainPlayer = false;
 
     this.horizontalMove = HorizontalDir.none;
     this.verticalMove = VerticalDir.none;
@@ -54,8 +55,9 @@ Player.prototype.update = function (delta) {
     var offset = this.speed * delta;
     if (this.verticalDir != 0 && this.horizontalDir != 0)
         offset = offset * Math.sin(45 * (180 / Math.PI));
-    this.x += this.horizontalDir * offset;
-    this.y += this.verticalDir * offset;
+
+    this.body.position[0] += this.horizontalDir * offset;
+    this.body.position[1] += this.verticalDir * offset;
 
     if (this.verticalDir != 0 || this.horizontalDir != 0) {
         this.isChanged = true;
@@ -64,25 +66,26 @@ Player.prototype.update = function (delta) {
 
 //set player position to x, y
 Player.prototype.setPosition = function (x, y) {
-    this.x = x;
-    this.y = y;
+    this.body.position[0] = x;
+    this.body.position[1] = y;
 };
 
 Player.prototype.serverUpdate = function (playerUpdateInfo) {
     //console.log('local: ' + this.x + ' server: ' + playerUpdateInfo.x);
-    this.setPosition(playerUpdateInfo.x, playerUpdateInfo.y);
+    this.setPosition(playerUpdateInfo.position[0], playerUpdateInfo.position[1]);
     this.horizontalMove = playerUpdateInfo.horizontalMove;
     this.verticalMove = playerUpdateInfo.verticalMove;
     this.name = playerUpdateInfo.name;
+    this.body.angle = playerUpdateInfo.angle;
 };
 
 Player.prototype.getUpdateInfo = function () {
     var playerUpdateInfo = {};
-    playerUpdateInfo.x = this.x;
-    playerUpdateInfo.y = this.y;
+    playerUpdateInfo.position = this.body.position;
     playerUpdateInfo.horizontalMove = this.horizontalDir;
     playerUpdateInfo.verticalMove = this.verticalDir;
     playerUpdateInfo.name = this.name;
+    playerUpdateInfo.angle = this.body.angle;
 
     return playerUpdateInfo;
 };

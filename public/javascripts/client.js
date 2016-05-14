@@ -20,7 +20,7 @@ var ping = {
     value: 0
 };
 
-var render = new Render(assetsLoadedCallback);
+var render = new Render(assetsLoadedCallback, mouseMoveCallback);
 var gameLogic = new Game();
 var inputHandler = new InputHandler();
 var messageBox = new MessageBox();
@@ -41,6 +41,7 @@ socket.on('startgame', function (client) {
     localPlayer = gameLogic.newPlayer(client.id);
     localPlayer.id = client.id;
     localPlayer.name = client.name;
+    localPlayer.isMainPlayer = true;
 
     startServerUpdateLoop();
     startServerHeartbeatUpdateLoop();
@@ -144,7 +145,8 @@ function startServerHeartbeatUpdateLoop() {
 
 function resetUpdate() {
     update = {
-        input: [],
+        input: null,
+        angle: null,
         isEmpty: true
     };
 }
@@ -179,6 +181,13 @@ function inputHandlerCallback(input) {
             update.isEmpty = false;
         }
     }
+}
+
+function mouseMoveCallback(degree) {
+    localPlayer.body.angle = degree;
+    localPlayer.isChanged = true;
+    update.angle = degree;
+    update.isEmpty = false;
 }
 
 //clear input and send update when tab inactive

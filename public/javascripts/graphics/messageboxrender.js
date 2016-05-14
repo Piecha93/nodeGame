@@ -28,6 +28,8 @@ MessageBoxRender.prototype.init = function () {
         wordWrap: true,
         wordWrapWidth: this.width
     });
+
+    this.textHolder.fixedToCamera = true;
 };
 
 MessageBoxRender.prototype.update = function () {
@@ -55,7 +57,7 @@ MessageBoxRender.prototype.update = function () {
             return;
     }
 
-    this.textHolder.y = this.game.height - this.textHolder.height - 50;
+    this.textHolder.cameraOffset.y = this.game.height - this.textHolder.height - 50;
 };
 
 MessageBoxRender.prototype.destroy = function () {

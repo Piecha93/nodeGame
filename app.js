@@ -95,8 +95,11 @@ function clientDisconnected(client) {
 
 function handleClientUpdate(client, data) {
     if (gameServers[client.serverId] != undefined) {
-        if (data.input !== undefined) {
+        if (data.input != null) {
             gameServers[client.serverId].handleClientInput(client.id, data.input);
+        }
+        if (data.angle != null) {
+            gameServers[client.serverId].handleClientAngle(client.id, data.angle);
         }
         client.timeOutTime = timeOut;
     }

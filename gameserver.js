@@ -2,7 +2,7 @@ var Game = require('./public/javascripts/logic/game/gamelogic');
 
 function GameServer(id) {
     //number of client updates per secound
-    this.updateTickRate = 20;
+    this.updateTickRate = 2000;
     this.serverId = id;
 
     this.gameLogic = null;
@@ -105,8 +105,17 @@ GameServer.prototype.updateLoop = function () {
 GameServer.prototype.handleClientInput = function (id, input) {
     //console.log('client: ' + id + ' sent: ' + input);
     var player = this.gameLogic.getPlayer(id);
-    if (player != null)
+    if (player != null) {
         player.input = input;
+    }
+};
+
+GameServer.prototype.handleClientAngle = function (id, angle) {
+    var player = this.gameLogic.getPlayer(id);
+    if (player != null) {
+        player.body.angle = angle;
+        player.isChanged = true;
+    }
 };
 
 GameServer.prototype.sendMessageToAll = function (message) {

@@ -1,12 +1,15 @@
+var p2 = require('p2');
 var Player = require('./player');
 var DeltaTimer = require('./detlatimer');
 
+
 function Game() {
-    this.tickRate = 128;
-    
+    this.tickRate = 64;
+
     this.players = {};
     this.renderHandler = null;
     this.timer = new DeltaTimer();
+    this.physicsWorld = new p2.World({});
 }
 
 Game.prototype.startGameLoop = function () {
@@ -15,7 +18,7 @@ Game.prototype.startGameLoop = function () {
 
 Game.prototype.gameLoop = function () {
     var delta = this.timer.getDelta();
-    this.handleInput(delta);
+    this.handleInput();
     this.update(delta);
     this.render(delta);
 
@@ -53,26 +56,30 @@ Game.prototype.newPlayer = function (id, playerCopy) {
     var player = new Player();
     player.id = id;
 
-    if (typeof playerCopy !== "undefined") {
-        player.x = playerCopy.x;
-        player.y = playerCopy.y;
+    //create physics elements
+    var body = new p2.Body({
+        position: [400, 300]
+    });
+
+    var shape = new p2.Box({
+        width: 64,
+        height: 64
+    });
+    body.addShape(shape);
+    player.body = body;
+
+    if (playerCopy != undefined) {
+        player.position = playerCopy.position;
         player.name = playerCopy.name;
     }
-    this.players[player.id] = player;
 
+    this.physicsWorld.addBody(body);
+    this.players[player.id] = player;
     return player;
 };
 
 Game.prototype.removePlayer = function (id) {
     delete this.players[id];
-};
-
-Game.prototype.setTickRate = function (tr) {
-    this.tickRate = tr;
-};
-
-Game.prototype.getTickRate = function () {
-    return this.tickRate;
 };
 
 Game.prototype.getPlayer = function (id) {

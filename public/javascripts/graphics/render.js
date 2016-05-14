@@ -3,12 +3,14 @@ var MessageInputRender = require("./messageinputrender");
 var MessageBoxRender = require("./messageboxrender");
 var StatsRender = require("./statsrender");
 
-function Render(callback) {
-    this.onLoadCallback = callback;
+function Render(onLoadCallback, mouseMoveCallback) {
+    this.onLoadCallback = onLoadCallback;
+    this.mouseMoveCallback = mouseMoveCallback;
     this.game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example',
         {preload: this.preload.bind(this), create: this.create.bind(this)});
 
     this.objects = {};
+    this.localPlayerRender = null;
     this.messageBoxRender = null;
     this.messageInputRender = null;
     this.statsRender = null;
@@ -19,12 +21,18 @@ Render.prototype.preload = function () {
     //load assets
     this.game.load.atlasJSONHash('panda', 'resources/images/panda.png', 'resources/images/panda.json');
     this.game.load.bitmapFont('gem', 'resources/fonts/gem.png', 'resources/fonts/gem.xml');
+    this.game.load.image('player', 'resources/images/player.png');
     //set callback (client connect to server when all assets are loaded)
     this.game.load.onLoadComplete.add(this.onLoadCallback);
 };
 
 Render.prototype.create = function () {
+    this.game.world.setBounds(0, 0, 1000, 1000);
+    this.game.stage.backgroundColor = "#4488AA";
+
+    this.game.input.addMoveCallback(mouseMoveCallback, this);
 };
+
 
 Render.prototype.createMessageBox = function (messageBox) {
     //create MessengerBox
@@ -70,8 +78,13 @@ Render.prototype.destroyStatsRender = function () {
 Render.prototype.newPlayer = function (player) {
     //create new player render
     var playerRender = new PlayerRender(this.game, player);
-    playerRender.init();
 
+    if (player.isMainPlayer) {
+        this.localPlayerRender = playerRender;
+    }
+
+    playerRender.init();
+    console.log(this.localPlayerRender);
     //add playerrender to objects array
     this.objects[player.id] = playerRender;
 };
@@ -98,5 +111,12 @@ Render.prototype.update = function (delta) {
         this.statsRender.update();
     }
 };
+
+function mouseMoveCallback(mousePointer) {
+    var radians = Math.atan2(mousePointer.x - this.localPlayerRender.sprite.x + this.game.camera.x
+        , mousePointer.y - this.localPlayerRender.sprite.y + this.game.camera.y);
+    var degree = (radians * (180 / Math.PI) * -1) + 90;
+    this.mouseMoveCallback(degree);
+}
 
 module.exports = Render;

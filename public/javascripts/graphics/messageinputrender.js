@@ -9,6 +9,7 @@ function MessageInputRender(game) {
 MessageInputRender.prototype.init = function () {
     var bitmap = this.game.add.bitmapData(250, 40);
     this.inputSprite = this.game.add.sprite(0, this.game.height - 35, bitmap);
+    this.inputSprite.fixedToCamera = true;
 
     this.inputSprite.canvasInput = new CanvasInput({
         canvas: bitmap.canvas,

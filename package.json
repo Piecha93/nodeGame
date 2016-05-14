@@ -6,6 +6,7 @@
     "socket.io": "latest",
     "express": "latest",
     "node-uuid": "latest",
-    "ejs": "latest"
+    "ejs": "latest",
+    "p2": "latest"
   }
 }
