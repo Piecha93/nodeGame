@@ -9,7 +9,21 @@ function Game() {
     this.players = {};
     this.renderHandler = null;
     this.timer = new DeltaTimer();
-    this.physicsWorld = new p2.World({});
+    this.physicsWorld = new p2.World({
+        gravity: [0, 0]
+    });
+
+    var body = new p2.Body({
+        position: [240, 208],
+        mass: 0
+    });
+
+    var shape = new p2.Box({
+        width: 32,
+        height: 32
+    });
+    body.addShape(shape);
+    this.physicsWorld.addBody(body);
 }
 
 Game.prototype.startGameLoop = function () {
@@ -39,6 +53,8 @@ Game.prototype.update = function (delta) {
     for (var key in this.players) {
         this.players[key].update(delta);
     }
+
+    this.physicsWorld.step(1 / 60, delta);
 };
 
 Game.prototype.render = function (delta) {
@@ -58,18 +74,20 @@ Game.prototype.newPlayer = function (id, playerCopy) {
 
     //create physics elements
     var body = new p2.Body({
-        position: [400, 300]
+        position: [400, 300],
+        mass: 100,
+        damping: 1,
+        angularDamping: 1
     });
 
-    var shape = new p2.Box({
-        width: 64,
-        height: 64
+    var shape = new p2.Circle({
+        radius: 32
     });
     body.addShape(shape);
     player.body = body;
 
-    if (playerCopy != undefined) {
-        player.position = playerCopy.position;
+    if (playerCopy != null) {
+        player.body.position = playerCopy.position;
         player.name = playerCopy.name;
     }
 

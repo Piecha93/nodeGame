@@ -317,7 +317,7 @@
                     l2[1] = this.at(i + 1);
                     p = Line.lineInt(l1, l2);
                     if (Point.sqdist(this.at(a), p) < dist) { // if edge is blocking visibility to b
-                        return false;
+                return false;
             }
         }
     }
@@ -379,10 +379,10 @@
                                 min = tmp1;
                                 nDiags = tmp1.length;
                                 min.push([this.at(i), this.at(j)]);
-                            }
-                        }
                     }
-        }
+                        }
+            }
+                }
             }
 
             return min;
@@ -424,7 +424,7 @@
                             polys.splice(j, 1);
                             polys.push(result[0], result[1]);
                             break;
-                        }
+                }
                     }
                 }
 
@@ -441,7 +441,7 @@
                         this.copy(j, i)];
                 } else {
                     return false;
-                }
+        }
             }
         };
 
@@ -459,8 +459,8 @@
                 for (var j = 0; j < i - 1; j++) {
                     if (Line.segmentsIntersect(path[i], path[i + 1], path[j], path[j + 1])) {
                         return false;
-                    }
-        }
+            }
+                }
             }
 
             // Check the segment between the last and the first point to all others
@@ -539,7 +539,7 @@
                                     lowerDist = d;
                                     lowerInt = p;
                                     lowerIndex = j;
-                                }
+                        }
                             }
                         }
                         if (Point.left(poly.at(i + 1), poly.at(i), poly.at(j + 1))
@@ -551,7 +551,7 @@
                                     upperDist = d;
                                     upperInt = p;
                                     upperIndex = j;
-                                }
+                        }
                             }
                         }
             }
@@ -606,15 +606,15 @@
                                 if (d < closestDist) {
                                     closestDist = d;
                                     closestIndex = j % this.vertices.length;
-                                }
-                            }
+                        }
+                    }
                         }
 
                         if (i < closestIndex) {
                             lowerPoly.append(poly, i, closestIndex + 1);
                             if (closestIndex != 0) {
                                 upperPoly.append(poly, closestIndex, v.length);
-                            }
+                    }
                             upperPoly.append(poly, 0, i + 1);
                         } else {
                             if (i != 0) {
@@ -632,9 +632,9 @@
                     } else {
                         upperPoly.quickDecomp(result, reflexVertices, steinerPoints, delta, maxlevel, level);
                         lowerPoly.quickDecomp(result, reflexVertices, steinerPoints, delta, maxlevel, level);
-                    }
+            }
 
-                    return result;
+            return result;
         }
             }
             result.push(this);
@@ -847,10 +847,10 @@
                 for (var j = 0; j < 2; j++) {
                     if (p[j] > u[j]) {
                         u[j] = p[j];
-                    }
+            }
                     if (p[j] < l[j]) {
                         l[j] = p[j];
-                    }
+            }
                 }
             }
 
@@ -1956,9 +1956,9 @@
                         if (!this.enableFrictionReduction) {
                             if (this.enableFriction) {
                                 this.frictionEquations.push(this.createFrictionFromContact(c));
-                            }
+                }
                         }
-        }
+                    }
                 }
 
                 if (justTest) {
@@ -3215,8 +3215,8 @@
                             vec2.copy(sepAxis, normal);
                             maxDist = dist;
                             found = overlap;
-                        }
-            }
+                }
+                    }
                 }
 
             } else {
@@ -3263,8 +3263,8 @@
                             maxDist = dist;
                             found = overlap;
                         }
-                    }
-        }
+            }
+                }
             }
 
 
@@ -3529,9 +3529,9 @@
 
                             if (this.enableFriction) {
                                 this.frictionEquations.push(this.createFrictionFromContact(c));
-                            }
+                }
                         }
-        }
+                    }
                 }
 
                 if (found) {
@@ -4124,7 +4124,7 @@
                 var idx = that.axisList.indexOf(e.body);
                 if (idx !== -1) {
                     that.axisList.splice(idx, 1);
-                }
+        }
             };
         }
 
@@ -4224,8 +4224,8 @@
 
                     if (Broadphase.canCollide(bi, bj) && this.boundingVolumeCheck(bi, bj)) {
                         result.push(bi, bj);
-                    }
-        }
+            }
+                }
             }
 
             return result;
@@ -4335,7 +4335,7 @@
             if (options.wakeUpBodies) {
                 if (bodyA) {
                     bodyA.wakeUp();
-                }
+        }
                 if (bodyB) {
                     bodyB.wakeUp();
                 }
@@ -6409,7 +6409,7 @@
                 listener.context = context || this;
                 if (this._listeners === undefined) {
                     this._listeners = {};
-                }
+        }
                 var listeners = this._listeners;
                 if (listeners[type] === undefined) {
                     listeners[type] = [];
@@ -6727,7 +6727,7 @@
          maxx = Math.max(maxx, p[i  ]);
          miny = Math.min(miny, p[i+1]);
          maxy = Math.max(maxy, p[i+1]);
-         }
+        }
          return {x:minx, y:miny, width:maxx-minx, height:maxy-miny};
          }
          */
@@ -6760,8 +6760,8 @@
                             earFound = false;
                             break;
                         }
-                    }
                 }
+            }
                 if (earFound) {
                     tgs.push(i0, i1, i2);
                     avl.splice((i + 1) % al, 1);
@@ -6769,7 +6769,7 @@
                     i = 0;
                 }
                 else if (i++ > 3 * al) break;      // no convex angles :(
-            }
+        }
             tgs.push(avl[0], avl[1], avl[2]);
             return tgs;
         }
@@ -8287,7 +8287,7 @@
                             r2 = vec2.squaredLength(shape.position),
                             Icm = shape.computeMomentOfInertia(m);
                         I += Icm + m * r2;
-                    }
+            }
                     this.inertia = I;
                     this.invInertia = I > 0 ? 1 / I : 0;
 
@@ -9831,7 +9831,7 @@
                             ray.reportIntersection(result, d1, normal, -1);
                             if (result.shouldStop(ray)) {
                                 return;
-                            }
+                    }
                         }
                     }
 
@@ -9843,9 +9843,9 @@
                             ray.reportIntersection(result, d2, normal, -1);
                             if (result.shouldStop(ray)) {
                                 return;
-                            }
-                        }
                     }
+                }
+            }
                 }
             }
         };
@@ -10481,7 +10481,7 @@
                 var v = data[i];
                 if (v > maxValue) {
                     maxValue = v;
-                }
+        }
                 if (v < minValue) {
                     minValue = v;
                 }
@@ -10630,8 +10630,8 @@
                     ray.reportIntersection(result, t, worldNormal, -1);
                     if (result.shouldStop(ray)) {
                         return;
-                    }
-                }
+            }
+        }
             }
         };
     }, {"../math/vec2": 30, "../utils/Utils": 57, "./Shape": 45}],
@@ -11334,7 +11334,7 @@
                             var f = 0.0;
                             for (var k = 0; k !== eq.contactEquations.length; k++) {
                                 f += eq.contactEquations[k].multiplier;
-                            }
+                    }
                             f *= eq.frictionCoefficient / eq.contactEquations.length;
                             eq.maxForce = f;
                             eq.minForce = -f;
@@ -12215,7 +12215,7 @@
             for (var key in defaults) {
                 if (!(key in options)) {
                     options[key] = defaults[key];
-                }
+        }
             }
             return options;
         };
@@ -12291,7 +12291,7 @@
                 var b = this.bodies[i];
                 if (b.type === Body.DYNAMIC && !b.wantsToSleep) {
                     return false;
-                }
+        }
             }
             return true;
         };
@@ -12399,7 +12399,7 @@
                 var eq = node.equations[i];
                 if (eqs.indexOf(eq) === -1) { // Already added?
                     eqs.push(eq);
-                }
+        }
             }
         };
 
@@ -13207,7 +13207,7 @@
                     if ((ignoredPairs[i] === result[j] && ignoredPairs[i + 1] === result[j + 1]) ||
                         (ignoredPairs[i + 1] === result[j] && ignoredPairs[i] === result[j + 1])) {
                         result.splice(j, 2);
-                    }
+            }
                 }
             }
 
@@ -13220,8 +13220,8 @@
                         if ((c.bodyA === result[j] && c.bodyB === result[j + 1]) ||
                             (c.bodyB === result[j] && c.bodyA === result[j + 1])) {
                             result.splice(j, 2);
-                        }
-                    }
+                }
+            }
                 }
             }
 
@@ -13253,11 +13253,11 @@
                             var tmp = this.getContactMaterial(si.material, sj.material);
                             if (tmp) {
                                 cm = tmp;
-                            }
-                        }
+                    }
+                }
 
                         this.runNarrowphase(np, bi, si, xi, ai, bj, sj, xj, aj, cm, this.frictionGravity);
-                    }
+            }
                 }
             }
 
@@ -13313,8 +13313,8 @@
                         var island = islandManager.islands[i];
                         if (island.equations.length) {
                             solver.solveIsland(dt, island);
-                        }
-                    }
+                }
+            }
 
                 } else {
 
@@ -13325,11 +13325,11 @@
                     // Add user-defined constraint equations
                     for (i = 0; i !== Nconstraints; i++) {
                         solver.addEquations(constraints[i].equations);
-                    }
+            }
 
                     if (this.solveConstraints) {
                         solver.solve(dt, this);
-                    }
+            }
 
                     solver.removeAllEquations();
                 }
@@ -13361,7 +13361,7 @@
                         ev.shapeB = eq.shapeB;
                         ev.contactEquation = eq;
                         this.emit(ev);
-                    }
+            }
                 }
             }
 
@@ -13382,7 +13382,7 @@
                     var island = this.islandManager.islands[i];
                     if (island.wantsToSleep()) {
                         island.sleep();
-                    }
+            }
                 }
             }
 
@@ -13484,8 +13484,8 @@
                         var speedLimitSquaredA = Math.pow(bi.sleepSpeedLimit, 2);
                         if (speedSquaredA >= speedLimitSquaredA * 2) {
                             bj._wakeUpAfterNarrowphase = true;
-                        }
-                    }
+                }
+            }
 
                     this.overlapKeeper.setOverlapping(bi, si, bj, sj);
                     if (this.has('beginContact') && this.overlapKeeper.isNewOverlap(si, sj)) {
@@ -13504,18 +13504,18 @@
                             for (var i = np.contactEquations.length - numContacts; i < np.contactEquations.length; i++) {
                                 e.contactEquations.push(np.contactEquations[i]);
                             }
-                        }
+                }
 
                         this.emit(e);
-                    }
+            }
 
                     // divide the max friction force by the number of contacts
                     if (typeof(numContacts) === "number" && numFrictionEquations > 1) { // Why divide by 1?
                         for (var i = np.frictionEquations.length - numFrictionEquations; i < np.frictionEquations.length; i++) {
                             var f = np.frictionEquations[i];
                             f.setSlipForce(f.getSlipForce() / numFrictionEquations);
-                        }
-                    }
+                }
+            }
                 }
             }
 
@@ -13727,7 +13727,7 @@
                         (s instanceof Particle && vec2.squaredLength(vec2.sub(tmp, x, worldPoint)) < precision * precision)
                     ) {
                         result.push(b);
-                    }
+            }
                 }
             }
 
@@ -13930,6 +13930,8 @@
 
             startServerUpdateLoop();
             startServerHeartbeatUpdateLoop();
+            //create map
+            render.createMap('testmap');
             //add player to render
             render.newPlayer(localPlayer);
             //add messageBox to render
@@ -13972,7 +13974,7 @@
                 var localPlayer = gameLogic.players[key];
                 if (typeof localPlayer !== "undefined") {
                     localPlayer.serverUpdate(serverPlayers[key]);
-                }
+        }
                 else {
                     localPlayer = gameLogic.newPlayer(key, serverPlayers[key]);
                     render.newPlayer(localPlayer);
@@ -14055,16 +14057,16 @@
                         var m = messageBox.createMessage(message, localPlayer.name);
                         m.parseAddressee();
                         socket.emit('clientmessage', m);
-                    }
+            }
                     chatMode = false;
                     inputHandler.clearInput();
-                }
+        }
             } else if (chatMode == false) {
                 if (localPlayer != null) {
                     localPlayer.input = input;
                     update.input = input;
-                    update.isEmpty = false;
-                }
+            update.isEmpty = false;
+        }
             }
         }
 
@@ -14084,12 +14086,44 @@
         };
 
     }, {
-        "./graphics/render": 66,
-        "./logic/chat/messagebox": 69,
-        "./logic/game/gamelogic": 71,
-        "./logic/inputhandler": 73
+        "./graphics/render": 67,
+        "./logic/chat/messagebox": 70,
+        "./logic/game/gamelogic": 72,
+        "./logic/inputhandler": 74
     }],
     63: [function (require, module, exports) {
+        /*
+         render text area for chat input
+         using CanvasInput library
+         */
+        function MessageInputRender(game, name) {
+            this.game = game;
+            this.map = null;
+            this.name = name;
+        }
+
+        MessageInputRender.prototype.init = function () {
+            this.map = this.game.add.tilemap(this.name);
+            this.map.addTilesetImage('terrain', 'tiles');
+
+            var layer1 = this.map.createLayer('layer1');
+            var layer2 = this.map.createLayer('layer2');
+            var layer3 = this.map.createLayer('layer3');
+
+            layer1.resizeWorld();
+        };
+
+        MessageInputRender.prototype.update = function () {
+
+        };
+
+        MessageInputRender.prototype.destroy = function () {
+
+        };
+
+        module.exports = MessageInputRender;
+    }, {}],
+    64: [function (require, module, exports) {
         /*
          Rendering messages
          TODO scrollbar, resize, hide, drag able
@@ -14144,7 +14178,7 @@
                         //for whisper
                         this.textHolder.addColor(hexToString(this.colors.whisper), startColorIndex);
                         break;
-                }
+        }
                 if (this.textHolder.height > this.heigth)
                     return;
             }
@@ -14162,7 +14196,7 @@
 
         module.exports = MessageBoxRender;
     }, {}],
-    64: [function (require, module, exports) {
+    65: [function (require, module, exports) {
         /*
          render text area for chat input
          using CanvasInput library
@@ -14217,7 +14251,7 @@
 
         module.exports = MessageInputRender;
     }, {}],
-    65: [function (require, module, exports) {
+    66: [function (require, module, exports) {
         /*
          player render
          */
@@ -14275,11 +14309,12 @@
 
         module.exports = PlayerRender;
     }, {}],
-    66: [function (require, module, exports) {
+    67: [function (require, module, exports) {
         var PlayerRender = require("./playerrender");
         var MessageInputRender = require("./messageinputrender");
         var MessageBoxRender = require("./messageboxrender");
         var StatsRender = require("./statsrender");
+        var MapRender = require("./maprender");
 
         function Render(onLoadCallback, mouseMoveCallback) {
             this.onLoadCallback = onLoadCallback;
@@ -14292,6 +14327,7 @@
             this.messageBoxRender = null;
             this.messageInputRender = null;
             this.statsRender = null;
+            this.mapRender = null;
         }
 
 //load images
@@ -14300,6 +14336,8 @@
             this.game.load.atlasJSONHash('panda', 'resources/images/panda.png', 'resources/images/panda.json');
             this.game.load.bitmapFont('gem', 'resources/fonts/gem.png', 'resources/fonts/gem.xml');
             this.game.load.image('player', 'resources/images/player.png');
+            this.game.load.image('tiles', 'resources/images/terrain.png');
+            this.game.load.tilemap('testmap', 'resources/maps/testmap.json', null, Phaser.Tilemap.TILED_JSON);
             //set callback (client connect to server when all assets are loaded)
             this.game.load.onLoadComplete.add(this.onLoadCallback);
         };
@@ -14311,6 +14349,10 @@
             this.game.input.addMoveCallback(mouseMoveCallback, this);
         };
 
+        Render.prototype.createMap = function (name) {
+            this.mapRender = new MapRender(this.game, name);
+            this.mapRender.init();
+        }
 
         Render.prototype.createMessageBox = function (messageBox) {
             //create MessengerBox
@@ -14362,7 +14404,6 @@
             }
 
             playerRender.init();
-            console.log(this.localPlayerRender);
             //add playerrender to objects array
             this.objects[player.id] = playerRender;
         };
@@ -14391,7 +14432,6 @@
         };
 
         function mouseMoveCallback(mousePointer) {
-            console.log(this.game.camera.x);
             var radians = Math.atan2(mousePointer.x - this.localPlayerRender.sprite.x + this.game.camera.x
                 , mousePointer.y - this.localPlayerRender.sprite.y + this.game.camera.y);
             var degree = (radians * (180 / Math.PI) * -1) + 90;
@@ -14399,8 +14439,14 @@
         }
 
         module.exports = Render;
-    }, {"./messageboxrender": 63, "./messageinputrender": 64, "./playerrender": 65, "./statsrender": 67}],
-    67: [function (require, module, exports) {
+    }, {
+        "./maprender": 63,
+        "./messageboxrender": 64,
+        "./messageinputrender": 65,
+        "./playerrender": 66,
+        "./statsrender": 68
+    }],
+    68: [function (require, module, exports) {
         /*
          render textarea for chat
          using CanvasInput library
@@ -14435,7 +14481,7 @@
 
         module.exports = StarsRender;
     }, {}],
-    68: [function (require, module, exports) {
+    69: [function (require, module, exports) {
         /*
          message class
          */
@@ -14486,7 +14532,7 @@
 
 
     }, {}],
-    69: [function (require, module, exports) {
+    70: [function (require, module, exports) {
         /*
          Class to keep all messages
          */
@@ -14527,8 +14573,8 @@
         };
 
         module.exports = MessageBox;
-    }, {"./message": 68}],
-    70: [function (require, module, exports) {
+    }, {"./message": 69}],
+    71: [function (require, module, exports) {
         /*
          class for counting delta
          */
@@ -14549,7 +14595,7 @@
 
         module.exports = DeltaTimer;
     }, {}],
-    71: [function (require, module, exports) {
+    72: [function (require, module, exports) {
         var p2 = require('p2');
         var Player = require('./player');
         var DeltaTimer = require('./detlatimer');
@@ -14561,7 +14607,21 @@
             this.players = {};
             this.renderHandler = null;
             this.timer = new DeltaTimer();
-            this.physicsWorld = new p2.World({});
+            this.physicsWorld = new p2.World({
+                gravity: [0, 0]
+            });
+
+            var body = new p2.Body({
+                position: [240, 208],
+                mass: 0
+            });
+
+            var shape = new p2.Box({
+                width: 32,
+                height: 32
+            });
+            body.addShape(shape);
+            this.physicsWorld.addBody(body);
         }
 
         Game.prototype.startGameLoop = function () {
@@ -14591,6 +14651,8 @@
             for (var key in this.players) {
                 this.players[key].update(delta);
             }
+
+            this.physicsWorld.step(1 / 60, delta);
         };
 
         Game.prototype.render = function (delta) {
@@ -14610,18 +14672,20 @@
 
             //create physics elements
             var body = new p2.Body({
-                position: [400, 300]
+                position: [400, 300],
+                mass: 100,
+                damping: 1,
+                angularDamping: 1
             });
 
-            var shape = new p2.Box({
-                width: 64,
-                height: 64
+            var shape = new p2.Circle({
+                radius: 32
             });
             body.addShape(shape);
             player.body = body;
 
-            if (playerCopy != undefined) {
-                player.position = playerCopy.position;
+            if (playerCopy != null) {
+                player.body.position = playerCopy.position;
                 player.name = playerCopy.name;
             }
 
@@ -14643,8 +14707,8 @@
 
         module.exports = Game;
 
-    }, {"./detlatimer": 70, "./player": 72, "p2": 36}],
-    72: [function (require, module, exports) {
+    }, {"./detlatimer": 71, "./player": 73, "p2": 36}],
+    73: [function (require, module, exports) {
         /*
          player class
          */
@@ -14706,7 +14770,8 @@
             this.body.position[0] += this.horizontalDir * offset;
             this.body.position[1] += this.verticalDir * offset;
 
-            if (this.verticalDir != 0 || this.horizontalDir != 0) {
+            if (this.verticalDir != 0 || this.horizontalDir != 0
+                || this.body.velocity[0] != 0 || this.body.velocity[1] != 0) {
                 this.isChanged = true;
             }
         };
@@ -14739,7 +14804,7 @@
 
         module.exports = Player;
     }, {}],
-    73: [function (require, module, exports) {
+    74: [function (require, module, exports) {
         /*var validInputs = [
          39, 68, //right
          37, 65, //left

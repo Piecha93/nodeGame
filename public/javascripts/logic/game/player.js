@@ -59,7 +59,8 @@ Player.prototype.update = function (delta) {
     this.body.position[0] += this.horizontalDir * offset;
     this.body.position[1] += this.verticalDir * offset;
 
-    if (this.verticalDir != 0 || this.horizontalDir != 0) {
+    if (this.verticalDir != 0 || this.horizontalDir != 0
+        || this.body.velocity[0] != 0 || this.body.velocity[1] != 0) {
         this.isChanged = true;
     }
 };

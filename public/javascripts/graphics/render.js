@@ -2,6 +2,7 @@ var PlayerRender = require("./playerrender");
 var MessageInputRender = require("./messageinputrender");
 var MessageBoxRender = require("./messageboxrender");
 var StatsRender = require("./statsrender");
+var MapRender = require("./maprender");
 
 function Render(onLoadCallback, mouseMoveCallback) {
     this.onLoadCallback = onLoadCallback;
@@ -14,6 +15,7 @@ function Render(onLoadCallback, mouseMoveCallback) {
     this.messageBoxRender = null;
     this.messageInputRender = null;
     this.statsRender = null;
+    this.mapRender = null;
 }
 
 //load images
@@ -22,6 +24,8 @@ Render.prototype.preload = function () {
     this.game.load.atlasJSONHash('panda', 'resources/images/panda.png', 'resources/images/panda.json');
     this.game.load.bitmapFont('gem', 'resources/fonts/gem.png', 'resources/fonts/gem.xml');
     this.game.load.image('player', 'resources/images/player.png');
+    this.game.load.image('tiles', 'resources/images/terrain.png');
+    this.game.load.tilemap('testmap', 'resources/maps/testmap.json', null, Phaser.Tilemap.TILED_JSON);
     //set callback (client connect to server when all assets are loaded)
     this.game.load.onLoadComplete.add(this.onLoadCallback);
 };
@@ -33,6 +37,10 @@ Render.prototype.create = function () {
     this.game.input.addMoveCallback(mouseMoveCallback, this);
 };
 
+Render.prototype.createMap = function (name) {
+    this.mapRender = new MapRender(this.game, name);
+    this.mapRender.init();
+}
 
 Render.prototype.createMessageBox = function (messageBox) {
     //create MessengerBox
@@ -84,7 +92,6 @@ Render.prototype.newPlayer = function (player) {
     }
 
     playerRender.init();
-    console.log(this.localPlayerRender);
     //add playerrender to objects array
     this.objects[player.id] = playerRender;
 };

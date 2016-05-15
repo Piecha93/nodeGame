@@ -45,6 +45,8 @@ socket.on('startgame', function (client) {
 
     startServerUpdateLoop();
     startServerHeartbeatUpdateLoop();
+    //create map
+    render.createMap('testmap');
     //add player to render
     render.newPlayer(localPlayer);
     //add messageBox to render
