@@ -1210,7 +1210,7 @@
         flush_block_only(s, true);
         if (s.strm.avail_out === 0) {
           return BS_FINISH_STARTED;
-        }
+    }
         /***/
         return BS_FINISH_DONE;
       }
@@ -1335,7 +1335,7 @@
           flush_block_only(s, false);
           if (s.strm.avail_out === 0) {
             return BS_NEED_MORE;
-          }
+      }
           /***/
         }
       }
@@ -1384,16 +1384,16 @@
           fill_window(s);
           if (s.lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH) {
             return BS_NEED_MORE;
-          }
+      }
           if (s.lookahead === 0) {
             break;
           }
           /* flush the current block */
-        }
+    }
 
         /* Insert the string window[strstart .. strstart+2] in the
          * dictionary, and set hash_head to the head of the hash chain:
-         */
+     */
         hash_head = 0/*NIL*/;
         if (s.lookahead >= MIN_MATCH) {
           /*** INSERT_STRING(s, s.strstart, hash_head); ***/
@@ -1423,7 +1423,7 @@
 
             /* If prev_match is also MIN_MATCH, match_start is garbage
              * but we will ignore the current match anyway.
-             */
+         */
             s.match_length = MIN_MATCH - 1;
           }
         }
@@ -1448,10 +1448,10 @@
           s.prev_length -= 2;
           do {
             if (++s.strstart <= max_insert) {
-              /*** INSERT_STRING(s, s.strstart, hash_head); ***/
-              s.ins_h = ((s.ins_h << s.hash_shift) ^ s.window[s.strstart + MIN_MATCH - 1]) & s.hash_mask;
-              hash_head = s.prev[s.strstart & s.w_mask] = s.head[s.ins_h];
-              s.head[s.ins_h] = s.strstart;
+          /*** INSERT_STRING(s, s.strstart, hash_head); ***/
+          s.ins_h = ((s.ins_h << s.hash_shift) ^ s.window[s.strstart + MIN_MATCH - 1]) & s.hash_mask;
+          hash_head = s.prev[s.strstart & s.w_mask] = s.head[s.ins_h];
+          s.head[s.ins_h] = s.strstart;
           /***/
         }
           } while (--s.prev_length !== 0);
@@ -1460,13 +1460,13 @@
           s.strstart++;
 
           if (bflush) {
-            /*** FLUSH_BLOCK(s, 0); ***/
-            flush_block_only(s, false);
-            if (s.strm.avail_out === 0) {
-              return BS_NEED_MORE;
-            }
-            /***/
-          }
+        /*** FLUSH_BLOCK(s, 0); ***/
+        flush_block_only(s, false);
+        if (s.strm.avail_out === 0) {
+          return BS_NEED_MORE;
+        }
+        /***/
+      }
 
         } else if (s.match_available) {
           /* If there was no match at the previous position, output a
@@ -1575,10 +1575,10 @@
             s.match_length = MAX_MATCH - (strend - scan);
             if (s.match_length > s.lookahead) {
               s.match_length = s.lookahead;
-            }
-          }
-          //Assert(scan <= s->window+(uInt)(s->window_size-1), "wild scan");
         }
+      }
+          //Assert(scan <= s->window+(uInt)(s->window_size-1), "wild scan");
+    }
 
         /* Emit match if have run of MIN_MATCH or longer, else emit literal */
         if (s.match_length >= MIN_MATCH) {
@@ -1604,7 +1604,7 @@
           flush_block_only(s, false);
           if (s.strm.avail_out === 0) {
             return BS_NEED_MORE;
-          }
+      }
           /***/
         }
       }
@@ -1643,12 +1643,12 @@
           fill_window(s);
           if (s.lookahead === 0) {
             if (flush === Z_NO_FLUSH) {
-              return BS_NEED_MORE;
-            }
+          return BS_NEED_MORE;
+        }
             break;
             /* flush the current block */
-          }
-        }
+      }
+    }
 
         /* Output a literal byte */
         s.match_length = 0;
@@ -2167,8 +2167,8 @@
         }
             s.gzindex = 0;
             s.status = EXTRA_STATE;
-          }
-        }
+      }
+    }
         else // DEFLATE header
         {
           var header = (Z_DEFLATED + ((s.w_bits - 8) << 4)) << 8;
@@ -2182,7 +2182,7 @@
             level_flags = 2;
           } else {
             level_flags = 3;
-          }
+      }
           header |= (level_flags << 6);
           if (s.strstart !== 0) {
             header |= PRESET_DICT;
@@ -2194,9 +2194,9 @@
 
           /* Save the adler32 of the preset dictionary: */
           if (s.strstart !== 0) {
-            putShortMSB(s, strm.adler >>> 16);
-            putShortMSB(s, strm.adler & 0xffff);
-          }
+        putShortMSB(s, strm.adler >>> 16);
+        putShortMSB(s, strm.adler & 0xffff);
+      }
           strm.adler = 1; // adler32(0L, Z_NULL, 0);
         }
       }
@@ -2211,13 +2211,13 @@
             if (s.pending === s.pending_buf_size) {
               if (s.gzhead.hcrc && s.pending > beg) {
                 strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
-          }
+              }
               flush_pending(strm);
               beg = s.pending;
               if (s.pending === s.pending_buf_size) {
                 break;
-          }
-        }
+              }
+            }
             put_byte(s, s.gzhead.extra[s.gzindex] & 0xff);
             s.gzindex++;
           }
@@ -2250,7 +2250,7 @@
                 val = 1;
                 break;
               }
-        }
+            }
             // JS specific: little magic to add zero terminator to end of string
             if (s.gzindex < s.gzhead.name.length) {
               val = s.gzhead.name.charCodeAt(s.gzindex++) & 0xff;
@@ -2262,7 +2262,7 @@
 
           if (s.gzhead.hcrc && s.pending > beg) {
             strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
-      }
+          }
           if (val === 0) {
             s.gzindex = 0;
             s.status = COMMENT_STATE;
@@ -2313,14 +2313,14 @@
       if (s.status === HCRC_STATE) {
         if (s.gzhead.hcrc) {
           if (s.pending + 2 > s.pending_buf_size) {
-        flush_pending(strm);
-      }
+            flush_pending(strm);
+          }
           if (s.pending + 2 <= s.pending_buf_size) {
-        put_byte(s, strm.adler & 0xff);
-        put_byte(s, (strm.adler >> 8) & 0xff);
+            put_byte(s, strm.adler & 0xff);
+            put_byte(s, (strm.adler >> 8) & 0xff);
             strm.adler = 0; //crc32(0L, Z_NULL, 0);
             s.status = BUSY_STATE;
-      }
+          }
         }
         else {
           s.status = BUSY_STATE;
@@ -2337,15 +2337,15 @@
            * avail_in equal to zero. There won't be anything to do,
            * but this is not an error situation so make sure we
            * return OK instead of BUF_ERROR at next call of deflate:
-           */
+       */
           s.last_flush = -1;
           return Z_OK;
-        }
+    }
 
         /* Make sure there is something to do and avoid duplicate consecutive
          * flushes. For repeated and useless calls with Z_FINISH, we keep
          * returning Z_STREAM_END instead of Z_BUF_ERROR.
-         */
+     */
       } else if (strm.avail_in === 0 && rank(flush) <= rank(old_flush) &&
           flush !== Z_FINISH) {
         return err(strm, Z_BUF_ERROR);
@@ -2371,7 +2371,7 @@
           if (strm.avail_out === 0) {
             s.last_flush = -1;
             /* avoid BUF_ERROR next call, see above */
-      }
+          }
           return Z_OK;
           /* If flush != Z_NO_FLUSH && avail_out == 0, the next call
            * of deflate should use the same flush parameter to make sure
@@ -2403,13 +2403,13 @@
               }
             }
           }
-      flush_pending(strm);
+          flush_pending(strm);
           if (strm.avail_out === 0) {
             s.last_flush = -1;
             /* avoid BUF_ERROR at next call, see above */
             return Z_OK;
-      }
-    }
+          }
+        }
       }
       //Assert(strm->avail_out > 0, "bug2");
       //if (strm.avail_out <= 0) { throw new Error("bug2");}
@@ -3149,7 +3149,7 @@
         wrap = (windowBits >> 4) + 1;
         if (windowBits < 48) {
           windowBits &= 15;
-        }
+    }
       }
 
       /* set number of window bits, free window if different */
@@ -3382,7 +3382,7 @@
             switch (state.mode) {
               case HEAD:
                 if (state.wrap === 0) {
-        state.mode = TYPEDO;
+                  state.mode = TYPEDO;
                   break;
       }
                 //=== NEEDBITS(16);
@@ -3409,7 +3409,7 @@
                   //===//
                   state.mode = FLAGS;
                   break;
-                }
+      }
                 state.flags = 0;
                 /* expect zlib header */
                 if (state.head) {
@@ -3582,34 +3582,34 @@
                   if (copy > have) {
                     copy = have;
                   }
-                  if (copy) {
-                    if (state.head) {
-                      len = state.head.extra_len - state.length;
-                      if (!state.head.extra) {
-                        // Use untyped array for more conveniend processing later
-                        state.head.extra = new Array(state.head.extra_len);
+        if (copy) {
+          if (state.head) {
+            len = state.head.extra_len - state.length;
+            if (!state.head.extra) {
+              // Use untyped array for more conveniend processing later
+              state.head.extra = new Array(state.head.extra_len);
             }
-                      utils.arraySet(
-                          state.head.extra,
-                          input,
-                          next,
-                          // extra field is limited to 65536 bytes
-                          // - no need for additional size check
-                          copy,
-                          /*len + copy > state.head.extra_max - len ? state.head.extra_max : copy,*/
-                          len
-                      );
-                      //zmemcpy(state.head.extra + len, next,
-                      //        len + copy > state.head.extra_max ?
-                      //        state.head.extra_max - len : copy);
-                    }
-                    if (state.flags & 0x0200) {
-                      state.check = crc32(state.check, input, copy, next);
-                    }
-                    have -= copy;
-                    next += copy;
-                    state.length -= copy;
-                  }
+            utils.arraySet(
+                state.head.extra,
+                input,
+                next,
+                // extra field is limited to 65536 bytes
+                // - no need for additional size check
+                copy,
+                /*len + copy > state.head.extra_max - len ? state.head.extra_max : copy,*/
+                len
+            );
+            //zmemcpy(state.head.extra + len, next,
+            //        len + copy > state.head.extra_max ?
+            //        state.head.extra_max - len : copy);
+          }
+          if (state.flags & 0x0200) {
+            state.check = crc32(state.check, input, copy, next);
+          }
+          have -= copy;
+          next += copy;
+          state.length -= copy;
+        }
                   if (state.length) {
                     break inf_leave;
                   }
@@ -4871,7 +4871,7 @@
           huff &= incr - 1;
           huff += incr;
         } else {
-      huff = 0;
+          huff = 0;
         }
 
         /* go to next symbol, update count, len */
@@ -4888,7 +4888,7 @@
           /* if first time, transition to sub-tables */
           if (drop === 0) {
             drop = root;
-          }
+      }
 
           /* increment past last table */
           next += min;
@@ -4903,8 +4903,8 @@
               break;
             }
             curr++;
-            left <<= 1;
-          }
+        left <<= 1;
+      }
 
           /* check for enough space */
           used += 1 << curr;
@@ -5321,9 +5321,9 @@
             // Trace((stderr,"code %d bits %d->%d\n", m, tree[m].Len, bits));
             s.opt_len += (bits - tree[m * 2 + 1]/*.Len*/) * tree[m * 2]/*.Freq*/;
             tree[m * 2 + 1]/*.Len*/ = bits;
-          }
+      }
           n--;
-        }
+    }
       }
     }
 
@@ -7844,7 +7844,7 @@
                   tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | (fourthByte & 0x3F)
                   if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
                     codePoint = tempCodePoint
-                  }
+            }
           }
             }
           }
@@ -12007,7 +12007,7 @@
             debugs[set] = function () {
               var msg = exports.format.apply(exports, arguments);
               console.error('%s %d: %s', set, pid, msg);
-            };
+      };
           } else {
             debugs[set] = function () {
             };
@@ -13239,7 +13239,7 @@
         {
           "name": "schteppe",
           "email": "schteppe@gmail.com"
-        }
+    }
       ],
       "dist": {
         "shasum": "25f2474d9bc3a6d3140a1da26a67c9e118ac9543",
@@ -14086,7 +14086,7 @@
             return false;
           } else {
             return 0;
-          }
+    }
         };
 
     /**
@@ -15778,7 +15778,7 @@
        b=span1;
        a=span2;
        swapped = true;
-       }
+            }
 
             // Get separating distance
             var dist = b[0] - a[1];
@@ -16774,11 +16774,11 @@
      */
     function Constraint(bodyA, bodyB, type, options) {
 
-      /**
-       * The type of constraint. May be one of Constraint.DISTANCE, Constraint.GEAR, Constraint.LOCK, Constraint.PRISMATIC or Constraint.REVOLUTE.
-       * @property {number} type
-       */
-      this.type = type;
+    /**
+     * The type of constraint. May be one of Constraint.DISTANCE, Constraint.GEAR, Constraint.LOCK, Constraint.PRISMATIC or Constraint.REVOLUTE.
+     * @property {number} type
+     */
+    this.type = type;
 
       options = Utils.defaults(options, {
         collideConnected: true,
@@ -17949,12 +17949,12 @@
        */
       this.lowerLimit = 0;
 
-      /**
-       * The upper limit on the constraint angle.
-       * @property upperLimit
-       * @type {Boolean}
-       */
-      this.upperLimit = 0;
+    /**
+     * The upper limit on the constraint angle.
+     * @property upperLimit
+     * @type {Boolean}
+     */
+    this.upperLimit = 0;
 
       this.upperLimitEquation = new RotationalLockEquation(bodyA, bodyB);
       this.lowerLimitEquation = new RotationalLockEquation(bodyA, bodyB);
@@ -18722,20 +18722,20 @@
        */
       this.shapeA = null;
 
-      /**
-       * The shape in body j that triggered this friction.
-       * @property shapeB
-       * @type {Shape}
-       * @todo Needed? The shape can be looked up via contactEquation.shapeB...
-       */
-      this.shapeB = null;
+    /**
+     * The shape in body j that triggered this friction.
+     * @property shapeB
+     * @type {Shape}
+     * @todo Needed? The shape can be looked up via contactEquation.shapeB...
+     */
+    this.shapeB = null;
 
-      /**
-       * The friction coefficient to use.
-       * @property frictionCoefficient
-       * @type {Number}
-       */
-      this.frictionCoefficient = 0.3;
+    /**
+     * The friction coefficient to use.
+     * @property frictionCoefficient
+     * @type {Number}
+     */
+    this.frictionCoefficient = 0.3;
     }
 
     FrictionEquation.prototype = new Equation();
@@ -18882,27 +18882,27 @@
     EventEmitter.prototype = {
       constructor: EventEmitter,
 
-      /**
-       * Add an event listener
-       * @method on
-       * @param  {String} type
-       * @param  {Function} listener
-       * @return {EventEmitter} The self object, for chainability.
-       */
-      on: function (type, listener, context) {
+    /**
+     * Add an event listener
+     * @method on
+     * @param  {String} type
+     * @param  {Function} listener
+     * @return {EventEmitter} The self object, for chainability.
+     */
+    on: function (type, listener, context) {
         listener.context = context || this;
-        if (this._listeners === undefined) {
-          this._listeners = {};
+      if (this._listeners === undefined) {
+        this._listeners = {};
         }
         var listeners = this._listeners;
-        if (listeners[type] === undefined) {
-          listeners[type] = [];
+      if (listeners[type] === undefined) {
+        listeners[type] = [];
         }
-        if (listeners[type].indexOf(listener) === -1) {
-          listeners[type].push(listener);
+      if (listeners[type].indexOf(listener) === -1) {
+        listeners[type].push(listener);
         }
         return this;
-      },
+    },
 
       /**
        * Check if an event listener is added
@@ -19000,7 +19000,7 @@
 
       if (!(materialA instanceof Material) || !(materialB instanceof Material)) {
         throw new Error("First two arguments must be Material instances.");
-      }
+    }
 
       /**
        * The contact material identifier
@@ -19016,12 +19016,12 @@
        */
       this.materialA = materialA;
 
-      /**
-       * Second material participating in the contact material
-       * @property materialB
-       * @type {Material}
-       */
-      this.materialB = materialB;
+    /**
+     * Second material participating in the contact material
+     * @property materialB
+     * @type {Material}
+     */
+    this.materialB = materialB;
 
       /**
        * Friction coefficient to use in the contact of these two materials. Friction = 0 will make the involved objects super slippery, and friction = 1 will make it much less slippery. A friction coefficient larger than 1 will allow for very large friction forces, which can be convenient for preventing car tires not slip on the ground.
@@ -21734,7 +21734,7 @@
 
       /**
        * @property {Array} wheels
-       */
+     */
       this.wheels = [];
 
       // A dummy body to constrain the chassis to
@@ -22215,7 +22215,7 @@
       vec2.set(r, this.length / 2, 0);
       if (angle !== 0) {
         vec2.rotate(r, r, angle);
-      }
+    }
 
       // Get bounds
       vec2.set(out.upperBound, Math.max(r[0] + radius, -r[0] + radius),
@@ -23665,44 +23665,44 @@
       Solver.call(this, options, Solver.GS);
       options = options || {};
 
-      /**
-       * The max number of iterations to do when solving. More gives better results, but is more expensive.
-       * @property iterations
-       * @type {Number}
-       */
-      this.iterations = options.iterations || 10;
+    /**
+     * The max number of iterations to do when solving. More gives better results, but is more expensive.
+     * @property iterations
+     * @type {Number}
+     */
+    this.iterations = options.iterations || 10;
 
-      /**
-       * The error tolerance, per constraint. If the total error is below this limit, the solver will stop iterating. Set to zero for as good solution as possible, but to something larger than zero to make computations faster.
-       * @property tolerance
-       * @type {Number}
-       * @default 1e-7
-       */
-      this.tolerance = options.tolerance || 1e-7;
+    /**
+     * The error tolerance, per constraint. If the total error is below this limit, the solver will stop iterating. Set to zero for as good solution as possible, but to something larger than zero to make computations faster.
+     * @property tolerance
+     * @type {Number}
+     * @default 1e-7
+     */
+    this.tolerance = options.tolerance || 1e-7;
 
       this.arrayStep = 30;
       this.lambda = new Utils.ARRAY_TYPE(this.arrayStep);
       this.Bs = new Utils.ARRAY_TYPE(this.arrayStep);
       this.invCs = new Utils.ARRAY_TYPE(this.arrayStep);
 
-      /**
-       * Set to true to set all right hand side terms to zero when solving. Can be handy for a few applications.
-       * @property useZeroRHS
-       * @type {Boolean}
-       * @todo Remove, not used
-       */
-      this.useZeroRHS = false;
+    /**
+     * Set to true to set all right hand side terms to zero when solving. Can be handy for a few applications.
+     * @property useZeroRHS
+     * @type {Boolean}
+     * @todo Remove, not used
+     */
+    this.useZeroRHS = false;
 
-      /**
-       * Number of solver iterations that are used to approximate normal forces used for friction (F_friction = mu * F_normal). These friction forces will override any other friction forces that are set. If you set frictionIterations = 0, then this feature will be disabled.
-       *
-       * Use only frictionIterations > 0 if the approximated normal force (F_normal = mass * gravity) is not good enough. Examples of where it can happen is in space games where gravity is zero, or in tall stacks where the normal force is large at bottom but small at top.
-       *
-       * @property frictionIterations
-       * @type {Number}
-       * @default 0
-       */
-      this.frictionIterations = options.frictionIterations !== undefined ? 0 : options.frictionIterations;
+    /**
+     * Number of solver iterations that are used to approximate normal forces used for friction (F_friction = mu * F_normal). These friction forces will override any other friction forces that are set. If you set frictionIterations = 0, then this feature will be disabled.
+     *
+     * Use only frictionIterations > 0 if the approximated normal force (F_normal = mass * gravity) is not good enough. Examples of where it can happen is in space games where gravity is zero, or in tall stacks where the normal force is large at bottom but small at top.
+     *
+     * @property frictionIterations
+     * @type {Number}
+     * @default 0
+     */
+    this.frictionIterations = options.frictionIterations !== undefined ? 0 : options.frictionIterations;
 
       /**
        * The number of iterations that were made during the last solve. If .tolerance is zero, this value will always be equal to .iterations, but if .tolerance is larger than zero, and the solver can quit early, then this number will be somewhere between 1 and .iterations.
@@ -23807,7 +23807,7 @@
             if (deltalambdaTot * deltalambdaTot <= tolSquared) {
               break;
             }
-          }
+            }
 
           GSSolver.updateMultipliers(equations, lambda, 1 / h);
 
@@ -23823,7 +23823,7 @@
               eq.maxForce = f;
               eq.minForce = -f;
             }
-          }
+            }
         }
 
         // Iterate over all equations
@@ -24003,7 +24003,7 @@
         if (eq.enabled) {
           this.equations.push(eq);
         }
-      }
+    }
     };
 
     /**
@@ -24365,10 +24365,10 @@
      * @property {Shape} shapeB
      */
     this.shapeB = shapeB;
-      /**
-       * @property {Body} bodyA
-       */
-      this.bodyA = bodyA;
+    /**
+     * @property {Body} bodyA
+     */
+    this.bodyA = bodyA;
       /**
        * @property {Body} bodyB
        */
@@ -24843,12 +24843,12 @@
        */
       this.nodes = [];
 
-      /**
-       * The node queue, used when traversing the graph of nodes.
-       * @private
-       * @property {Array} queue
-       */
-      this.queue = [];
+    /**
+     * The node queue, used when traversing the graph of nodes.
+     * @private
+     * @property {Array} queue
+     */
+    this.queue = [];
     }
 
     /**
@@ -25419,10 +25419,10 @@
       this.overlappingShapesLastState = {keys: []};
       this.overlappingShapesCurrentState = {keys: []};
 
-      /**
-       * @property {OverlapKeeper} overlapKeeper
-       */
-      this.overlapKeeper = new OverlapKeeper();
+    /**
+     * @property {OverlapKeeper} overlapKeeper
+     */
+    this.overlapKeeper = new OverlapKeeper();
     }
 
     World.prototype = new Object(EventEmitter.prototype);
@@ -26651,17 +26651,17 @@
                     case undefined:
                     case null:
                       state = STATE_TILE_DATA_B64_RAW;
-                      break;
+                break;
                     case 'gzip':
                       state = STATE_TILE_DATA_B64_GZIP;
-                      break;
+                break;
                     case 'zlib':
                       state = STATE_TILE_DATA_B64_ZLIB;
-                      break;
-                    default:
-                      error(new Error("unsupported data compression: " + dataCompression));
-                      return;
-                  }
+                break;
+              default:
+                error(new Error("unsupported data compression: " + dataCompression));
+                return;
+            }
                   break;
                 default:
                   error(new Error("unsupported data encoding: " + dataEncoding));
@@ -27028,11 +27028,11 @@
                   tile = new Tile();
                   tile.id = tileId;
                   tileSet.tiles[tileId] = tile;
-                }
+          }
                 tile.gid = globalTileId;
                 unresolvedLayer.layer.tiles[i] = tile;
                 break;
-              }
+        }
       }
           }
         }
@@ -27269,7 +27269,7 @@
           var listeners = self.listeners;
           self.listeners = [];
           listeners.forEach(cbListener);
-        }
+    }
       }
 
       function cbListener(listener) {
@@ -27402,19 +27402,19 @@
                   break
 
                 case 'cdata':
-            emitNode(parser, 'oncdata', parser.cdata)
-            parser.cdata = ''
+                  emitNode(parser, 'oncdata', parser.cdata)
+                  parser.cdata = ''
                   break
 
                 case 'script':
-            emitNode(parser, 'onscript', parser.script)
-            parser.script = ''
+                  emitNode(parser, 'onscript', parser.script)
+                  parser.script = ''
                   break
 
                 default:
                   error(parser, 'Max buffer length exceeded: ' + buffers[i])
         }
-            }
+      }
             maxActual = Math.max(maxActual, len)
           }
           // schedule the next check for the earliest possible buffer overrun.
@@ -27425,7 +27425,7 @@
         function clearBuffers(parser) {
           for (var i = 0, l = buffers.length; i < l; i++) {
             parser[buffers[i]] = ''
-          }
+    }
         }
 
         function flushBuffers(parser) {
@@ -27433,7 +27433,7 @@
           if (parser.cdata !== '') {
             emitNode(parser, 'oncdata', parser.cdata)
             parser.cdata = ''
-          }
+    }
           if (parser.script !== '') {
             emitNode(parser, 'onscript', parser.script)
             parser.script = ''
@@ -28049,12 +28049,12 @@
                     'Actual: ' + parser.attribValue)
               } else {
                 var tag = parser.tag
-          var parent = parser.tags[parser.tags.length - 1] || parser
+                var parent = parser.tags[parser.tags.length - 1] || parser
                 if (tag.ns === parent.ns) {
                   tag.ns = Object.create(parent.ns)
           }
                 tag.ns[local] = parser.attribValue
-        }
+              }
             }
 
             // defer onattribute events until all attributes have been seen
@@ -28096,8 +28096,8 @@
                 emitNode(parser, 'onopennamespace', {
                   prefix: p,
                   uri: tag.ns[p]
-                })
-              })
+          })
+        })
             }
 
             // handle deferred onattribute events
@@ -28125,7 +28125,7 @@
                 strictFail(parser, 'Unbound namespace prefix: ' +
                     JSON.stringify(prefix))
                 a.uri = prefix
-              }
+        }
               parser.tag.attributes[name] = a
               emitNode(parser, 'onattribute', a)
             }
@@ -28214,7 +28214,7 @@
               Object.keys(tag.ns).forEach(function (p) {
                 var n = tag.ns[p]
                 emitNode(parser, 'onclosenamespace', {prefix: p, uri: n})
-              })
+        })
             }
           }
           if (t === 0) parser.closedRoot = true
@@ -28307,7 +28307,7 @@
                 parser.column = 0
               } else {
                 parser.column++
-              }
+        }
             }
             switch (parser.state) {
               case S.BEGIN:
@@ -28334,14 +28334,14 @@
                         parser.column = 0
                       } else {
                         parser.column++
-                }
+                      }
               }
             }
                   parser.textNode += chunk.substring(starti, i - 1)
-                }
+          }
                 if (c === '<' && !(parser.sawRoot && parser.closedRoot && !parser.strict)) {
-                  parser.state = S.OPEN_WAKA
-                  parser.startTagPosition = parser.position
+            parser.state = S.OPEN_WAKA
+            parser.startTagPosition = parser.position
                 } else {
                   if (not(whitespace, c) && (!parser.sawRoot || parser.closedRoot)) {
                     strictFail(parser, 'Text data outside of root node.')
@@ -28351,7 +28351,7 @@
                   } else {
                     parser.textNode += c
                   }
-                }
+          }
                 continue
 
               case S.SCRIPT:
@@ -28360,7 +28360,7 @@
                   parser.state = S.SCRIPT_ENDING
                 } else {
                   parser.script += c
-                }
+          }
                 continue
 
               case S.SCRIPT_ENDING:
@@ -28369,7 +28369,7 @@
                 } else {
                   parser.script += '<' + c
                   parser.state = S.SCRIPT
-                }
+          }
                 continue
 
               case S.OPEN_WAKA:
@@ -28397,7 +28397,7 @@
                   }
                   parser.textNode += '<' + c
                   parser.state = S.TEXT
-                }
+          }
                 continue
 
               case S.SGML_DECL:
@@ -28415,7 +28415,7 @@
                   if (parser.doctype || parser.sawRoot) {
                     strictFail(parser,
                         'Inappropriately located doctype declaration')
-                  }
+            }
                   parser.doctype = ''
                   parser.sgmlDecl = ''
                 } else if (c === '>') {
@@ -28427,7 +28427,7 @@
                   parser.sgmlDecl += c
                 } else {
                   parser.sgmlDecl += c
-                }
+          }
                 continue
 
               case S.SGML_DECL_QUOTED:
@@ -28450,7 +28450,7 @@
                   } else if (is(quote, c)) {
                     parser.state = S.DOCTYPE_QUOTED
                     parser.q = c
-                  }
+            }
                 }
                 continue
 
@@ -28858,7 +28858,7 @@
                   result += stringFromCharCode.apply(null, codeUnits)
                   codeUnits.length = 0
                 }
-              }
+        }
               return result
             }
             if (Object.defineProperty) {
@@ -29281,10 +29281,6 @@
       if (this.player.isMainPlayer) {
         this.game.camera.follow(this.sprite);
     }
-
-      //this.circle = this.game.add.graphics(0, 0);
-      //this.circle.beginFill(0xFF0000, 555);
-      //this.circle.drawCircle(this.player.x, this.player.y, 1);
     };
 
     PlayerRender.prototype.update = function () {
@@ -29640,7 +29636,7 @@
         this.players[key].update(delta);
       }
 
-      this.physicsWorld.step(1 / 60, delta / 1000, 4);
+      this.physicsWorld.step(1 / 60, delta / 1000, 20);
     };
 
     Game.prototype.render = function (delta) {

@@ -30,10 +30,6 @@ PlayerRender.prototype.init = function () {
     if (this.player.isMainPlayer) {
         this.game.camera.follow(this.sprite);
     }
-
-    //this.circle = this.game.add.graphics(0, 0);
-    //this.circle.beginFill(0xFF0000, 555);
-    //this.circle.drawCircle(this.player.x, this.player.y, 1);
 };
 
 PlayerRender.prototype.update = function () {

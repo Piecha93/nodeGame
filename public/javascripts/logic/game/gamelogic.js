@@ -45,7 +45,7 @@ Game.prototype.update = function (delta) {
         this.players[key].update(delta);
     }
 
-    this.physicsWorld.step(1 / 60, delta / 1000, 4);
+    this.physicsWorld.step(1 / 60, delta / 1000, 20);
 };
 
 Game.prototype.render = function (delta) {
