@@ -2,7 +2,7 @@ var Game = require('./public/javascripts/logic/game/gamelogic');
 
 function GameServer(id, mapName) {
     //number of client updates per secound
-    this.updateTickRate = 2000;
+    this.updateTickRate = 20;
     this.serverId = id;
 
     this.gameLogic = null;

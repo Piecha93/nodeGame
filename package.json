@@ -8,6 +8,6 @@
     "node-uuid": "latest",
     "ejs": "latest",
     "p2": "latest",
-    "tmx-parser": "lastest"
+    "tmx-parser": "1.4.0"
   }
 }

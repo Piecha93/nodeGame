@@ -417,7 +417,7 @@
         for (var p in source) {
           if (source.hasOwnProperty(p)) {
             obj[p] = source[p];
-          }
+      }
         }
       }
 
@@ -605,7 +605,7 @@
         c = n;
         for (var k = 0; k < 8; k++) {
           c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
-        }
+    }
         table[n] = c;
       }
 
@@ -957,10 +957,10 @@
           best_len = len;
           if (len >= nice_match) {
             break;
-          }
+      }
           scan_end1 = _win[scan + best_len - 1];
           scan_end = _win[scan + best_len];
-        }
+    }
       } while ((cur_match = prev[cur_match & wmask]) > limit && --chain_length !== 0);
 
       if (best_len <= s.lookahead) {
@@ -1080,7 +1080,7 @@
             s.insert--;
             if (s.lookahead + s.insert < MIN_MATCH) {
               break;
-            }
+        }
           }
         }
         /* If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
@@ -1185,7 +1185,7 @@
           flush_block_only(s, false);
           if (s.strm.avail_out === 0) {
             return BS_NEED_MORE;
-          }
+      }
           /***/
 
 
@@ -1198,7 +1198,7 @@
           flush_block_only(s, false);
           if (s.strm.avail_out === 0) {
             return BS_NEED_MORE;
-          }
+      }
           /***/
         }
       }
@@ -1219,8 +1219,8 @@
         /*** FLUSH_BLOCK(s, 0); ***/
         flush_block_only(s, false);
         if (s.strm.avail_out === 0) {
-          return BS_NEED_MORE;
-        }
+      return BS_NEED_MORE;
+    }
         /***/
       }
 
@@ -1250,16 +1250,16 @@
           fill_window(s);
           if (s.lookahead < MIN_LOOKAHEAD && flush === Z_NO_FLUSH) {
             return BS_NEED_MORE;
-          }
+      }
           if (s.lookahead === 0) {
             break;
             /* flush the current block */
-          }
-        }
+      }
+    }
 
         /* Insert the string window[strstart .. strstart+2] in the
          * dictionary, and set hash_head to the head of the hash chain:
-         */
+     */
         hash_head = 0/*NIL*/;
         if (s.lookahead >= MIN_MATCH) {
           /*** INSERT_STRING(s, s.strstart, hash_head); ***/
@@ -1297,16 +1297,16 @@
             /* string at strstart already in table */
             do {
               s.strstart++;
-              /*** INSERT_STRING(s, s.strstart, hash_head); ***/
-              s.ins_h = ((s.ins_h << s.hash_shift) ^ s.window[s.strstart + MIN_MATCH - 1]) & s.hash_mask;
-              hash_head = s.prev[s.strstart & s.w_mask] = s.head[s.ins_h];
-              s.head[s.ins_h] = s.strstart;
-              /***/
+          /*** INSERT_STRING(s, s.strstart, hash_head); ***/
+          s.ins_h = ((s.ins_h << s.hash_shift) ^ s.window[s.strstart + MIN_MATCH - 1]) & s.hash_mask;
+          hash_head = s.prev[s.strstart & s.w_mask] = s.head[s.ins_h];
+          s.head[s.ins_h] = s.strstart;
+          /***/
               /* strstart never exceeds WSIZE-MAX_MATCH, so there are
                * always MIN_MATCH bytes ahead.
-               */
+           */
             } while (--s.match_length !== 0);
-            s.strstart++;
+        s.strstart++;
           } else {
             s.strstart += s.match_length;
             s.match_length = 0;
@@ -1319,7 +1319,7 @@
 //#endif
             /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
              * matter since it will be recomputed at next deflate call.
-         */
+             */
           }
         } else {
           /* No match, output a literal byte */
@@ -1423,7 +1423,7 @@
 
             /* If prev_match is also MIN_MATCH, match_start is garbage
              * but we will ignore the current match anyway.
-         */
+             */
             s.match_length = MIN_MATCH - 1;
           }
         }
@@ -1452,10 +1452,10 @@
               s.ins_h = ((s.ins_h << s.hash_shift) ^ s.window[s.strstart + MIN_MATCH - 1]) & s.hash_mask;
               hash_head = s.prev[s.strstart & s.w_mask] = s.head[s.ins_h];
               s.head[s.ins_h] = s.strstart;
-              /***/
-            }
+          /***/
+        }
           } while (--s.prev_length !== 0);
-          s.match_available = 0;
+      s.match_available = 0;
           s.match_length = MIN_MATCH - 1;
           s.strstart++;
 
@@ -1494,7 +1494,7 @@
           s.match_available = 1;
           s.strstart++;
           s.lookahead--;
-        }
+    }
       }
       //Assert (flush != Z_NO_FLUSH, "no flush?");
       if (s.match_available) {
@@ -2142,7 +2142,7 @@
                     4 : 0));
             put_byte(s, OS_CODE);
             s.status = BUSY_STATE;
-          }
+      }
           else {
             put_byte(s, (s.gzhead.text ? 1 : 0) +
                 (s.gzhead.hcrc ? 2 : 0) +
@@ -2162,9 +2162,9 @@
               put_byte(s, s.gzhead.extra.length & 0xff);
               put_byte(s, (s.gzhead.extra.length >> 8) & 0xff);
             }
-            if (s.gzhead.hcrc) {
-              strm.adler = crc32(strm.adler, s.pending_buf, s.pending, 0);
-            }
+        if (s.gzhead.hcrc) {
+          strm.adler = crc32(strm.adler, s.pending_buf, s.pending, 0);
+        }
             s.gzindex = 0;
             s.status = EXTRA_STATE;
           }
@@ -2211,13 +2211,13 @@
             if (s.pending === s.pending_buf_size) {
               if (s.gzhead.hcrc && s.pending > beg) {
                 strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
-              }
+          }
               flush_pending(strm);
               beg = s.pending;
               if (s.pending === s.pending_buf_size) {
                 break;
-              }
-            }
+          }
+        }
             put_byte(s, s.gzhead.extra[s.gzindex] & 0xff);
             s.gzindex++;
           }
@@ -2250,7 +2250,7 @@
                 val = 1;
                 break;
               }
-            }
+        }
             // JS specific: little magic to add zero terminator to end of string
             if (s.gzindex < s.gzhead.name.length) {
               val = s.gzhead.name.charCodeAt(s.gzindex++) & 0xff;
@@ -2262,7 +2262,7 @@
 
           if (s.gzhead.hcrc && s.pending > beg) {
             strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
-          }
+      }
           if (val === 0) {
             s.gzindex = 0;
             s.status = COMMENT_STATE;
@@ -2313,14 +2313,14 @@
       if (s.status === HCRC_STATE) {
         if (s.gzhead.hcrc) {
           if (s.pending + 2 > s.pending_buf_size) {
-            flush_pending(strm);
-          }
+        flush_pending(strm);
+      }
           if (s.pending + 2 <= s.pending_buf_size) {
-            put_byte(s, strm.adler & 0xff);
-            put_byte(s, (strm.adler >> 8) & 0xff);
+        put_byte(s, strm.adler & 0xff);
+        put_byte(s, (strm.adler >> 8) & 0xff);
             strm.adler = 0; //crc32(0L, Z_NULL, 0);
             s.status = BUSY_STATE;
-          }
+      }
         }
         else {
           s.status = BUSY_STATE;
@@ -2371,7 +2371,7 @@
           if (strm.avail_out === 0) {
             s.last_flush = -1;
             /* avoid BUF_ERROR next call, see above */
-          }
+      }
           return Z_OK;
           /* If flush != Z_NO_FLUSH && avail_out == 0, the next call
            * of deflate should use the same flush parameter to make sure
@@ -2390,7 +2390,7 @@
             trees._tr_stored_block(s, 0, 0, false);
             /* For a full flush, this empty block will be recognized
              * as a special marker by inflate_sync().
-         */
+             */
             if (flush === Z_FULL_FLUSH) {
               /*** CLEAR_HASH(s); ***/
               /* forget history */
@@ -2403,13 +2403,13 @@
               }
             }
           }
-          flush_pending(strm);
+      flush_pending(strm);
           if (strm.avail_out === 0) {
             s.last_flush = -1;
             /* avoid BUF_ERROR at next call, see above */
             return Z_OK;
-          }
-        }
+      }
+    }
       }
       //Assert(strm->avail_out > 0, "bug2");
       //if (strm.avail_out <= 0) { throw new Error("bug2");}
@@ -2806,7 +2806,7 @@
                                 output[_out++] = output[from++];
                                 if (len > 1) {
                                   output[_out++] = output[from++];
-                                }
+                }
                               }
                             }
                           }
@@ -3288,7 +3288,7 @@
         dist = state.wsize - state.wnext;
         if (dist > copy) {
           dist = copy;
-        }
+    }
         //zmemcpy(state->window + state->wnext, end - copy, dist);
         utils.arraySet(state.window, src, end - copy, dist, state.wnext);
         copy -= dist;
@@ -3382,9 +3382,9 @@
             switch (state.mode) {
               case HEAD:
                 if (state.wrap === 0) {
-                  state.mode = TYPEDO;
+        state.mode = TYPEDO;
                   break;
-                }
+      }
                 //=== NEEDBITS(16);
                 while (bits < 16) {
                   if (have === 0) {
@@ -4357,7 +4357,7 @@
 //          if (state.length === 0) { state.mode = LEN; }
 //          break;
 //#endif
-                  }
+        }
                   if (copy > state.wnext) {
                     copy -= state.wnext;
                     from = state.wsize - copy;
@@ -4369,12 +4369,12 @@
                     copy = state.length;
                   }
                   from_source = state.window;
-                }
+      }
                 else {                              /* copy from output */
                   from_source = output;
                   from = put - state.offset;
                   copy = state.length;
-                }
+      }
                 if (copy > left) {
                   copy = left;
                 }
@@ -4429,7 +4429,7 @@
                   bits = 0;
                   //===//
                   //Tracev((stderr, "inflate:   check matches trailer\n"));
-                }
+      }
                 state.mode = LENGTH;
                 /* falls through */
               case LENGTH:
@@ -4469,7 +4469,7 @@
                 /* falls through */
               default:
                 return Z_STREAM_ERROR;
-            }
+    }
           }
 
       // inf_leave <- here is real place for "goto inf_leave", emulated via "break inf_leave"
@@ -4495,7 +4495,7 @@
         if (updatewindow(strm, strm.output, strm.next_out, _out - strm.avail_out)) {
           state.mode = MEM;
           return Z_MEM_ERROR;
-        }
+    }
       }
       _in -= strm.avail_in;
       _out -= strm.avail_out;
@@ -4871,7 +4871,7 @@
           huff &= incr - 1;
           huff += incr;
         } else {
-          huff = 0;
+      huff = 0;
         }
 
         /* go to next symbol, update count, len */
@@ -4908,10 +4908,10 @@
 
           /* check for enough space */
           used += 1 << curr;
-          if ((type === LENS && used > ENOUGH_LENS) ||
-              (type === DISTS && used > ENOUGH_DISTS)) {
-            return 1;
-          }
+      if ((type === LENS && used > ENOUGH_LENS) ||
+          (type === DISTS && used > ENOUGH_DISTS)) {
+        return 1;
+      }
 
           /* point entry in root table to sub-table */
           low = huff & mask;
@@ -5274,7 +5274,7 @@
         xbits = 0;
         if (n >= base) {
           xbits = extra[n - base];
-        }
+    }
         f = tree[n * 2]/*.Freq*/;
         s.opt_len += f * (bits + xbits);
         if (has_stree) {
@@ -5301,7 +5301,7 @@
         s.bl_count[max_length]--;
         /* The brother of the overflow item also moves one step up,
          * but this does not affect bl_count[max_length]
-         */
+     */
         overflow -= 2;
       } while (overflow > 0);
 
@@ -5579,7 +5579,7 @@
         if (j < s.heap_len &&
             smaller(tree, s.heap[j + 1], s.heap[j], s.depth)) {
           j++;
-        }
+    }
         /* Exit if v is smaller than both sons */
         if (smaller(tree, v, s.heap[j], s.depth)) {
           break;
@@ -5845,7 +5845,7 @@
         } else {
           max_count = 7;
           min_count = 4;
-        }
+    }
       }
     }
 
@@ -5926,7 +5926,7 @@
         } else {
           max_count = 7;
           min_count = 4;
-        }
+    }
       }
     }
 
@@ -5956,7 +5956,7 @@
       for (max_blindex = BL_CODES - 1; max_blindex >= 3; max_blindex--) {
         if (s.bl_tree[bl_order[max_blindex] * 2 + 1]/*.Len*/ !== 0) {
           break;
-        }
+    }
       }
       /* Update opt_len to include the bit length tree and counts */
       s.opt_len += 3 * (max_blindex + 1) + 5 + 5 + 4;
@@ -6028,8 +6028,8 @@
       /* Check for non-textual ("black-listed") bytes. */
       for (n = 0; n <= 31; n++, black_mask >>>= 1) {
         if ((black_mask & 1) && (s.dyn_ltree[n * 2]/*.Freq*/ !== 0)) {
-          return Z_BINARY;
-        }
+      return Z_BINARY;
+    }
       }
 
       /* Check for textual ("white-listed") bytes. */
@@ -6040,7 +6040,7 @@
       for (n = 32; n < LITERALS; n++) {
         if (s.dyn_ltree[n * 2]/*.Freq*/ !== 0) {
           return Z_TEXT;
-        }
+    }
       }
 
       /* There are no "black-listed" or "white-listed" bytes:
@@ -6122,7 +6122,7 @@
         /* Check if the file is binary or text */
         if (s.strm.data_type === Z_UNKNOWN) {
           s.strm.data_type = detect_data_type(s);
-        }
+    }
 
         /* Construct the literal and distance trees */
         build_tree(s, s.l_desc);
@@ -6134,7 +6134,7 @@
         //        s->static_len));
         /* At this point, opt_len and static_len are the total bit lengths of
          * the compressed block data, excluding the tree representations.
-         */
+     */
 
         /* Build the bit length tree for the above two trees, and get the index
          * in bl_order of the last bit length code to send.
@@ -6796,6 +6796,7 @@
       }
 
 
+
 // gzip - bigger header, same deflate compression
       function Gzip(opts) {
         if (!(this instanceof Gzip)) return new Gzip(opts);
@@ -6806,6 +6807,7 @@
         if (!(this instanceof Gunzip)) return new Gunzip(opts);
         Zlib.call(this, opts, binding.GUNZIP);
       }
+
 
 
 // raw - no header
@@ -6954,7 +6956,7 @@
               self._level = level;
               self._strategy = strategy;
               if (callback) callback();
-            }
+      }
           });
         } else {
           process.nextTick(callback);
@@ -7651,7 +7653,7 @@
               if (i - foundIndex + 1 === val.length) return byteOffset + foundIndex
             } else {
               foundIndex = -1
-            }
+      }
           }
           return -1
         }
@@ -7831,8 +7833,8 @@
                   tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | (thirdByte & 0x3F)
                   if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
                     codePoint = tempCodePoint
-                  }
-                }
+            }
+          }
                 break
               case 4:
                 secondByte = buf[i + 1]
@@ -7843,7 +7845,7 @@
                   if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
                     codePoint = tempCodePoint
                   }
-                }
+          }
             }
           }
 
@@ -8893,7 +8895,7 @@
           er = arguments[1];
           if (er instanceof Error) {
             throw er; // Unhandled 'error' event
-          }
+      }
           throw TypeError('Uncaught, unspecified "error" event.');
         }
       }
@@ -8917,7 +8919,7 @@
             break;
             // slower
           default:
-            args = Array.prototype.slice.call(arguments, 1);
+        args = Array.prototype.slice.call(arguments, 1);
             handler.apply(this, args);
         }
       } else if (isObject(handler)) {
@@ -8974,7 +8976,7 @@
           if (typeof console.trace === 'function') {
             // not supported in IE 10
             console.trace();
-          }
+      }
         }
       }
 
@@ -9030,16 +9032,16 @@
               (list[i].listener && list[i].listener === listener)) {
             position = i;
             break;
-          }
+      }
         }
 
         if (position < 0)
-          return this;
+      return this;
 
         if (list.length === 1) {
           list.length = 0;
-          delete this._events[type];
-        } else {
+      delete this._events[type];
+    } else {
           list.splice(position, 1);
         }
 
@@ -9145,7 +9147,7 @@
             enumerable: false,
             writable: true,
             configurable: true
-          }
+      }
         });
       };
     } else {
@@ -9430,7 +9432,7 @@
       }
       if (queue.length) {
         drainQueue();
-      }
+    }
     }
 
     function drainQueue() {
@@ -9451,7 +9453,7 @@
         }
         queueIndex = -1;
         len = queue.length;
-      }
+    }
       currentQueue = null;
       draining = false;
       clearTimeout(timeout);
@@ -9839,8 +9841,8 @@
                 if (addToFront) state.buffer.unshift(chunk); else state.buffer.push(chunk);
 
                 if (state.needReadable) emitReadable(stream);
-              }
-            }
+        }
+      }
 
             maybeReadMore(stream, state);
           }
@@ -10174,7 +10176,7 @@
             if (state.pipesCount === 1 && state.pipes[0] === dest && src.listenerCount('data') === 1 && !cleanedUp) {
               debug('false write response, pause', src._readableState.awaitDrain);
               src._readableState.awaitDrain++;
-            }
+      }
             src.pause();
           }
         }
@@ -10307,7 +10309,7 @@
               processNextTick(nReadingNextTick, this);
             } else if (state.length) {
               emitReadable(this, state);
-            }
+      }
           }
         }
 
@@ -10479,7 +10481,7 @@
               if (cpy < buf.length) list[0] = buf.slice(cpy); else list.shift();
 
               c += cpy;
-            }
+      }
           }
         }
 
@@ -11074,7 +11076,7 @@
             /*</replacement>*/
           } else {
             afterWrite(stream, state, finished, cb);
-          }
+      }
         }
       }
 
@@ -11443,9 +11445,9 @@
               throw new Error(msg);
             } else if (config('traceDeprecation')) {
               console.trace(msg);
-            } else {
+      } else {
               console.warn(msg);
-            }
+      }
             warned = true;
           }
           return fn.apply(this, arguments);
@@ -11548,6 +11550,7 @@
     Stream.Stream = Stream;
 
 
+
 // old-style streams.  Note that the pipe method (the only relevant
 // part of this class) is overridden in the Readable class.
 
@@ -11562,7 +11565,7 @@
         if (dest.writable) {
           if (false === dest.write(chunk) && source.pause) {
             source.pause();
-          }
+      }
         }
       }
 
@@ -11785,7 +11788,7 @@
 
         // if there are no more bytes in this buffer, just emit our char
         if (buffer.length === 0) {
-          return charStr;
+      return charStr;
         }
         break;
       }
@@ -11941,7 +11944,7 @@
                 return JSON.stringify(args[i++]);
               } catch (_) {
                 return '[Circular]';
-              }
+        }
             default:
               return x;
           }
@@ -11982,7 +11985,7 @@
               console.trace(msg);
             } else {
               console.error(msg);
-            }
+      }
             warned = true;
           }
           return fn.apply(this, arguments);
@@ -12291,16 +12294,16 @@
               str = formatValue(ctx, desc.value, recurseTimes - 1);
             }
             if (str.indexOf('\n') > -1) {
-              if (array) {
-                str = str.split('\n').map(function (line) {
-                  return '  ' + line;
-                }).join('\n').substr(2);
-              } else {
-                str = '\n' + str.split('\n').map(function (line) {
-                      return '   ' + line;
-                    }).join('\n');
-              }
-            }
+        if (array) {
+          str = str.split('\n').map(function (line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function (line) {
+                return '   ' + line;
+              }).join('\n');
+        }
+      }
           } else {
             str = ctx.stylize('[Circular]', 'special');
           }
@@ -12636,7 +12639,7 @@
             magB = Math.sqrt(bc[0] * bc[0] + bc[1] * bc[1]),
             angle = Math.acos(dot / (magA * magB));
         return angle < thresholdAngle;
-      }
+    }
     };
 
     Point.sqdist = function (a, b) {
@@ -12660,12 +12663,12 @@
      */
     function Polygon() {
 
-      /**
-       * Vertices that this polygon consists of. An array of array of numbers, example: [[0,0],[1,0],..]
-       * @property vertices
-       * @type {Array}
-       */
-      this.vertices = [];
+    /**
+     * Vertices that this polygon consists of. An array of array of numbers, example: [[0,0],[1,0],..]
+     * @property vertices
+     * @type {Array}
+     */
+    this.vertices = [];
     }
 
     /**
@@ -13206,7 +13209,7 @@
       "licenses": [
         {
           "type": "MIT"
-        }
+    }
       ],
       "devDependencies": {
         "grunt": "^0.4.5",
@@ -13264,12 +13267,12 @@
      */
     function AABB(options) {
 
-      /**
-       * The lower bound of the bounding box.
-       * @property lowerBound
-       * @type {Array}
-       */
-      this.lowerBound = vec2.create();
+    /**
+     * The lower bound of the bounding box.
+     * @property lowerBound
+     * @type {Array}
+     */
+    this.lowerBound = vec2.create();
       if (options && options.lowerBound) {
         vec2.copy(this.lowerBound, options.lowerBound);
       }
@@ -13282,7 +13285,7 @@
       this.upperBound = vec2.create();
       if (options && options.upperBound) {
         vec2.copy(this.upperBound, options.upperBound);
-      }
+    }
     }
 
     var tmp = vec2.create();
@@ -13466,26 +13469,26 @@
 
       this.type = type;
 
-      /**
-       * The resulting overlapping pairs. Will be filled with results during .getCollisionPairs().
-       * @property result
-       * @type {Array}
-       */
-      this.result = [];
+    /**
+     * The resulting overlapping pairs. Will be filled with results during .getCollisionPairs().
+     * @property result
+     * @type {Array}
+     */
+    this.result = [];
 
-      /**
-       * The world to search for collision pairs in. To change it, use .setWorld()
-       * @property world
-       * @type {World}
-       * @readOnly
-       */
-      this.world = null;
+    /**
+     * The world to search for collision pairs in. To change it, use .setWorld()
+     * @property world
+     * @type {World}
+     * @readOnly
+     */
+    this.world = null;
 
-      /**
-       * The bounding volume type to use in the broadphase algorithms. Should be set to Broadphase.AABB or Broadphase.BOUNDING_CIRCLE.
-       * @property {Number} boundingVolumeType
-       */
-      this.boundingVolumeType = Broadphase.AABB;
+    /**
+     * The bounding volume type to use in the broadphase algorithms. Should be set to Broadphase.AABB or Broadphase.BOUNDING_CIRCLE.
+     * @property {Number} boundingVolumeType
+     */
+    this.boundingVolumeType = Broadphase.AABB;
     }
 
     /**
@@ -13750,11 +13753,11 @@
      */
     function Narrowphase() {
 
-      /**
-       * @property contactEquations
-       * @type {Array}
-       */
-      this.contactEquations = [];
+    /**
+     * @property contactEquations
+     * @type {Array}
+     */
+    this.contactEquations = [];
 
       /**
        * @property frictionEquations
@@ -13865,12 +13868,12 @@
        */
       this.collidingBodiesLastStep = new TupleDictionary();
 
-      /**
-       * Contact skin size value to use in the next contact equations.
-       * @property {Number} contactSkinSize
-       * @default 0.01
-       */
-      this.contactSkinSize = 0.01;
+    /**
+     * Contact skin size value to use in the next contact equations.
+     * @property {Number} contactSkinSize
+     * @default 0.01
+     */
+    this.contactSkinSize = 0.01;
     }
 
     var bodiesOverlap_shapePositionA = vec2.create();
@@ -14115,7 +14118,7 @@
             return false;
           } else {
             return 0;
-          }
+    }
         };
 
     function setConvexToCapsuleShapeMiddle(convexShape, capsuleShape) {
@@ -14438,7 +14441,7 @@
                 if (this.enableFriction) {
                   this.frictionEquations.push(this.createFrictionFromContact(c));
                 }
-              }
+            }
             }
           }
 
@@ -14858,7 +14861,7 @@
           return false;
         }
         lastCross = cross;
-      }
+    }
       return true;
     }
 
@@ -15094,8 +15097,8 @@
                 if (dot(dist, worldNormal) <= 0) {
 
                   if (justTest) {
-                    return true;
-            }
+                return true;
+                  }
 
                   // Found vertex
                   numReported++;
@@ -15123,7 +15126,7 @@
                     if (this.enableFriction) {
                       this.frictionEquations.push(this.createFrictionFromContact(c));
                 }
-                  }
+            }
                 }
               }
 
@@ -15318,7 +15321,7 @@
             if (this.enableFrictionReduction) {
               if (numTotal) {
                 this.frictionEquations.push(this.createFrictionFromAverage(numTotal));
-              }
+            }
             }
             return numTotal;
           }
@@ -15733,7 +15736,7 @@
               b = span1;
               a = span2;
               swapped = true;
-                }
+            }
 
             // Get separating distance
             var dist = b[0] - a[1];
@@ -15744,7 +15747,7 @@
               maxDist = dist;
               found = overlap;
             }
-            }
+          }
         }
       }
 
@@ -15764,29 +15767,29 @@
        var normal = c.axes[i];
 
        // Project hulls onto that normal
-       Narrowphase.projectConvexOntoAxis(c1, offset1, angle1, normal, span1);
-       Narrowphase.projectConvexOntoAxis(c2, offset2, angle2, normal, span2);
+            Narrowphase.projectConvexOntoAxis(c1, offset1, angle1, normal, span1);
+            Narrowphase.projectConvexOntoAxis(c2, offset2, angle2, normal, span2);
 
-       // Order by span position
+            // Order by span position
        var a=span1,
        b=span2,
-       swapped = false;
+                swapped = false;
        if(span1[0] > span2[0]){
        b=span1;
        a=span2;
        swapped = true;
        }
 
-       // Get separating distance
-       var dist = b[0] - a[1];
+            // Get separating distance
+            var dist = b[0] - a[1];
        overlap = (dist <= Narrowphase.convexPrecision);
 
        if(maxDist===null || dist > maxDist){
        vec2.copy(sepAxis, normal);
        maxDist = dist;
        found = overlap;
-       }
-       }
+            }
+        }
        }
        */
 
@@ -15969,7 +15972,7 @@
 
               if (this.enableFriction) {
                 this.frictionEquations.push(this.createFrictionFromContact(c));
-              }
+            }
             }
           }
 
@@ -16011,7 +16014,7 @@
                 if (this.enableFriction) {
                   this.frictionEquations.push(this.createFrictionFromContact(c));
                 }
-              }
+            }
             }
           }
 
@@ -16146,11 +16149,11 @@
     function Ray(options) {
       options = options || {};
 
-      /**
-       * Ray start point.
-       * @property {array} from
-       */
-      this.from = options.from ? vec2.fromValues(options.from[0], options.from[1]) : vec2.create();
+    /**
+     * Ray start point.
+     * @property {array} from
+     */
+    this.from = options.from ? vec2.fromValues(options.from[0], options.from[1]) : vec2.create();
 
       /**
        * Ray end point
@@ -16182,31 +16185,31 @@
        */
       this.collisionGroup = options.collisionGroup !== undefined ? options.collisionGroup : -1;
 
-      /**
-       * The intersection mode. Should be {{#crossLink "Ray/ANY:property"}}Ray.ANY{{/crossLink}}, {{#crossLink "Ray/ALL:property"}}Ray.ALL{{/crossLink}} or {{#crossLink "Ray/CLOSEST:property"}}Ray.CLOSEST{{/crossLink}}.
-       * @property {number} mode
-       */
-      this.mode = options.mode !== undefined ? options.mode : Ray.ANY;
+    /**
+     * The intersection mode. Should be {{#crossLink "Ray/ANY:property"}}Ray.ANY{{/crossLink}}, {{#crossLink "Ray/ALL:property"}}Ray.ALL{{/crossLink}} or {{#crossLink "Ray/CLOSEST:property"}}Ray.CLOSEST{{/crossLink}}.
+     * @property {number} mode
+     */
+    this.mode = options.mode !== undefined ? options.mode : Ray.ANY;
 
-      /**
-       * Current, user-provided result callback. Will be used if mode is Ray.ALL.
-       * @property {Function} callback
-       */
-      this.callback = options.callback || function (result) {
-          };
+    /**
+     * Current, user-provided result callback. Will be used if mode is Ray.ALL.
+     * @property {Function} callback
+     */
+    this.callback = options.callback || function (result) {
+        };
 
-      /**
-       * @readOnly
-       * @property {array} direction
-       */
-      this.direction = vec2.create();
+    /**
+     * @readOnly
+     * @property {array} direction
+     */
+    this.direction = vec2.create();
 
-      /**
-       * Length of the ray
-       * @readOnly
-       * @property {number} length
-       */
-      this.length = 1;
+    /**
+     * Length of the ray
+     * @readOnly
+     * @property {number} length
+     */
+    this.length = 1;
 
       this.update();
     }
@@ -16581,12 +16584,12 @@
     function SAPBroadphase() {
       Broadphase.call(this, Broadphase.SAP);
 
-      /**
-       * List of bodies currently in the broadphase.
-       * @property axisList
-       * @type {Array}
-       */
-      this.axisList = [];
+    /**
+     * List of bodies currently in the broadphase.
+     * @property axisList
+     * @type {Array}
+     */
+    this.axisList = [];
 
       /**
        * The axis to sort along. 0 means x-axis and 1 y-axis. If your bodies are more spread out over the X axis, set axisIndex to 0, and you will gain some performance.
@@ -16606,7 +16609,7 @@
         if (idx !== -1) {
           that.axisList.splice(idx, 1);
         }
-      };
+    };
     }
 
     SAPBroadphase.prototype = new Broadphase();
@@ -16782,13 +16785,13 @@
         wakeUpBodies: true,
       });
 
-      /**
-       * Equations to be solved in this constraint
-       *
-       * @property equations
-       * @type {Array}
-       */
-      this.equations = [];
+    /**
+     * Equations to be solved in this constraint
+     *
+     * @property equations
+     * @type {Array}
+     */
+    this.equations = [];
 
       /**
        * First body participating in the constraint.
@@ -16820,7 +16823,7 @@
         if (bodyB) {
           bodyB.wakeUp();
         }
-      }
+    }
     }
 
     /**
@@ -17061,11 +17064,11 @@
        */
       this.lowerLimit = 0;
 
-      /**
-       * Current constraint position. This is equal to the current distance between the world anchor points.
-       * @property {number} position
-       */
-      this.position = 0;
+    /**
+     * Current constraint position. This is equal to the current distance between the world anchor points.
+     * @property {number} position
+     */
+    this.position = 0;
     }
 
     DistanceConstraint.prototype = new Constraint();
@@ -17224,7 +17227,7 @@
       // Set max torque
       if (options.maxTorque !== undefined) {
         this.setMaxTorque(options.maxTorque);
-      }
+    }
     }
 
     GearConstraint.prototype = new Constraint();
@@ -17367,7 +17370,7 @@
       } else {
         // Construct
         this.localAngleB = bodyB.angle - bodyA.angle;
-      }
+    }
 
       this.equations.push(x, y, rot);
       this.setMaxForce(maxForce);
@@ -17481,11 +17484,11 @@
         vec2.copy(localAnchorB, options.localAnchorB);
       }
 
-      /**
-       * @property localAnchorA
-       * @type {Array}
-       */
-      this.localAnchorA = localAnchorA;
+    /**
+     * @property localAnchorA
+     * @type {Array}
+     */
+    this.localAnchorA = localAnchorA;
 
       /**
        * @property localAnchorB
@@ -17875,7 +17878,7 @@
         // Get pivotA and pivotB
         vec2.copy(this.pivotA, options.localPivotA);
         vec2.copy(this.pivotB, options.localPivotB);
-      }
+    }
 
       // Equations to be fed to the solver
       var eqs = this.equations = [
@@ -17910,12 +17913,12 @@
 
       this.motorEquation = new RotationalVelocityEquation(bodyA, bodyB);
 
-      /**
-       * Indicates whether the motor is enabled. Use .enableMotor() to enable the constraint motor.
-       * @property {Boolean} motorEnabled
-       * @readOnly
-       */
-      this.motorEnabled = false;
+    /**
+     * Indicates whether the motor is enabled. Use .enableMotor() to enable the constraint motor.
+     * @property {Boolean} motorEnabled
+     * @readOnly
+     */
+    this.motorEnabled = false;
 
       /**
        * The constraint position.
@@ -18162,13 +18165,13 @@
       Equation.call(this, bodyA, bodyB, -Number.MAX_VALUE, Number.MAX_VALUE);
       this.angle = options.angle || 0;
 
-      /**
-       * The gear ratio.
-       * @property {Number} ratio
-       * @private
-       * @see setRatio
-       */
-      this.ratio = typeof(options.ratio) === "number" ? options.ratio : 1;
+    /**
+     * The gear ratio.
+     * @property {Number} ratio
+     * @private
+     * @see setRatio
+     */
+    this.ratio = typeof(options.ratio) === "number" ? options.ratio : 1;
 
       this.setRatio(this.ratio);
     }
@@ -18221,20 +18224,20 @@
     function ContactEquation(bodyA, bodyB) {
       Equation.call(this, bodyA, bodyB, 0, Number.MAX_VALUE);
 
-      /**
-       * Vector from body i center of mass to the contact point.
-       * @property contactPointA
-       * @type {Array}
-       */
-      this.contactPointA = vec2.create();
+    /**
+     * Vector from body i center of mass to the contact point.
+     * @property contactPointA
+     * @type {Array}
+     */
+    this.contactPointA = vec2.create();
       this.penetrationVec = vec2.create();
 
-      /**
-       * World-oriented vector from body A center of mass to the contact point.
-       * @property contactPointB
-       * @type {Array}
-       */
-      this.contactPointB = vec2.create();
+    /**
+     * World-oriented vector from body A center of mass to the contact point.
+     * @property contactPointB
+     * @type {Array}
+     */
+    this.contactPointB = vec2.create();
 
       /**
        * The normal vector, pointing out of body i
@@ -18250,13 +18253,13 @@
        */
       this.restitution = 0;
 
-      /**
-       * This property is set to true if this is the first impact between the bodies (not persistant contact).
-       * @property firstImpact
-       * @type {Boolean}
-       * @readOnly
-       */
-      this.firstImpact = false;
+    /**
+     * This property is set to true if this is the first impact between the bodies (not persistant contact).
+     * @property firstImpact
+     * @type {Boolean}
+     * @readOnly
+     */
+    this.firstImpact = false;
 
       /**
        * The shape in body i that triggered this contact.
@@ -18356,54 +18359,54 @@
      */
     function Equation(bodyA, bodyB, minForce, maxForce) {
 
-      /**
-       * Minimum force to apply when solving.
-       * @property minForce
-       * @type {Number}
-       */
-      this.minForce = typeof(minForce) === "undefined" ? -Number.MAX_VALUE : minForce;
+    /**
+     * Minimum force to apply when solving.
+     * @property minForce
+     * @type {Number}
+     */
+    this.minForce = typeof(minForce) === "undefined" ? -Number.MAX_VALUE : minForce;
 
-      /**
-       * Max force to apply when solving.
-       * @property maxForce
-       * @type {Number}
-       */
-      this.maxForce = typeof(maxForce) === "undefined" ? Number.MAX_VALUE : maxForce;
+    /**
+     * Max force to apply when solving.
+     * @property maxForce
+     * @type {Number}
+     */
+    this.maxForce = typeof(maxForce) === "undefined" ? Number.MAX_VALUE : maxForce;
 
-      /**
-       * First body participating in the constraint
-       * @property bodyA
-       * @type {Body}
-       */
-      this.bodyA = bodyA;
+    /**
+     * First body participating in the constraint
+     * @property bodyA
+     * @type {Body}
+     */
+    this.bodyA = bodyA;
 
-      /**
-       * Second body participating in the constraint
-       * @property bodyB
-       * @type {Body}
-       */
-      this.bodyB = bodyB;
+    /**
+     * Second body participating in the constraint
+     * @property bodyB
+     * @type {Body}
+     */
+    this.bodyB = bodyB;
 
-      /**
-       * The stiffness of this equation. Typically chosen to a large number (~1e7), but can be chosen somewhat freely to get a stable simulation.
-       * @property stiffness
-       * @type {Number}
-       */
-      this.stiffness = Equation.DEFAULT_STIFFNESS;
+    /**
+     * The stiffness of this equation. Typically chosen to a large number (~1e7), but can be chosen somewhat freely to get a stable simulation.
+     * @property stiffness
+     * @type {Number}
+     */
+    this.stiffness = Equation.DEFAULT_STIFFNESS;
 
-      /**
-       * The number of time steps needed to stabilize the constraint equation. Typically between 3 and 5 time steps.
-       * @property relaxation
-       * @type {Number}
-       */
-      this.relaxation = Equation.DEFAULT_RELAXATION;
+    /**
+     * The number of time steps needed to stabilize the constraint equation. Typically between 3 and 5 time steps.
+     * @property relaxation
+     * @type {Number}
+     */
+    this.relaxation = Equation.DEFAULT_RELAXATION;
 
-      /**
-       * The Jacobian entry of this equation. 6 numbers, 3 per body (x,y,angle).
-       * @property G
-       * @type {Array}
-       */
-      this.G = new Utils.ARRAY_TYPE(6);
+    /**
+     * The Jacobian entry of this equation. 6 numbers, 3 per body (x,y,angle).
+     * @property G
+     * @type {Array}
+     */
+    this.G = new Utils.ARRAY_TYPE(6);
       for (var i = 0; i < 6; i++) {
         this.G[i] = 0;
       }
@@ -18415,30 +18418,30 @@
       this.epsilon = 0;
       this.timeStep = 1 / 60;
 
-      /**
-       * Indicates if stiffness or relaxation was changed.
-       * @property {Boolean} needsUpdate
-       */
-      this.needsUpdate = true;
+    /**
+     * Indicates if stiffness or relaxation was changed.
+     * @property {Boolean} needsUpdate
+     */
+    this.needsUpdate = true;
 
-      /**
-       * The resulting constraint multiplier from the last solve. This is mostly equivalent to the force produced by the constraint.
-       * @property multiplier
-       * @type {Number}
-       */
-      this.multiplier = 0;
+    /**
+     * The resulting constraint multiplier from the last solve. This is mostly equivalent to the force produced by the constraint.
+     * @property multiplier
+     * @type {Number}
+     */
+    this.multiplier = 0;
 
-      /**
-       * Relative velocity.
-       * @property {Number} relativeVelocity
-       */
-      this.relativeVelocity = 0;
+    /**
+     * Relative velocity.
+     * @property {Number} relativeVelocity
+     */
+    this.relativeVelocity = 0;
 
-      /**
-       * Whether this equation is enabled or not. If true, it will be added to the solver.
-       * @property {Boolean} enabled
-       */
-      this.enabled = true;
+    /**
+     * Whether this equation is enabled or not. If true, it will be added to the solver.
+     * @property {Boolean} enabled
+     */
+    this.enabled = true;
     }
 
     Equation.prototype.constructor = Equation;
@@ -18683,19 +18686,19 @@
     function FrictionEquation(bodyA, bodyB, slipForce) {
       Equation.call(this, bodyA, bodyB, -slipForce, slipForce);
 
-      /**
-       * Relative vector from center of body A to the contact point, world oriented.
-       * @property contactPointA
-       * @type {Array}
-       */
-      this.contactPointA = vec2.create();
+    /**
+     * Relative vector from center of body A to the contact point, world oriented.
+     * @property contactPointA
+     * @type {Array}
+     */
+    this.contactPointA = vec2.create();
 
-      /**
-       * Relative vector from center of body B to the contact point, world oriented.
-       * @property contactPointB
-       * @type {Array}
-       */
-      this.contactPointB = vec2.create();
+    /**
+     * Relative vector from center of body B to the contact point, world oriented.
+     * @property contactPointB
+     * @type {Array}
+     */
+    this.contactPointB = vec2.create();
 
       /**
        * Tangent vector that the friction force will act along. World oriented.
@@ -18805,10 +18808,10 @@
       options = options || {};
       Equation.call(this, bodyA, bodyB, -Number.MAX_VALUE, Number.MAX_VALUE);
 
-      /**
-       * @property {number} angle
-       */
-      this.angle = options.angle || 0;
+    /**
+     * @property {number} angle
+     */
+    this.angle = options.angle || 0;
 
       var G = this.G;
       G[2] = 1;
@@ -19093,12 +19096,12 @@
      * @author schteppe
      */
     function Material(id) {
-      /**
-       * The material identifier
-       * @property id
-       * @type {Number}
-       */
-      this.id = id || Material.idCounter++;
+    /**
+     * The material identifier
+     * @property id
+     * @type {Number}
+     */
+    this.id = id || Material.idCounter++;
     }
 
     Material.idCounter = 0;
@@ -19184,7 +19187,7 @@
      if(!PolyK._convex(p[l  ], p[l+1], p[l+2], p[l+3], p[0], p[1])) return false;
      if(!PolyK._convex(p[l+2], p[l+3], p[0  ], p[1  ], p[2], p[3])) return false;
      return true;
-     }
+    }
      */
     PolyK.GetArea = function (p) {
       if (p.length < 6) return 0;
@@ -19549,7 +19552,7 @@
      && a.y >= Math.min(b.y, c.y) && a.y <= Math.max(b.y, c.y))
      return true;
      return false;
-     }
+    }
      */
     PolyK._convex = function (ax, ay, bx, by, cx, cy) {
       return (ay - by) * (cx - bx) + (bx - ax) * (cy - by) >= 0;
@@ -20449,7 +20452,7 @@
         this.type = Body.STATIC;
       } else {
         this.type = Body.DYNAMIC;
-      }
+    }
 
       /**
        * Bounding circle radius.
@@ -20535,12 +20538,12 @@
        */
       this.idleTime = 0;
 
-      /**
-       * The last time when the body went to SLEEPY state.
-       * @property {Number} timeLastSleepy
-       * @private
-       */
-      this.timeLastSleepy = 0;
+    /**
+     * The last time when the body went to SLEEPY state.
+     * @property {Number} timeLastSleepy
+     * @private
+     */
+    this.timeLastSleepy = 0;
 
       /**
        * If the body speed exceeds this threshold, CCD (continuous collision detection) will be enabled. Set it to a negative number to disable CCD completely for this body.
@@ -21402,19 +21405,19 @@
 
       Spring.call(this, bodyA, bodyB, options);
 
-      /**
-       * Anchor for bodyA in local bodyA coordinates.
-       * @property localAnchorA
-       * @type {Array}
-       */
-      this.localAnchorA = vec2.fromValues(0, 0);
+    /**
+     * Anchor for bodyA in local bodyA coordinates.
+     * @property localAnchorA
+     * @type {Array}
+     */
+    this.localAnchorA = vec2.fromValues(0, 0);
 
-      /**
-       * Anchor for bodyB in local bodyB coordinates.
-       * @property localAnchorB
-       * @type {Array}
-       */
-      this.localAnchorB = vec2.fromValues(0, 0);
+    /**
+     * Anchor for bodyB in local bodyB coordinates.
+     * @property localAnchorB
+     * @type {Array}
+     */
+    this.localAnchorB = vec2.fromValues(0, 0);
 
       if (options.localAnchorA) {
         vec2.copy(this.localAnchorA, options.localAnchorA);
@@ -21435,12 +21438,12 @@
       this.getWorldAnchorB(worldAnchorB);
       var worldDistance = vec2.distance(worldAnchorA, worldAnchorB);
 
-      /**
-       * Rest length of the spring.
-       * @property restLength
-       * @type {number}
-       */
-      this.restLength = typeof(options.restLength) === "number" ? options.restLength : worldDistance;
+    /**
+     * Rest length of the spring.
+     * @property restLength
+     * @type {number}
+     */
+    this.restLength = typeof(options.restLength) === "number" ? options.restLength : worldDistance;
     }
 
     LinearSpring.prototype = new Spring();
@@ -21577,12 +21580,12 @@
 
       Spring.call(this, bodyA, bodyB, options);
 
-      /**
-       * Rest angle of the spring.
-       * @property restAngle
-       * @type {number}
-       */
-      this.restAngle = typeof(options.restAngle) === "number" ? options.restAngle : bodyB.angle - bodyA.angle;
+    /**
+     * Rest angle of the spring.
+     * @property restAngle
+     * @type {number}
+     */
+    this.restAngle = typeof(options.restAngle) === "number" ? options.restAngle : bodyB.angle - bodyA.angle;
     }
 
     RotationalSpring.prototype = new Spring();
@@ -21656,12 +21659,12 @@
        */
       this.bodyA = bodyA;
 
-      /**
-       * Second connected body.
-       * @property bodyB
-       * @type {Body}
-       */
-      this.bodyB = bodyB;
+    /**
+     * Second connected body.
+     * @property bodyB
+     * @type {Body}
+     */
+    this.bodyB = bodyB;
     }
 
     /**
@@ -21726,7 +21729,7 @@
 
       /**
        * @property {Body} chassisBody
-       */
+     */
       this.chassisBody = chassisBody;
 
       /**
@@ -21839,7 +21842,7 @@
       this.localPosition = vec2.fromValues(0, 0);
       if (options.localPosition) {
         vec2.copy(this.localPosition, options.localPosition);
-      }
+    }
 
       Constraint.apply(this, vehicle.chassisBody, vehicle.groundBody);
 
@@ -22146,20 +22149,20 @@
           radius: arguments[1]
         };
         console.warn('The Capsule constructor signature has changed. Please use the following format: new Capsule({ radius: 1, length: 1 })');
-      }
+    }
       options = options || {};
 
-      /**
-       * The distance between the end points.
-       * @property {Number} length
-       */
-      this.length = options.length || 1;
+    /**
+     * The distance between the end points.
+     * @property {Number} length
+     */
+    this.length = options.length || 1;
 
-      /**
-       * The radius of the capsule.
-       * @property {Number} radius
-       */
-      this.radius = options.radius || 1;
+    /**
+     * The radius of the capsule.
+     * @property {Number} radius
+     */
+    this.radius = options.radius || 1;
 
       options.type = Shape.CAPSULE;
       Shape.call(this, options);
@@ -22296,7 +22299,7 @@
             if (result.shouldStop(ray)) {
               return;
             }
-          }
+            }
 
         } else {
           var sqrtDelta = Math.sqrt(delta);
@@ -22355,15 +22358,15 @@
           radius: arguments[0]
         };
         console.warn('The Circle constructor signature has changed. Please use the following format: new Circle({ radius: 1 })');
-      }
+    }
       options = options || {};
 
-      /**
-       * The radius of the circle.
-       * @property radius
-       * @type {number}
-       */
-      this.radius = options.radius || 1;
+    /**
+     * The radius of the circle.
+     * @property radius
+     * @type {number}
+     */
+    this.radius = options.radius || 1;
 
       options.type = Shape.CIRCLE;
       Shape.call(this, options);
@@ -22596,7 +22599,7 @@
       this.updateArea();
       if (this.area < 0) {
         throw new Error("Convex vertices must be given in conter-clockwise winding.");
-      }
+    }
     }
 
     Convex.prototype = new Shape();
@@ -22941,7 +22944,7 @@
 
       if (options.maxValue === undefined || options.minValue === undefined) {
         this.updateMaxMinValues();
-      }
+    }
 
       options.type = Shape.HEIGHTFIELD;
       Shape.call(this, options);
@@ -23064,7 +23067,7 @@
         out[0] = intX;
         out[1] = intY;
         return t;
-      }
+    }
       return -1; // No collision
     }
 
@@ -23136,7 +23139,7 @@
           length: arguments[0]
         };
         console.warn('The Line constructor signature has changed. Please use the following format: new Line({ length: 1, ... })');
-      }
+    }
       options = options || {};
 
       /**
@@ -23208,7 +23211,7 @@
         var normal = raycast_normal;
         vec2.rotate(normal, raycast_unit_y, angle); // todo: this should depend on which side the ray comes from
         ray.reportIntersection(result, fraction, normal, -1);
-      }
+    }
     };
   }, {"../math/vec2": 73, "./Shape": 88}],
   86: [function (require, module, exports) {
@@ -23413,11 +23416,11 @@
     function Shape(options) {
       options = options || {};
 
-      /**
-       * The body this shape is attached to. A shape can only be attached to a single body.
-       * @property {Body} body
-       */
-      this.body = null;
+    /**
+     * The body this shape is attached to. A shape can only be attached to a single body.
+     * @property {Body} body
+     */
+    this.body = null;
 
       /**
        * Body-local position of the shape.
@@ -23530,7 +23533,7 @@
 
       if (this.type) {
         this.updateBoundingRadius();
-      }
+    }
 
       this.updateArea();
     }
@@ -23577,7 +23580,7 @@
       get: function () {
         console.warn('Shape.RECTANGLE is deprecated, use Shape.BOX instead.');
         return Shape.BOX;
-      }
+    }
     });
 
     /**
@@ -23715,7 +23718,7 @@
       var l = array.length;
       while (l--) {
         array[l] = +0.0;
-      }
+    }
     }
 
     /**
@@ -23804,7 +23807,7 @@
             if (deltalambdaTot * deltalambdaTot <= tolSquared) {
               break;
             }
-            }
+          }
 
           GSSolver.updateMultipliers(equations, lambda, 1 / h);
 
@@ -23815,7 +23818,7 @@
               var f = 0.0;
               for (var k = 0; k !== eq.contactEquations.length; k++) {
                 f += eq.contactEquations[k].multiplier;
-                    }
+              }
               f *= eq.frictionCoefficient / eq.contactEquations.length;
               eq.maxForce = f;
               eq.minForce = -f;
@@ -23826,8 +23829,8 @@
         // Iterate over all equations
         for (iter = 0; iter !== maxIter; iter++) {
 
-          // Accumulate the total error for each iteration.
-          deltalambdaTot = 0.0;
+            // Accumulate the total error for each iteration.
+            deltalambdaTot = 0.0;
 
           for (j = 0; j !== Neq; j++) {
             c = equations[j];
@@ -23836,12 +23839,12 @@
             deltalambdaTot += Math.abs(deltalambda);
             }
 
-          this.usedIterations++;
+            this.usedIterations++;
 
-          // If the total error is small enough - stop iterate
+            // If the total error is small enough - stop iterate
           if (deltalambdaTot * deltalambdaTot <= tolSquared) {
             break;
-          }
+            }
         }
 
         // Add result to velocity
@@ -23911,20 +23914,20 @@
 
       this.type = type;
 
-      /**
-       * Current equations in the solver.
-       *
-       * @property equations
-       * @type {Array}
-       */
-      this.equations = [];
+    /**
+     * Current equations in the solver.
+     *
+     * @property equations
+     * @type {Array}
+     */
+    this.equations = [];
 
-      /**
-       * Function that is used to sort all equations before each solve.
-       * @property equationSortFunction
-       * @type {function|boolean}
-       */
-      this.equationSortFunction = options.equationSortFunction || false;
+    /**
+     * Function that is used to sort all equations before each solve.
+     * @property equationSortFunction
+     * @type {function|boolean}
+     */
+    this.equationSortFunction = options.equationSortFunction || false;
     }
 
     Solver.prototype = new EventEmitter();
@@ -24013,7 +24016,7 @@
       var i = this.equations.indexOf(eq);
       if (i !== -1) {
         this.equations.splice(i, 1);
-      }
+    }
     };
 
     /**
@@ -24354,14 +24357,14 @@
      * @param {Shape} shapeB
      */
     function OverlapKeeperRecord(bodyA, shapeA, bodyB, shapeB) {
-      /**
-       * @property {Shape} shapeA
-       */
-      this.shapeA = shapeA;
-      /**
-       * @property {Shape} shapeB
-       */
-      this.shapeB = shapeB;
+    /**
+     * @property {Shape} shapeA
+     */
+    this.shapeA = shapeA;
+    /**
+     * @property {Shape} shapeB
+     */
+    this.shapeB = shapeB;
       /**
        * @property {Body} bodyA
        */
@@ -24493,18 +24496,18 @@
      */
     function TupleDictionary() {
 
-      /**
-       * The data storage
-       * @property data
-       * @type {Object}
-       */
-      this.data = {};
+    /**
+     * The data storage
+     * @property data
+     * @type {Object}
+     */
+    this.data = {};
 
-      /**
-       * Keys that are currently used.
-       * @property {Array} keys
-       */
-      this.keys = [];
+    /**
+     * Keys that are currently used.
+     * @property {Array} keys
+     */
+    this.keys = [];
     }
 
     /**
@@ -24601,7 +24604,7 @@
       while (l--) {
         var key = dict.keys[l];
         this.data[key] = dict.data[key];
-      }
+    }
     };
 
   }, {"./Utils": 100}],
@@ -24647,7 +24650,7 @@
       howmany = howmany || 1;
       for (var i = index, len = array.length - howmany; i < len; i++) {
         array[i] = array[i + howmany];
-      }
+    }
       array.length = len;
     };
 
@@ -24697,7 +24700,7 @@
         if (!(key in options)) {
           options[key] = defaults[key];
         }
-      }
+    }
       return options;
     };
 
@@ -24714,19 +24717,19 @@
      */
     function Island() {
 
-      /**
-       * Current equations in this island.
-       * @property equations
-       * @type {Array}
-       */
-      this.equations = [];
+    /**
+     * Current equations in this island.
+     * @property equations
+     * @type {Array}
+     */
+    this.equations = [];
 
-      /**
-       * Current bodies in this island.
-       * @property bodies
-       * @type {Array}
-       */
-      this.bodies = [];
+    /**
+     * Current bodies in this island.
+     * @property bodies
+     * @type {Array}
+     */
+    this.bodies = [];
     }
 
     /**
@@ -24785,7 +24788,7 @@
       for (var i = 0; i < this.bodies.length; i++) {
         var b = this.bodies[i];
         b.sleep();
-      }
+    }
       return true;
     };
 
@@ -24810,11 +24813,11 @@
      */
     function IslandManager(options) {
 
-      /**
-       * @property nodePool
-       * @type {IslandNodePool}
-       */
-      this.nodePool = new IslandNodePool({size: 16});
+    /**
+     * @property nodePool
+     * @type {IslandNodePool}
+     */
+    this.nodePool = new IslandNodePool({size: 16});
 
       /**
        * @property islandPool
@@ -24984,7 +24987,7 @@
         this.bfs(child, island.bodies, island.equations);
 
         islands.push(island);
-      }
+    }
 
       return islands;
     };
@@ -25014,11 +25017,11 @@
        */
       this.body = body;
 
-      /**
-       * Neighboring IslandNodes
-       * @property {Array} neighbors
-       */
-      this.neighbors = [];
+    /**
+     * Neighboring IslandNodes
+     * @property {Array} neighbors
+     */
+    this.neighbors = [];
 
       /**
        * Equations connected to this node.
@@ -25026,12 +25029,12 @@
        */
       this.equations = [];
 
-      /**
-       * If this node was visiting during the graph traversal.
-       * @property visited
-       * @type {Boolean}
-       */
-      this.visited = false;
+    /**
+     * If this node was visiting during the graph traversal.
+     * @property visited
+     * @type {Boolean}
+     */
+    this.visited = false;
     }
 
     /**
@@ -25478,7 +25481,7 @@
       var idx = this.contactMaterials.indexOf(cm);
       if (idx !== -1) {
         Utils.splice(this.contactMaterials, idx, 1);
-      }
+    }
     };
 
     /**
@@ -25953,7 +25956,7 @@
             if (speedSquaredB >= speedLimitSquaredB * 2) {
               bi._wakeUpAfterNarrowphase = true;
             }
-          }
+            }
 
           if (bj.allowSleep &&
               bj.type === Body.DYNAMIC &&
@@ -26473,7 +26476,7 @@
                 break;
               case 'LAYER':
                 layer = new TileLayer(map);
-                tileIndex = 0;
+          tileIndex = 0;
                 layer.name = tag.attributes.NAME;
                 layer.opacity = float(tag.attributes.OPACITY, 1);
                 layer.visible = bool(tag.attributes.VISIBLE, true);
@@ -26481,7 +26484,7 @@
                 unresolvedLayer = {
                   layer: layer,
                   tiles: new Array(map.width * map.height),
-                };
+          };
                 unresolvedLayers.push(unresolvedLayer);
                 state = STATE_TILE_LAYER;
                 break;
@@ -26831,7 +26834,7 @@
                 layer = oldLayer;
                 unpackTileBytes(buf);
                 cb();
-              });
+        });
             });
           },
         };
@@ -26870,7 +26873,7 @@
               state = STATE_TERRAIN;
             } else {
               waitForClose();
-            }
+      }
           },
           closetag: function (name) {
             state = STATE_TILESET;
@@ -26883,7 +26886,7 @@
               collectProperties(terrain.properties);
             } else {
               waitForClose();
-            }
+      }
           },
           closetag: function (name) {
             state = STATE_TERRAIN_TYPES;
@@ -26907,7 +26910,7 @@
             if (err) {
               cb(err);
               return;
-            }
+      }
             // now all tilesets are resolved and all data is decoded
             unresolvedLayers.forEach(resolveLayer);
             cb(null, topLevelObject);
@@ -27005,7 +27008,7 @@
             if (err) {
               cb(err);
               return;
-            }
+      }
             resolvedTileSet.mergeTo(unresolvedTileSet);
             cb();
           });
@@ -27030,7 +27033,7 @@
                 unresolvedLayer.layer.tiles[i] = tile;
                 break;
               }
-            }
+      }
           }
         }
 
@@ -27058,7 +27061,7 @@
             cb(err);
           } else {
             parse(content, name, cb);
-          }
+    }
         });
       }
 
@@ -27069,7 +27072,7 @@
           return {
             x: xy[0],
             y: xy[1],
-          };
+    };
         });
       }
 
@@ -27399,18 +27402,18 @@
                   break
 
                 case 'cdata':
-                  emitNode(parser, 'oncdata', parser.cdata)
-                  parser.cdata = ''
+            emitNode(parser, 'oncdata', parser.cdata)
+            parser.cdata = ''
                   break
 
                 case 'script':
-                  emitNode(parser, 'onscript', parser.script)
-                  parser.script = ''
+            emitNode(parser, 'onscript', parser.script)
+            parser.script = ''
                   break
 
                 default:
                   error(parser, 'Max buffer length exceeded: ' + buffers[i])
-              }
+        }
             }
             maxActual = Math.max(maxActual, len)
           }
@@ -27507,7 +27510,7 @@
                   me.removeAllListeners(ev)
                   me._parser['on' + ev] = h
                   return h
-                }
+          }
                 me.on(ev, h)
               },
               enumerable: true,
@@ -28046,12 +28049,12 @@
                     'Actual: ' + parser.attribValue)
               } else {
                 var tag = parser.tag
-                var parent = parser.tags[parser.tags.length - 1] || parser
+          var parent = parser.tags[parser.tags.length - 1] || parser
                 if (tag.ns === parent.ns) {
                   tag.ns = Object.create(parent.ns)
-                }
+          }
                 tag.ns[local] = parser.attribValue
-              }
+        }
             }
 
             // defer onattribute events until all attributes have been seen
@@ -28114,7 +28117,7 @@
                 prefix: prefix,
                 local: local,
                 uri: uri
-              }
+        }
 
               // if there's any attributes with an undefined namespace,
               // then fail on them now.
@@ -28311,7 +28314,7 @@
                 parser.state = S.BEGIN_WHITESPACE
                 if (c === '\uFEFF') {
                   continue
-                }
+          }
                 beginWhiteSpace(parser, c)
                 continue
 
@@ -28331,9 +28334,9 @@
                         parser.column = 0
                       } else {
                         parser.column++
-                      }
-                    }
-                  }
+                }
+              }
+            }
                   parser.textNode += chunk.substring(starti, i - 1)
                 }
                 if (c === '<' && !(parser.sawRoot && parser.closedRoot && !parser.strict)) {
@@ -28645,14 +28648,14 @@
                   parser.state = S.ATTRIB_VALUE
                 } else if (is(whitespace, c)) {
                   continue
-                } else {
+          } else {
                   strictFail(parser, 'Attribute without value')
                   parser.tag.attributes[parser.attribName] = ''
                   parser.attribValue = ''
-                  emitNode(parser, 'onattribute', {
-                    name: parser.attribName,
-                    value: ''
-                  })
+            emitNode(parser, 'onattribute', {
+              name: parser.attribName,
+              value: ''
+            })
                   parser.attribName = ''
                   if (c === '>') {
                     openTag(parser)
@@ -28663,7 +28666,7 @@
                     strictFail(parser, 'Invalid attribute name')
                     parser.state = S.ATTRIB
                   }
-                }
+          }
                 continue
 
               case S.ATTRIB_VALUE:
@@ -28685,7 +28688,7 @@
                     parser.state = S.ATTRIB_VALUE_ENTITY_Q
                   } else {
                     parser.attribValue += c
-                  }
+            }
                   continue
                 }
                 attrib(parser)
@@ -28707,18 +28710,18 @@
                   parser.state = S.ATTRIB_NAME
                 } else {
                   strictFail(parser, 'Invalid attribute name')
-                }
+          }
                 continue
 
               case S.ATTRIB_VALUE_UNQUOTED:
                 if (not(attribEnd, c)) {
                   if (c === '&') {
                     parser.state = S.ATTRIB_VALUE_ENTITY_U
-                  } else {
+            } else {
                     parser.attribValue += c
-                  }
+            }
                   continue
-                }
+          }
                 attrib(parser)
                 if (c === '>') {
                   openTag(parser)
@@ -28728,33 +28731,33 @@
                 continue
 
               case S.CLOSE_TAG:
-                if (!parser.tagName) {
-                  if (is(whitespace, c)) {
-                    continue
-                  } else if (not(nameStart, c)) {
-                    if (parser.script) {
-                      parser.script += '</' + c
-                      parser.state = S.SCRIPT
-                    } else {
-                      strictFail(parser, 'Invalid tagname in closing tag.')
-                    }
-                  } else {
-                    parser.tagName = c
-                  }
-                } else if (c === '>') {
-                  closeTag(parser)
-                } else if (is(nameBody, c)) {
-                  parser.tagName += c
-                } else if (parser.script) {
-                  parser.script += '</' + parser.tagName
-                  parser.tagName = ''
-                  parser.state = S.SCRIPT
-                } else {
-                  if (not(whitespace, c)) {
-                    strictFail(parser, 'Invalid tagname in closing tag')
-                  }
-                  parser.state = S.CLOSE_TAG_SAW_WHITE
-                }
+          if (!parser.tagName) {
+            if (is(whitespace, c)) {
+              continue
+            } else if (not(nameStart, c)) {
+              if (parser.script) {
+                parser.script += '</' + c
+                parser.state = S.SCRIPT
+              } else {
+                strictFail(parser, 'Invalid tagname in closing tag.')
+              }
+            } else {
+              parser.tagName = c
+            }
+          } else if (c === '>') {
+            closeTag(parser)
+          } else if (is(nameBody, c)) {
+            parser.tagName += c
+          } else if (parser.script) {
+            parser.script += '</' + parser.tagName
+            parser.tagName = ''
+            parser.state = S.SCRIPT
+          } else {
+            if (not(whitespace, c)) {
+              strictFail(parser, 'Invalid tagname in closing tag')
+            }
+            parser.state = S.CLOSE_TAG_SAW_WHITE
+          }
                 continue
 
               case S.CLOSE_TAG_SAW_WHITE:
@@ -28830,7 +28833,7 @@
               var length = arguments.length
               if (!length) {
                 return ''
-              }
+        }
               var result = ''
               while (++index < length) {
                 var codePoint = Number(arguments[index])
@@ -28972,7 +28975,7 @@
           localPlayer = gameLogic.newPlayer(key, serverPlayers[key]);
           render.newPlayer(localPlayer);
         }
-      }
+    }
     }
 
 //delete disconnected players
@@ -28997,7 +29000,7 @@
       if (!update.isEmpty) {
         socket.emit('clientupdate', update);
         resetUpdate();
-      }
+    }
       //console.log('updating clients' + new Date().getTime());
     }
 
@@ -29010,7 +29013,7 @@
         heartBeat.id++;
       } else {
         heartBeatsTimer += 1 / heartBeatsRate * 1000
-      }
+    }
     }
 
     function startServerUpdateLoop() {
@@ -29060,7 +29063,7 @@
           update.input = input;
             update.isEmpty = false;
         }
-      }
+    }
     }
 
     function mouseMoveCallback(degree) {
@@ -29139,7 +29142,7 @@
         shout: 0xC65B08,
         whisper: 0x7A378B,
         system: 0xFF0000
-      }
+    }
     }
 
     MessageBoxRender.prototype.init = function () {
@@ -29277,7 +29280,7 @@
 
       if (this.player.isMainPlayer) {
         this.game.camera.follow(this.sprite);
-      }
+    }
 
       //this.circle = this.game.add.graphics(0, 0);
       //this.circle.beginFill(0xFF0000, 555);
@@ -29422,7 +29425,7 @@
       }
       if (this.statsRender != null) {
         this.statsRender.update();
-      }
+    }
     };
 
     function mouseMoveCallback(mousePointer) {
@@ -29487,7 +29490,7 @@
         this.addressee = addressee;
       } else {
         this.addressee = "";
-      }
+    }
     }
 
     Message.prototype.append = function (content) {
@@ -29518,7 +29521,7 @@
 
       if (this.addressee != "all") {
         this.content = this.content.substr(1, this.content.length);
-      }
+    }
       return this.addressee;
     };
 
@@ -29562,7 +29565,7 @@
       var arrayLength = this.messageArray.length;
       if (count > arrayLength) {
         count = arrayLength;
-      }
+    }
       return this.messageArray.slice(arrayLength - count, arrayLength);
     };
 
@@ -29604,6 +29607,7 @@
       this.physicsWorld = new p2.World({
         gravity: [0, 0]
       });
+
       this.map = null;
     }
 
@@ -29613,6 +29617,7 @@
 
     Game.prototype.gameLoop = function () {
       var delta = this.timer.getDelta();
+      console.log(delta);
       this.handleInput();
       this.update(delta);
       this.render(delta);
@@ -29635,7 +29640,7 @@
         this.players[key].update(delta);
       }
 
-      this.physicsWorld.step(1 / 60, delta);
+      this.physicsWorld.step(1 / 60, delta / 1000, 4);
     };
 
     Game.prototype.render = function (delta) {
@@ -29660,7 +29665,7 @@
       //create physics elements
       var body = new p2.Body({
         position: [400, 300],
-        mass: 100,
+        mass: 1,
         damping: 1,
         angularDamping: 1
       });
@@ -29901,7 +29906,7 @@
     InputHandler.prototype.deleteCallback = function () {
       this.callback = function () {
 
-      }
+    }
     };
 
 //event listener for press key

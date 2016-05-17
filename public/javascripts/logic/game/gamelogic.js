@@ -12,6 +12,7 @@ function Game() {
     this.physicsWorld = new p2.World({
         gravity: [0, 0]
     });
+
     this.map = null;
 }
 
@@ -21,6 +22,7 @@ Game.prototype.startGameLoop = function () {
 
 Game.prototype.gameLoop = function () {
     var delta = this.timer.getDelta();
+    console.log(delta);
     this.handleInput();
     this.update(delta);
     this.render(delta);
@@ -43,7 +45,7 @@ Game.prototype.update = function (delta) {
         this.players[key].update(delta);
     }
 
-    this.physicsWorld.step(1 / 60, delta);
+    this.physicsWorld.step(1 / 60, delta / 1000, 4);
 };
 
 Game.prototype.render = function (delta) {
@@ -68,7 +70,7 @@ Game.prototype.newPlayer = function (id, playerCopy) {
     //create physics elements
     var body = new p2.Body({
         position: [400, 300],
-        mass: 100,
+        mass: 1,
         damping: 1,
         angularDamping: 1
     });
