@@ -7,6 +7,7 @@
     "express": "latest",
     "node-uuid": "latest",
     "ejs": "latest",
-    "p2": "latest"
+    "p2": "latest",
+    "tmx-parser": "lastest"
   }
 }

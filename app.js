@@ -10,6 +10,8 @@ var path = require('path');
 var server = require('http').createServer(app);
 var io = require('socket.io').listen(server);
 var UUID = require('node-uuid');
+var tmx = require('tmx-parser');
+
 var GameServer = require('./gameserver');
 
 server.listen(port);
@@ -82,7 +84,7 @@ function clientConnected(client) {
 
     //add client to server
     gameServers[client.serverId].clientConnected(client);
-    client.emit('startgame', {id: client.id, name: client.name});
+    client.emit('startgame', {id: client.id, name: client.name, mapName: gameServers[client.serverId].mapName});
 }
 
 function clientDisconnected(client) {
@@ -169,7 +171,7 @@ function handleClientHeartbeat(client, data) {
 
 function startNewServer() {
     var id = UUID();
-    gameServers[id] = new GameServer(id);
+    gameServers[id] = new GameServer(id, 'mapatest');
     gameServers[id].startGameServer();
 }
 

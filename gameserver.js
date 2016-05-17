@@ -1,6 +1,6 @@
 var Game = require('./public/javascripts/logic/game/gamelogic');
 
-function GameServer(id) {
+function GameServer(id, mapName) {
     //number of client updates per secound
     this.updateTickRate = 2000;
     this.serverId = id;
@@ -10,6 +10,8 @@ function GameServer(id) {
     this.clients = [];
     this.update = {};
     this.clearUpdate();
+
+    this.mapName = mapName;
 }
 
 GameServer.prototype.clearUpdate = function () {
@@ -24,6 +26,7 @@ GameServer.prototype.clearUpdate = function () {
 //start game server
 GameServer.prototype.startGameServer = function () {
     this.gameLogic = new Game();
+    this.gameLogic.createMap(this.mapName);
     this.gameLogic.startGameLoop();
 
     //start update loop

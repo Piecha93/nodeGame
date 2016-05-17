@@ -15,6 +15,7 @@ MessageInputRender.prototype.init = function () {
     var layer1 = this.map.createLayer('layer1');
     var layer2 = this.map.createLayer('layer2');
     var layer3 = this.map.createLayer('layer3');
+    var layer4 = this.map.createLayer('layer4');
 
     layer1.resizeWorld();
 };

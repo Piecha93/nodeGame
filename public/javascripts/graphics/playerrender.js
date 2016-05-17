@@ -14,10 +14,13 @@ function PlayerRender(game, player) {
 
 PlayerRender.prototype.init = function () {
     this.sprite = this.game.add.sprite(0, 0, 'player');
+    this.sprite.width /= 2;
+    this.sprite.height /= 2;
+
     this.sprite.anchor.set(0.5);
 
     this.nameText = this.game.add.text(this.player.x, this.player.y, this.player.name, {
-        font: "bold 16px Arial",
+        font: "bold 11px Arial",
         fill: "#ffffff"
     });
 
@@ -42,10 +45,7 @@ PlayerRender.prototype.update = function () {
 
     //name position update
     this.nameText.x = this.sprite.x;
-    this.nameText.y = this.sprite.y - 40;
-
-    // this.circle.x += (this.player.x - this.circle.x) / this.lerpRate;
-    //  this.circle.y += (this.player.y - this.circle.y) / this.lerpRate;
+    this.nameText.y = this.sprite.y - 20;
 };
 
 PlayerRender.prototype.destroy = function () {

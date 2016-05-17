@@ -32,15 +32,17 @@ function assetsLoadedCallback() {
     socket.emit('connected');
 }
 
-socket.on('startgame', function (client) {
+socket.on('startgame', function (gameData) {
     //start game loop when connected to server
     gameLogic.startGameLoop();
+    //create map
+    gameLogic.createMap(gameData.mapName);
     //set render to game logic update
     gameLogic.setRender(render);
     //create local player with id from server
-    localPlayer = gameLogic.newPlayer(client.id);
-    localPlayer.id = client.id;
-    localPlayer.name = client.name;
+    localPlayer = gameLogic.newPlayer(gameData.id);
+    localPlayer.id = gameData.id;
+    localPlayer.name = gameData.name;
     localPlayer.isMainPlayer = true;
 
     startServerUpdateLoop();
@@ -57,7 +59,7 @@ socket.on('startgame', function (client) {
     //set inputHandler callback
     inputHandler.setCallback(inputHandlerCallback);
 
-    console.log('Connection to server succesfull. Your id is: ' + client.id);
+    console.log('Connection to server succesfull. Your id is: ' + gameData.id);
 });
 
 /*

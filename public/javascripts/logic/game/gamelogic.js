@@ -1,7 +1,7 @@
 var p2 = require('p2');
 var Player = require('./player');
 var DeltaTimer = require('./detlatimer');
-
+var Map = require('./map');
 
 function Game() {
     this.tickRate = 64;
@@ -12,18 +12,7 @@ function Game() {
     this.physicsWorld = new p2.World({
         gravity: [0, 0]
     });
-
-    var body = new p2.Body({
-        position: [240, 208],
-        mass: 0
-    });
-
-    var shape = new p2.Box({
-        width: 32,
-        height: 32
-    });
-    body.addShape(shape);
-    this.physicsWorld.addBody(body);
+    this.map = null;
 }
 
 Game.prototype.startGameLoop = function () {
@@ -67,6 +56,10 @@ Game.prototype.setRender = function (render) {
     this.renderHandler = render;
 };
 
+Game.prototype.createMap = function (mapName) {
+    this.map = new Map(mapName, this.physicsWorld);
+};
+
 //creates new player
 Game.prototype.newPlayer = function (id, playerCopy) {
     var player = new Player();
@@ -81,7 +74,7 @@ Game.prototype.newPlayer = function (id, playerCopy) {
     });
 
     var shape = new p2.Circle({
-        radius: 32
+        radius: 16
     });
     body.addShape(shape);
     player.body = body;

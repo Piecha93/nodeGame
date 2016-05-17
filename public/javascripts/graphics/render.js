@@ -25,22 +25,22 @@ Render.prototype.preload = function () {
     this.game.load.bitmapFont('gem', 'resources/fonts/gem.png', 'resources/fonts/gem.xml');
     this.game.load.image('player', 'resources/images/player.png');
     this.game.load.image('tiles', 'resources/images/terrain.png');
-    this.game.load.tilemap('testmap', 'resources/maps/testmap.json', null, Phaser.Tilemap.TILED_JSON);
+    this.game.load.tilemap('testmap', 'resources/maps/mapatest.json', null, Phaser.Tilemap.TILED_JSON);
     //set callback (client connect to server when all assets are loaded)
     this.game.load.onLoadComplete.add(this.onLoadCallback);
 };
 
 Render.prototype.create = function () {
-    this.game.world.setBounds(0, 0, 1000, 1000);
     this.game.stage.backgroundColor = "#4488AA";
 
     this.game.input.addMoveCallback(mouseMoveCallback, this);
+    this.game.renderer.renderSession.roundPixels = true;
 };
 
 Render.prototype.createMap = function (name) {
     this.mapRender = new MapRender(this.game, name);
     this.mapRender.init();
-}
+};
 
 Render.prototype.createMessageBox = function (messageBox) {
     //create MessengerBox

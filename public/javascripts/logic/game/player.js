@@ -10,7 +10,7 @@ function Player() {
     this.input = [];
     this.horizontalDir = HorizontalDir.none;
     this.verticalDir = VerticalDir.none;
-    this.speed = 0.15;
+    this.speed = 0.2;
     this.isChanged = true;
     this.name = "";
 
