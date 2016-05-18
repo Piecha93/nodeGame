@@ -57,7 +57,7 @@ socket.on('startgame', function (gameData) {
     render.createStatsRender(ping);
 
     //set inputHandler callback
-    inputHandler.setCallback(inputHandlerCallback);
+    inputHandler.setCallback(inputCallback);
 
     console.log('Connection to server succesfull. Your id is: ' + gameData.id);
 });
@@ -159,7 +159,7 @@ var chatMode = false;
 //this function is called when input handler got something
 //input is copy od inputhandler inputArray
 //TODO refactor this ...
-function inputHandlerCallback(input) {
+function inputCallback(input) {
     //if enter pressed
     if (input[input.length - 1] == 13) {
         //if chat mode if true we need to get message from canvas and send it to server
@@ -187,8 +187,7 @@ function inputHandlerCallback(input) {
 }
 
 function mouseMoveCallback(degree) {
-    localPlayer.body.angle = degree;
-    localPlayer.isChanged = true;
+    localPlayer.angle = degree;
     update.angle = degree;
     update.isEmpty = false;
 }

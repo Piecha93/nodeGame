@@ -2,7 +2,7 @@ var Game = require('./public/javascripts/logic/game/gamelogic');
 
 function GameServer(id, mapName) {
     //number of client updates per secound
-    this.updateTickRate = 20;
+    this.updateTickRate = 18;
     this.serverId = id;
 
     this.gameLogic = null;
@@ -118,7 +118,7 @@ GameServer.prototype.handleClientInput = function (id, input) {
 GameServer.prototype.handleClientAngle = function (id, angle) {
     var player = this.gameLogic.getPlayer(id);
     if (player != null) {
-        player.body.angle = angle;
+        player.angle = angle;
         player.isChanged = true;
     }
 };

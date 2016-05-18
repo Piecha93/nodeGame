@@ -11,6 +11,8 @@ function Player() {
     this.horizontalDir = HorizontalDir.none;
     this.verticalDir = VerticalDir.none;
     this.speed = 0.2;
+    this.angle = 0;
+    this.angleSpeed = 1;
     this.isChanged = true;
     this.name = "";
 
@@ -26,14 +28,6 @@ function Player() {
         name: "",
         angle: 999
     };
-
-    /*  this.hdir = HorizontalDir.left;
-     console.log('start hdir: ' + this.hdir);
-     this.hdircpy = this.hdir;
-     this.hdircpy = HorizontalDir.right;
-     console.log('cpy: ' + this.hdircpy);
-     console.log('org: ' + this.hdir);*/
-
 }
 
 Player.prototype.handleInput = function () {
@@ -68,17 +62,20 @@ Player.prototype.handleInput = function () {
 //update player position depends on delta and move direction
 Player.prototype.update = function (delta) {
     if (this.body != null) {
+        //count offset
         var offset = this.speed * delta;
         if (this.verticalDir != 0 && this.horizontalDir != 0)
             offset = offset * Math.sin(45 * (180 / Math.PI));
 
+        //update position
         this.body.position[0] += this.horizontalDir * offset;
         this.body.position[1] += this.verticalDir * offset;
 
-        // if (this.verticalDir != 0 || this.horizontalDir != 0
-        //     || this.body.velocity[0] != 0 || this.body.velocity[1] != 0) {
-        //      this.isChanged = true;
-        // }
+        //update angle
+        if (Math.abs(this.angle - this.body.angle) > 0.1) {
+            //TODO fix rotation between 270 and -90
+            this.body.angle += (this.angle - this.body.angle) * this.angleSpeed / delta;
+        }
     }
 };
 
@@ -104,7 +101,7 @@ Player.prototype.serverUpdate = function (playerUpdateInfo) {
         this.name = playerUpdateInfo.name;
     }
     if (playerUpdateInfo.hasOwnProperty('angle')) {
-        this.body.angle = playerUpdateInfo.angle;
+        this.angle = playerUpdateInfo.angle;
     }
 };
 
@@ -115,7 +112,7 @@ Player.prototype.getAllUpdateInfo = function () {
     playerUpdateInfo.horizontalMove = this.horizontalDir;
     playerUpdateInfo.verticalMove = this.verticalDir;
     playerUpdateInfo.name = this.name;
-    playerUpdateInfo.angle = this.body.angle;
+    playerUpdateInfo.angle = this.angle;
 
     return playerUpdateInfo;
 };
@@ -135,15 +132,15 @@ Player.prototype.getUpdateInfo = function () {
         playerUpdateInfo.verticalMove = this.verticalDir;
         this.lastUpdateInfo.verticalMove = this.verticalDir;
     }
-    if (this.lastUpdateInfo.angle != this.body.angle) {
-        playerUpdateInfo.angle = this.body.angle;
-        this.lastUpdateInfo.angle = this.body.angle;
+
+    if (this.lastUpdateInfo.angle != this.angle) {
+        playerUpdateInfo.angle = this.angle;
+        this.lastUpdateInfo.angle = this.angle;
     }
     if (this.lastUpdateInfo.name != this.name) {
         playerUpdateInfo.name = this.name;
         this.lastUpdateInfo.name = this.name;
     }
-
     return playerUpdateInfo;
 };
 

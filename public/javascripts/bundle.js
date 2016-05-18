@@ -1320,7 +1320,7 @@
             /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
              * matter since it will be recomputed at next deflate call.
              */
-          }
+      }
         } else {
           /* No match, output a literal byte */
           //Tracevv((stderr,"%c", s.window[s.strstart]));
@@ -1329,7 +1329,7 @@
 
           s.lookahead--;
           s.strstart++;
-        }
+    }
         if (bflush) {
           /*** FLUSH_BLOCK(s, 0); ***/
           flush_block_only(s, false);
@@ -1486,7 +1486,7 @@
           s.lookahead--;
           if (s.strm.avail_out === 0) {
             return BS_NEED_MORE;
-          }
+      }
         } else {
           /* There is no previous match to compare with, wait for
            * the next step to decide.
@@ -1494,7 +1494,7 @@
           s.match_available = 1;
           s.strstart++;
           s.lookahead--;
-        }
+    }
       }
       //Assert (flush != Z_NO_FLUSH, "no flush?");
       if (s.match_available) {
@@ -1598,7 +1598,7 @@
 
           s.lookahead--;
           s.strstart++;
-        }
+    }
         if (bflush) {
           /*** FLUSH_BLOCK(s, 0); ***/
           flush_block_only(s, false);
@@ -1672,7 +1672,7 @@
         flush_block_only(s, true);
         if (s.strm.avail_out === 0) {
           return BS_FINISH_STARTED;
-        }
+    }
         /***/
         return BS_FINISH_DONE;
       }
@@ -2223,7 +2223,7 @@
       }
           if (s.gzhead.hcrc && s.pending > beg) {
             strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
-          }
+      }
           if (s.gzindex === s.gzhead.extra.length) {
             s.gzindex = 0;
             s.status = NAME_STATE;
@@ -2266,7 +2266,7 @@
           if (val === 0) {
             s.gzindex = 0;
             s.status = COMMENT_STATE;
-          }
+      }
         }
         else {
           s.status = COMMENT_STATE;
@@ -2371,7 +2371,7 @@
           if (strm.avail_out === 0) {
             s.last_flush = -1;
             /* avoid BUF_ERROR next call, see above */
-      }
+          }
           return Z_OK;
           /* If flush != Z_NO_FLUSH && avail_out == 0, the next call
            * of deflate should use the same flush parameter to make sure
@@ -2390,7 +2390,7 @@
             trees._tr_stored_block(s, 0, 0, false);
             /* For a full flush, this empty block will be recognized
              * as a special marker by inflate_sync().
-             */
+         */
             if (flush === Z_FULL_FLUSH) {
               /*** CLEAR_HASH(s); ***/
               /* forget history */
@@ -2401,15 +2401,15 @@
                 s.block_start = 0;
                 s.insert = 0;
               }
-            }
-          }
+        }
+      }
       flush_pending(strm);
           if (strm.avail_out === 0) {
             s.last_flush = -1;
             /* avoid BUF_ERROR at next call, see above */
-            return Z_OK;
+        return Z_OK;
       }
-    }
+        }
       }
       //Assert(strm->avail_out > 0, "bug2");
       //if (strm.avail_out <= 0) { throw new Error("bug2");}
@@ -3306,7 +3306,7 @@
           if (state.whave < state.wsize) {
             state.whave += dist;
           }
-        }
+    }
       }
       return 0;
     }
@@ -7815,7 +7815,7 @@
               case 1:
                 if (firstByte < 0x80) {
                   codePoint = firstByte
-                }
+          }
                 break
               case 2:
                 secondByte = buf[i + 1]
@@ -27333,7 +27333,7 @@
         function SAXParser(strict, opt) {
           if (!(this instanceof SAXParser)) {
             return new SAXParser(strict, opt)
-          }
+    }
 
           var parser = this
           clearBuffers(parser)
@@ -27357,13 +27357,13 @@
           // which protos to its parent tag.
           if (parser.opt.xmlns) {
             parser.ns = Object.create(rootNS)
-          }
+    }
 
           // mostly just for error reporting
           parser.trackPosition = parser.opt.position !== false
           if (parser.trackPosition) {
             parser.position = parser.line = parser.column = 0
-          }
+    }
           emit(parser, 'onready')
         }
 
@@ -27383,7 +27383,7 @@
             var a = []
             for (var i in o) if (o.hasOwnProperty(i)) a.push(i)
             return a
-    }
+          }
         }
 
         function checkBufferLength(parser) {
@@ -27402,13 +27402,13 @@
                   break
 
                 case 'cdata':
-            emitNode(parser, 'oncdata', parser.cdata)
-            parser.cdata = ''
+                  emitNode(parser, 'oncdata', parser.cdata)
+                  parser.cdata = ''
                   break
 
                 case 'script':
-            emitNode(parser, 'onscript', parser.script)
-            parser.script = ''
+                  emitNode(parser, 'onscript', parser.script)
+                  parser.script = ''
                   break
 
                 default:
@@ -27488,7 +27488,7 @@
 
           this._parser.onend = function () {
             me.emit('end')
-          }
+    }
 
           this._parser.onerror = function (er) {
             me.emit('error', er)
@@ -28049,12 +28049,12 @@
                     'Actual: ' + parser.attribValue)
               } else {
                 var tag = parser.tag
-          var parent = parser.tags[parser.tags.length - 1] || parser
+                var parent = parser.tags[parser.tags.length - 1] || parser
                 if (tag.ns === parent.ns) {
                   tag.ns = Object.create(parent.ns)
           }
                 tag.ns[local] = parser.attribValue
-        }
+              }
             }
 
             // defer onattribute events until all attributes have been seen
@@ -28096,8 +28096,8 @@
                 emitNode(parser, 'onopennamespace', {
                   prefix: p,
                   uri: tag.ns[p]
-                })
-              })
+          })
+        })
             }
 
             // handle deferred onattribute events
@@ -28125,7 +28125,7 @@
                 strictFail(parser, 'Unbound namespace prefix: ' +
                     JSON.stringify(prefix))
                 a.uri = prefix
-              }
+        }
               parser.tag.attributes[name] = a
               emitNode(parser, 'onattribute', a)
             }
@@ -28214,7 +28214,7 @@
               Object.keys(tag.ns).forEach(function (p) {
                 var n = tag.ns[p]
                 emitNode(parser, 'onclosenamespace', {prefix: p, uri: n})
-              })
+        })
             }
           }
           if (t === 0) parser.closedRoot = true
@@ -28307,7 +28307,7 @@
                 parser.column = 0
               } else {
                 parser.column++
-              }
+        }
             }
             switch (parser.state) {
               case S.BEGIN:
@@ -28338,10 +28338,10 @@
               }
             }
                   parser.textNode += chunk.substring(starti, i - 1)
-                }
+          }
                 if (c === '<' && !(parser.sawRoot && parser.closedRoot && !parser.strict)) {
-                  parser.state = S.OPEN_WAKA
-                  parser.startTagPosition = parser.position
+            parser.state = S.OPEN_WAKA
+            parser.startTagPosition = parser.position
           } else {
                   if (not(whitespace, c) && (!parser.sawRoot || parser.closedRoot)) {
                     strictFail(parser, 'Text data outside of root node.')
@@ -28936,7 +28936,7 @@
       render.createStatsRender(ping);
 
       //set inputHandler callback
-      inputHandler.setCallback(inputHandlerCallback);
+      inputHandler.setCallback(inputCallback);
 
       console.log('Connection to server succesfull. Your id is: ' + gameData.id);
     });
@@ -29038,7 +29038,7 @@
 //this function is called when input handler got something
 //input is copy od inputhandler inputArray
 //TODO refactor this ...
-    function inputHandlerCallback(input) {
+    function inputCallback(input) {
       //if enter pressed
       if (input[input.length - 1] == 13) {
         //if chat mode if true we need to get message from canvas and send it to server
@@ -29066,8 +29066,7 @@
     }
 
     function mouseMoveCallback(degree) {
-      localPlayer.body.angle = degree;
-      localPlayer.isChanged = true;
+      localPlayer.angle = degree;
       update.angle = degree;
       update.isEmpty = false;
     }
@@ -29780,6 +29779,8 @@
       this.horizontalDir = HorizontalDir.none;
       this.verticalDir = VerticalDir.none;
       this.speed = 0.2;
+      this.angle = 0;
+      this.angleSpeed = 1;
       this.isChanged = true;
       this.name = "";
 
@@ -29795,14 +29796,6 @@
         name: "",
         angle: 999
       };
-
-      /*  this.hdir = HorizontalDir.left;
-       console.log('start hdir: ' + this.hdir);
-       this.hdircpy = this.hdir;
-       this.hdircpy = HorizontalDir.right;
-       console.log('cpy: ' + this.hdircpy);
-       console.log('org: ' + this.hdir);*/
-
     }
 
     Player.prototype.handleInput = function () {
@@ -29837,17 +29830,19 @@
 //update player position depends on delta and move direction
     Player.prototype.update = function (delta) {
       if (this.body != null) {
+        //count offset
         var offset = this.speed * delta;
         if (this.verticalDir != 0 && this.horizontalDir != 0)
           offset = offset * Math.sin(45 * (180 / Math.PI));
 
+        //update position
         this.body.position[0] += this.horizontalDir * offset;
         this.body.position[1] += this.verticalDir * offset;
 
-        // if (this.verticalDir != 0 || this.horizontalDir != 0
-        //     || this.body.velocity[0] != 0 || this.body.velocity[1] != 0) {
-        //      this.isChanged = true;
-        // }
+        //update angle
+        if (Math.abs(this.angle - this.body.angle) > 0.1) {
+          this.body.angle += (this.angle - this.body.angle) * this.angleSpeed / delta;
+        }
       }
     };
 
@@ -29873,7 +29868,7 @@
         this.name = playerUpdateInfo.name;
       }
       if (playerUpdateInfo.hasOwnProperty('angle')) {
-        this.body.angle = playerUpdateInfo.angle;
+        this.angle = playerUpdateInfo.angle;
       }
     };
 
@@ -29884,7 +29879,7 @@
       playerUpdateInfo.horizontalMove = this.horizontalDir;
       playerUpdateInfo.verticalMove = this.verticalDir;
       playerUpdateInfo.name = this.name;
-      playerUpdateInfo.angle = this.body.angle;
+      playerUpdateInfo.angle = this.angle;
 
       return playerUpdateInfo;
     };
@@ -29904,15 +29899,15 @@
         playerUpdateInfo.verticalMove = this.verticalDir;
         this.lastUpdateInfo.verticalMove = this.verticalDir;
       }
-      if (this.lastUpdateInfo.angle != this.body.angle) {
-        playerUpdateInfo.angle = this.body.angle;
-        this.lastUpdateInfo.angle = this.body.angle;
+
+      if (this.lastUpdateInfo.angle != this.angle) {
+        playerUpdateInfo.angle = this.angle;
+        this.lastUpdateInfo.angle = this.angle;
       }
       if (this.lastUpdateInfo.name != this.name) {
         playerUpdateInfo.name = this.name;
         this.lastUpdateInfo.name = this.name;
       }
-
       return playerUpdateInfo;
     };
 
