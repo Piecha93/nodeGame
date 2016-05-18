@@ -89,13 +89,12 @@ socket.on('heartbeatsresponse', function (data) {
 function updatePlayers(serverPlayers) {
     for (var key in serverPlayers) {
         var localPlayer = gameLogic.players[key];
-        if (typeof localPlayer !== "undefined") {
-            localPlayer.serverUpdate(serverPlayers[key]);
-        }
-        else {
-            localPlayer = gameLogic.newPlayer(key, serverPlayers[key]);
+        //create new player if don't exist locally
+        if (typeof localPlayer == "undefined") {
+            localPlayer = gameLogic.newPlayer(key);
             render.newPlayer(localPlayer);
         }
+        localPlayer.serverUpdate(serverPlayers[key]);
     }
 }
 

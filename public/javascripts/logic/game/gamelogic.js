@@ -22,7 +22,8 @@ Game.prototype.startGameLoop = function () {
 
 Game.prototype.gameLoop = function () {
     var delta = this.timer.getDelta();
-    console.log(delta);
+    delta = (delta < 40) ? delta : 40;
+
     this.handleInput();
     this.update(delta);
     this.render(delta);
@@ -63,7 +64,7 @@ Game.prototype.createMap = function (mapName) {
 };
 
 //creates new player
-Game.prototype.newPlayer = function (id, playerCopy) {
+Game.prototype.newPlayer = function (id) {
     var player = new Player();
     player.id = id;
 
@@ -78,13 +79,9 @@ Game.prototype.newPlayer = function (id, playerCopy) {
     var shape = new p2.Circle({
         radius: 16
     });
+
     body.addShape(shape);
     player.body = body;
-
-    if (playerCopy != null) {
-        player.body.position = playerCopy.position;
-        player.name = playerCopy.name;
-    }
 
     this.physicsWorld.addBody(body);
     this.players[player.id] = player;

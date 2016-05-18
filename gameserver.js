@@ -46,8 +46,9 @@ GameServer.prototype.clientConnected = function (client) {
 
     var newPlayer = this.gameLogic.newPlayer(client.id);
     newPlayer.name = client.name;
+
     for (var key in this.gameLogic.players) {
-        this.update.players[key] = this.gameLogic.players[key].getUpdateInfo();
+        this.update.players[key] = this.gameLogic.players[key].getAllUpdateInfo();
     }
 
     this.update.isEmpty = false;
@@ -84,9 +85,10 @@ GameServer.prototype.updateLoop = function () {
 
     //get players who need update
     for (var key in this.gameLogic.players) {
-        if (this.gameLogic.players[key].isChanged) {
-            this.update.players[key] = this.gameLogic.players[key].getUpdateInfo();
-            this.gameLogic.players[key].isChanged = false;
+        var updateInfo = this.gameLogic.players[key].getUpdateInfo();
+        //check if update info is not empty
+        if (Object.keys(updateInfo).length > 0) {
+            this.update.players[key] = updateInfo;
             this.update.isEmpty = false;
         }
     }

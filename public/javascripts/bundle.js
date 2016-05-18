@@ -1337,7 +1337,7 @@
             return BS_NEED_MORE;
       }
           /***/
-        }
+    }
       }
       s.insert = ((s.strstart < (MIN_MATCH - 1)) ? s.strstart : MIN_MATCH - 1);
       if (flush === Z_FINISH) {
@@ -1479,9 +1479,9 @@
 
           if (bflush) {
             /*** FLUSH_BLOCK_ONLY(s, 0) ***/
-            flush_block_only(s, false);
-            /***/
-          }
+        flush_block_only(s, false);
+        /***/
+      }
           s.strstart++;
           s.lookahead--;
           if (s.strm.avail_out === 0) {
@@ -1494,7 +1494,7 @@
           s.match_available = 1;
           s.strstart++;
           s.lookahead--;
-    }
+        }
       }
       //Assert (flush != Z_NO_FLUSH, "no flush?");
       if (s.match_available) {
@@ -1510,7 +1510,7 @@
         flush_block_only(s, true);
         if (s.strm.avail_out === 0) {
           return BS_FINISH_STARTED;
-        }
+    }
         /***/
         return BS_FINISH_DONE;
       }
@@ -1606,7 +1606,7 @@
             return BS_NEED_MORE;
       }
           /***/
-        }
+    }
       }
       s.insert = 0;
       if (flush === Z_FINISH) {
@@ -1662,9 +1662,9 @@
           flush_block_only(s, false);
           if (s.strm.avail_out === 0) {
             return BS_NEED_MORE;
-          }
+      }
           /***/
-        }
+    }
       }
       s.insert = 0;
       if (flush === Z_FINISH) {
@@ -2209,18 +2209,18 @@
 
           while (s.gzindex < (s.gzhead.extra.length & 0xffff)) {
             if (s.pending === s.pending_buf_size) {
-              if (s.gzhead.hcrc && s.pending > beg) {
-                strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
-              }
+          if (s.gzhead.hcrc && s.pending > beg) {
+            strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
+          }
               flush_pending(strm);
               beg = s.pending;
               if (s.pending === s.pending_buf_size) {
                 break;
-              }
-            }
+          }
+        }
             put_byte(s, s.gzhead.extra[s.gzindex] & 0xff);
             s.gzindex++;
-          }
+      }
           if (s.gzhead.hcrc && s.pending > beg) {
             strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
           }
@@ -2241,28 +2241,28 @@
 
           do {
             if (s.pending === s.pending_buf_size) {
-              if (s.gzhead.hcrc && s.pending > beg) {
-                strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
-              }
+          if (s.gzhead.hcrc && s.pending > beg) {
+            strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
+          }
               flush_pending(strm);
               beg = s.pending;
               if (s.pending === s.pending_buf_size) {
                 val = 1;
                 break;
-              }
-            }
+          }
+        }
             // JS specific: little magic to add zero terminator to end of string
             if (s.gzindex < s.gzhead.name.length) {
               val = s.gzhead.name.charCodeAt(s.gzindex++) & 0xff;
             } else {
               val = 0;
-            }
+        }
             put_byte(s, val);
           } while (val !== 0);
 
           if (s.gzhead.hcrc && s.pending > beg) {
             strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
-          }
+      }
           if (val === 0) {
             s.gzindex = 0;
             s.status = COMMENT_STATE;
@@ -2280,31 +2280,31 @@
 
           do {
             if (s.pending === s.pending_buf_size) {
-              if (s.gzhead.hcrc && s.pending > beg) {
-                strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
-              }
+          if (s.gzhead.hcrc && s.pending > beg) {
+            strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
+          }
               flush_pending(strm);
               beg = s.pending;
               if (s.pending === s.pending_buf_size) {
                 val = 1;
                 break;
-              }
-            }
+          }
+        }
             // JS specific: little magic to add zero terminator to end of string
             if (s.gzindex < s.gzhead.comment.length) {
               val = s.gzhead.comment.charCodeAt(s.gzindex++) & 0xff;
             } else {
               val = 0;
-            }
+        }
             put_byte(s, val);
           } while (val !== 0);
 
           if (s.gzhead.hcrc && s.pending > beg) {
             strm.adler = crc32(strm.adler, s.pending_buf, s.pending - beg, beg);
-          }
+      }
           if (val === 0) {
             s.status = HCRC_STATE;
-          }
+      }
         }
         else {
           s.status = HCRC_STATE;
@@ -2313,14 +2313,14 @@
       if (s.status === HCRC_STATE) {
         if (s.gzhead.hcrc) {
           if (s.pending + 2 > s.pending_buf_size) {
-            flush_pending(strm);
-          }
+        flush_pending(strm);
+      }
           if (s.pending + 2 <= s.pending_buf_size) {
-            put_byte(s, strm.adler & 0xff);
-            put_byte(s, (strm.adler >> 8) & 0xff);
+        put_byte(s, strm.adler & 0xff);
+        put_byte(s, (strm.adler >> 8) & 0xff);
             strm.adler = 0; //crc32(0L, Z_NULL, 0);
             s.status = BUSY_STATE;
-          }
+      }
         }
         else {
           s.status = BUSY_STATE;
@@ -2337,15 +2337,15 @@
            * avail_in equal to zero. There won't be anything to do,
            * but this is not an error situation so make sure we
            * return OK instead of BUF_ERROR at next call of deflate:
-       */
+           */
           s.last_flush = -1;
           return Z_OK;
-    }
+        }
 
         /* Make sure there is something to do and avoid duplicate consecutive
          * flushes. For repeated and useless calls with Z_FINISH, we keep
          * returning Z_STREAM_END instead of Z_BUF_ERROR.
-     */
+         */
       } else if (strm.avail_in === 0 && rank(flush) <= rank(old_flush) &&
           flush !== Z_FINISH) {
         return err(strm, Z_BUF_ERROR);
@@ -2371,7 +2371,7 @@
           if (strm.avail_out === 0) {
             s.last_flush = -1;
             /* avoid BUF_ERROR next call, see above */
-          }
+      }
           return Z_OK;
           /* If flush != Z_NO_FLUSH && avail_out == 0, the next call
            * of deflate should use the same flush parameter to make sure
@@ -2403,13 +2403,13 @@
               }
             }
           }
-          flush_pending(strm);
+      flush_pending(strm);
           if (strm.avail_out === 0) {
             s.last_flush = -1;
             /* avoid BUF_ERROR at next call, see above */
             return Z_OK;
-          }
-        }
+      }
+    }
       }
       //Assert(strm->avail_out > 0, "bug2");
       //if (strm.avail_out <= 0) { throw new Error("bug2");}
@@ -3297,7 +3297,7 @@
           utils.arraySet(state.window, src, end - copy, copy, 0);
           state.wnext = copy;
           state.whave = state.wsize;
-        }
+    }
         else {
           state.wnext += dist;
           if (state.wnext === state.wsize) {
@@ -3382,7 +3382,7 @@
             switch (state.mode) {
               case HEAD:
                 if (state.wrap === 0) {
-                  state.mode = TYPEDO;
+        state.mode = TYPEDO;
                   break;
       }
                 //=== NEEDBITS(16);
@@ -3393,7 +3393,7 @@
                   have--;
                   hold += input[next++] << bits;
                   bits += 8;
-                }
+      }
                 //===//
                 if ((state.wrap & 2) && hold === 0x8b1f) {  /* gzip header */
                   state.check = 0/*crc32(0L, Z_NULL, 0)*/;
@@ -4871,7 +4871,7 @@
           huff &= incr - 1;
           huff += incr;
         } else {
-          huff = 0;
+      huff = 0;
         }
 
         /* go to next symbol, update count, len */
@@ -7824,7 +7824,7 @@
                   if (tempCodePoint > 0x7F) {
                     codePoint = tempCodePoint
             }
-                }
+          }
                 break
               case 3:
                 secondByte = buf[i + 1]
@@ -24369,10 +24369,10 @@
      * @property {Body} bodyA
      */
     this.bodyA = bodyA;
-      /**
-       * @property {Body} bodyB
-       */
-      this.bodyB = bodyB;
+    /**
+     * @property {Body} bodyB
+     */
+    this.bodyB = bodyB;
     }
 
     /**
@@ -27383,7 +27383,7 @@
             var a = []
             for (var i in o) if (o.hasOwnProperty(i)) a.push(i)
             return a
-          }
+    }
         }
 
         function checkBufferLength(parser) {
@@ -27402,19 +27402,19 @@
                   break
 
                 case 'cdata':
-                  emitNode(parser, 'oncdata', parser.cdata)
-                  parser.cdata = ''
+            emitNode(parser, 'oncdata', parser.cdata)
+            parser.cdata = ''
                   break
 
                 case 'script':
-                  emitNode(parser, 'onscript', parser.script)
-                  parser.script = ''
+            emitNode(parser, 'onscript', parser.script)
+            parser.script = ''
                   break
 
                 default:
                   error(parser, 'Max buffer length exceeded: ' + buffers[i])
         }
-      }
+            }
             maxActual = Math.max(maxActual, len)
           }
           // schedule the next check for the earliest possible buffer overrun.
@@ -27425,7 +27425,7 @@
         function clearBuffers(parser) {
           for (var i = 0, l = buffers.length; i < l; i++) {
             parser[buffers[i]] = ''
-    }
+          }
         }
 
         function flushBuffers(parser) {
@@ -27433,7 +27433,7 @@
           if (parser.cdata !== '') {
             emitNode(parser, 'oncdata', parser.cdata)
             parser.cdata = ''
-    }
+          }
           if (parser.script !== '') {
             emitNode(parser, 'onscript', parser.script)
             parser.script = ''
@@ -28049,12 +28049,12 @@
                     'Actual: ' + parser.attribValue)
               } else {
                 var tag = parser.tag
-                var parent = parser.tags[parser.tags.length - 1] || parser
+          var parent = parser.tags[parser.tags.length - 1] || parser
                 if (tag.ns === parent.ns) {
                   tag.ns = Object.create(parent.ns)
           }
                 tag.ns[local] = parser.attribValue
-              }
+        }
             }
 
             // defer onattribute events until all attributes have been seen
@@ -28096,8 +28096,8 @@
                 emitNode(parser, 'onopennamespace', {
                   prefix: p,
                   uri: tag.ns[p]
-          })
-        })
+                })
+              })
             }
 
             // handle deferred onattribute events
@@ -28125,7 +28125,7 @@
                 strictFail(parser, 'Unbound namespace prefix: ' +
                     JSON.stringify(prefix))
                 a.uri = prefix
-        }
+              }
               parser.tag.attributes[name] = a
               emitNode(parser, 'onattribute', a)
             }
@@ -28214,7 +28214,7 @@
               Object.keys(tag.ns).forEach(function (p) {
                 var n = tag.ns[p]
                 emitNode(parser, 'onclosenamespace', {prefix: p, uri: n})
-        })
+              })
             }
           }
           if (t === 0) parser.closedRoot = true
@@ -28307,7 +28307,7 @@
                 parser.column = 0
               } else {
                 parser.column++
-        }
+              }
             }
             switch (parser.state) {
               case S.BEGIN:
@@ -28338,28 +28338,28 @@
               }
             }
                   parser.textNode += chunk.substring(starti, i - 1)
-          }
+                }
                 if (c === '<' && !(parser.sawRoot && parser.closedRoot && !parser.strict)) {
-            parser.state = S.OPEN_WAKA
-            parser.startTagPosition = parser.position
-                } else {
+                  parser.state = S.OPEN_WAKA
+                  parser.startTagPosition = parser.position
+          } else {
                   if (not(whitespace, c) && (!parser.sawRoot || parser.closedRoot)) {
                     strictFail(parser, 'Text data outside of root node.')
-                  }
+            }
                   if (c === '&') {
                     parser.state = S.TEXT_ENTITY
-                  } else {
+            } else {
                     parser.textNode += c
-                  }
+            }
           }
                 continue
 
               case S.SCRIPT:
                 // only non-strict
-                if (c === '<') {
-                  parser.state = S.SCRIPT_ENDING
-                } else {
-                  parser.script += c
+          if (c === '<') {
+            parser.state = S.SCRIPT_ENDING
+          } else {
+            parser.script += c
           }
                 continue
 
@@ -28369,7 +28369,7 @@
                 } else {
                   parser.script += '<' + c
                   parser.state = S.SCRIPT
-          }
+                }
                 continue
 
               case S.OPEN_WAKA:
@@ -28396,7 +28396,7 @@
                     c = new Array(pad).join(' ') + c
                   }
                   parser.textNode += '<' + c
-                  parser.state = S.TEXT
+            parser.state = S.TEXT
           }
                 continue
 
@@ -28415,7 +28415,7 @@
                   if (parser.doctype || parser.sawRoot) {
                     strictFail(parser,
                         'Inappropriately located doctype declaration')
-            }
+                  }
                   parser.doctype = ''
                   parser.sgmlDecl = ''
                 } else if (c === '>') {
@@ -28434,7 +28434,7 @@
                 if (c === parser.q) {
                   parser.state = S.SGML_DECL
                   parser.q = ''
-                }
+          }
                 parser.sgmlDecl += c
                 continue
 
@@ -28450,8 +28450,8 @@
                   } else if (is(quote, c)) {
                     parser.state = S.DOCTYPE_QUOTED
                     parser.q = c
-            }
-                }
+                  }
+          }
                 continue
 
               case S.DOCTYPE_QUOTED:
@@ -28459,7 +28459,7 @@
                 if (c === parser.q) {
                   parser.q = ''
                   parser.state = S.DOCTYPE
-                }
+          }
                 continue
 
               case S.DOCTYPE_DTD:
@@ -28469,7 +28469,7 @@
                 } else if (is(quote, c)) {
                   parser.state = S.DOCTYPE_DTD_QUOTED
                   parser.q = c
-                }
+          }
                 continue
 
               case S.DOCTYPE_DTD_QUOTED:
@@ -28494,7 +28494,7 @@
                   parser.comment = textopts(parser.opt, parser.comment)
                   if (parser.comment) {
                     emitNode(parser, 'oncomment', parser.comment)
-                  }
+            }
                   parser.comment = ''
                 } else {
                   parser.comment += '-' + c
@@ -28535,7 +28535,7 @@
                 if (c === '>') {
                   if (parser.cdata) {
                     emitNode(parser, 'oncdata', parser.cdata)
-                  }
+            }
                   emitNode(parser, 'onclosecdata')
                   parser.cdata = ''
                   parser.state = S.TEXT
@@ -28544,7 +28544,7 @@
                 } else {
                   parser.cdata += ']]' + c
                   parser.state = S.CDATA
-                }
+          }
                 continue
 
               case S.PROC_INST:
@@ -28593,10 +28593,10 @@
                   } else {
                     if (not(whitespace, c)) {
                       strictFail(parser, 'Invalid character in tag name')
-                    }
+              }
                     parser.state = S.ATTRIB
-                  }
-                }
+            }
+          }
                 continue
 
               case S.OPEN_TAG_SLASH:
@@ -28606,7 +28606,7 @@
                 } else {
                   strictFail(parser, 'Forward-slash in opening tag not followed by >')
                   parser.state = S.ATTRIB
-                }
+          }
                 continue
 
               case S.ATTRIB:
@@ -28623,7 +28623,7 @@
                   parser.state = S.ATTRIB_NAME
                 } else {
                   strictFail(parser, 'Invalid attribute name')
-                }
+          }
                 continue
 
               case S.ATTRIB_NAME:
@@ -28640,7 +28640,7 @@
                   parser.attribName += c
                 } else {
                   strictFail(parser, 'Invalid attribute name')
-                }
+          }
                 continue
 
               case S.ATTRIB_NAME_SAW_WHITE:
@@ -28968,13 +28968,12 @@
     function updatePlayers(serverPlayers) {
       for (var key in serverPlayers) {
         var localPlayer = gameLogic.players[key];
-        if (typeof localPlayer !== "undefined") {
-          localPlayer.serverUpdate(serverPlayers[key]);
-        }
-        else {
-          localPlayer = gameLogic.newPlayer(key, serverPlayers[key]);
+        //create new player if don't exist locally
+        if (typeof localPlayer == "undefined") {
+          localPlayer = gameLogic.newPlayer(key);
           render.newPlayer(localPlayer);
         }
+        localPlayer.serverUpdate(serverPlayers[key]);
     }
     }
 
@@ -29291,6 +29290,7 @@
       this.sprite.angle = this.player.body.angle;
 
       //name position update
+      this.nameText.text = this.player.name;
       this.nameText.x = this.sprite.x;
       this.nameText.y = this.sprite.y - 20;
     };
@@ -29613,7 +29613,8 @@
 
     Game.prototype.gameLoop = function () {
       var delta = this.timer.getDelta();
-      console.log(delta);
+      delta = (delta < 40) ? delta : 40;
+
       this.handleInput();
       this.update(delta);
       this.render(delta);
@@ -29654,7 +29655,7 @@
     };
 
 //creates new player
-    Game.prototype.newPlayer = function (id, playerCopy) {
+    Game.prototype.newPlayer = function (id) {
       var player = new Player();
       player.id = id;
 
@@ -29669,13 +29670,9 @@
       var shape = new p2.Circle({
         radius: 16
       });
+
       body.addShape(shape);
       player.body = body;
-
-      if (playerCopy != null) {
-        player.body.position = playerCopy.position;
-        player.name = playerCopy.name;
-      }
 
       this.physicsWorld.addBody(body);
       this.players[player.id] = player;
@@ -29790,13 +29787,28 @@
 
       this.horizontalMove = HorizontalDir.none;
       this.verticalMove = VerticalDir.none;
+
+      this.lastUpdateInfo = {
+        position: [0, 0],
+        horizontalMove: 2,
+        verticalMove: 2,
+        name: "",
+        angle: 999
+      };
+
+      /*  this.hdir = HorizontalDir.left;
+       console.log('start hdir: ' + this.hdir);
+       this.hdircpy = this.hdir;
+       this.hdircpy = HorizontalDir.right;
+       console.log('cpy: ' + this.hdircpy);
+       console.log('org: ' + this.hdir);*/
+
     }
 
     Player.prototype.handleInput = function () {
       if (this.horizontalDir != 0 || this.verticalDir != 0) {
         this.horizontalDir = HorizontalDir.none;
         this.verticalDir = VerticalDir.none;
-        this.isChanged = true;
       }
 
       var self = this;
@@ -29824,35 +29836,49 @@
 
 //update player position depends on delta and move direction
     Player.prototype.update = function (delta) {
-      var offset = this.speed * delta;
-      if (this.verticalDir != 0 && this.horizontalDir != 0)
-        offset = offset * Math.sin(45 * (180 / Math.PI));
+      if (this.body != null) {
+        var offset = this.speed * delta;
+        if (this.verticalDir != 0 && this.horizontalDir != 0)
+          offset = offset * Math.sin(45 * (180 / Math.PI));
 
-      this.body.position[0] += this.horizontalDir * offset;
-      this.body.position[1] += this.verticalDir * offset;
+        this.body.position[0] += this.horizontalDir * offset;
+        this.body.position[1] += this.verticalDir * offset;
 
-      if (this.verticalDir != 0 || this.horizontalDir != 0
-          || this.body.velocity[0] != 0 || this.body.velocity[1] != 0) {
-        this.isChanged = true;
+        // if (this.verticalDir != 0 || this.horizontalDir != 0
+        //     || this.body.velocity[0] != 0 || this.body.velocity[1] != 0) {
+        //      this.isChanged = true;
+        // }
       }
     };
 
 //set player position to x, y
     Player.prototype.setPosition = function (x, y) {
-      this.body.position[0] = x;
-      this.body.position[1] = y;
+      if (this.body != null) {
+        this.body.position[0] = x;
+        this.body.position[1] = y;
+      }
     };
 
     Player.prototype.serverUpdate = function (playerUpdateInfo) {
-      //console.log('local: ' + this.x + ' server: ' + playerUpdateInfo.x);
-      this.setPosition(playerUpdateInfo.position[0], playerUpdateInfo.position[1]);
-      this.horizontalMove = playerUpdateInfo.horizontalMove;
-      this.verticalMove = playerUpdateInfo.verticalMove;
-      this.name = playerUpdateInfo.name;
-      this.body.angle = playerUpdateInfo.angle;
+      if (playerUpdateInfo.hasOwnProperty('position')) {
+        this.setPosition(playerUpdateInfo.position[0], playerUpdateInfo.position[1]);
+      }
+      if (playerUpdateInfo.hasOwnProperty('horizontalMove')) {
+        this.horizontalMove = playerUpdateInfo.horizontalMove;
+      }
+      if (playerUpdateInfo.hasOwnProperty('verticalMove')) {
+        this.verticalMove = playerUpdateInfo.verticalMove;
+      }
+      if (playerUpdateInfo.hasOwnProperty('name')) {
+        this.name = playerUpdateInfo.name;
+      }
+      if (playerUpdateInfo.hasOwnProperty('angle')) {
+        this.body.angle = playerUpdateInfo.angle;
+      }
     };
 
-    Player.prototype.getUpdateInfo = function () {
+//get all update info
+    Player.prototype.getAllUpdateInfo = function () {
       var playerUpdateInfo = {};
       playerUpdateInfo.position = this.body.position;
       playerUpdateInfo.horizontalMove = this.horizontalDir;
@@ -29862,6 +29888,34 @@
 
       return playerUpdateInfo;
     };
+
+//get only update info from things which has changed
+    Player.prototype.getUpdateInfo = function () {
+      var playerUpdateInfo = {};
+      if (this.lastUpdateInfo.position[0] != this.body.position[0] || this.lastUpdateInfo.position[1] != this.body.position[1]) {
+        playerUpdateInfo.position = this.body.position;
+        this.lastUpdateInfo.position = [this.body.position[0], this.body.position[1]];
+      }
+      if (this.lastUpdateInfo.horizontalMove != this.horizontalDir) {
+        playerUpdateInfo.horizontalMove = this.horizontalDir;
+        this.lastUpdateInfo.horizontalMove = this.horizontalDir;
+      }
+      if (this.lastUpdateInfo.verticalMove != this.verticalDir) {
+        playerUpdateInfo.verticalMove = this.verticalDir;
+        this.lastUpdateInfo.verticalMove = this.verticalDir;
+      }
+      if (this.lastUpdateInfo.angle != this.body.angle) {
+        playerUpdateInfo.angle = this.body.angle;
+        this.lastUpdateInfo.angle = this.body.angle;
+      }
+      if (this.lastUpdateInfo.name != this.name) {
+        playerUpdateInfo.name = this.name;
+        this.lastUpdateInfo.name = this.name;
+      }
+
+      return playerUpdateInfo;
+    };
+
 
     module.exports = Player;
   }, {}],

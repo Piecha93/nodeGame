@@ -40,6 +40,7 @@ PlayerRender.prototype.update = function () {
     this.sprite.angle = this.player.body.angle;
 
     //name position update
+    this.nameText.text = this.player.name;
     this.nameText.x = this.sprite.x;
     this.nameText.y = this.sprite.y - 20;
 };

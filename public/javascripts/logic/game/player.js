@@ -18,13 +18,28 @@ function Player() {
 
     this.horizontalMove = HorizontalDir.none;
     this.verticalMove = VerticalDir.none;
+
+    this.lastUpdateInfo = {
+        position: [0, 0],
+        horizontalMove: 2,
+        verticalMove: 2,
+        name: "",
+        angle: 999
+    };
+
+    /*  this.hdir = HorizontalDir.left;
+     console.log('start hdir: ' + this.hdir);
+     this.hdircpy = this.hdir;
+     this.hdircpy = HorizontalDir.right;
+     console.log('cpy: ' + this.hdircpy);
+     console.log('org: ' + this.hdir);*/
+
 }
 
 Player.prototype.handleInput = function () {
     if (this.horizontalDir != 0 || this.verticalDir != 0) {
         this.horizontalDir = HorizontalDir.none;
         this.verticalDir = VerticalDir.none;
-        this.isChanged = true;
     }
 
     var self = this;
@@ -52,35 +67,49 @@ Player.prototype.handleInput = function () {
 
 //update player position depends on delta and move direction
 Player.prototype.update = function (delta) {
-    var offset = this.speed * delta;
-    if (this.verticalDir != 0 && this.horizontalDir != 0)
-        offset = offset * Math.sin(45 * (180 / Math.PI));
+    if (this.body != null) {
+        var offset = this.speed * delta;
+        if (this.verticalDir != 0 && this.horizontalDir != 0)
+            offset = offset * Math.sin(45 * (180 / Math.PI));
 
-    this.body.position[0] += this.horizontalDir * offset;
-    this.body.position[1] += this.verticalDir * offset;
+        this.body.position[0] += this.horizontalDir * offset;
+        this.body.position[1] += this.verticalDir * offset;
 
-    if (this.verticalDir != 0 || this.horizontalDir != 0
-        || this.body.velocity[0] != 0 || this.body.velocity[1] != 0) {
-        this.isChanged = true;
+        // if (this.verticalDir != 0 || this.horizontalDir != 0
+        //     || this.body.velocity[0] != 0 || this.body.velocity[1] != 0) {
+        //      this.isChanged = true;
+        // }
     }
 };
 
 //set player position to x, y
 Player.prototype.setPosition = function (x, y) {
-    this.body.position[0] = x;
-    this.body.position[1] = y;
+    if (this.body != null) {
+        this.body.position[0] = x;
+        this.body.position[1] = y;
+    }
 };
 
 Player.prototype.serverUpdate = function (playerUpdateInfo) {
-    //console.log('local: ' + this.x + ' server: ' + playerUpdateInfo.x);
-    this.setPosition(playerUpdateInfo.position[0], playerUpdateInfo.position[1]);
-    this.horizontalMove = playerUpdateInfo.horizontalMove;
-    this.verticalMove = playerUpdateInfo.verticalMove;
-    this.name = playerUpdateInfo.name;
-    this.body.angle = playerUpdateInfo.angle;
+    if (playerUpdateInfo.hasOwnProperty('position')) {
+        this.setPosition(playerUpdateInfo.position[0], playerUpdateInfo.position[1]);
+    }
+    if (playerUpdateInfo.hasOwnProperty('horizontalMove')) {
+        this.horizontalMove = playerUpdateInfo.horizontalMove;
+    }
+    if (playerUpdateInfo.hasOwnProperty('verticalMove')) {
+        this.verticalMove = playerUpdateInfo.verticalMove;
+    }
+    if (playerUpdateInfo.hasOwnProperty('name')) {
+        this.name = playerUpdateInfo.name;
+    }
+    if (playerUpdateInfo.hasOwnProperty('angle')) {
+        this.body.angle = playerUpdateInfo.angle;
+    }
 };
 
-Player.prototype.getUpdateInfo = function () {
+//get all update info
+Player.prototype.getAllUpdateInfo = function () {
     var playerUpdateInfo = {};
     playerUpdateInfo.position = this.body.position;
     playerUpdateInfo.horizontalMove = this.horizontalDir;
@@ -90,5 +119,33 @@ Player.prototype.getUpdateInfo = function () {
 
     return playerUpdateInfo;
 };
+
+//get only update info from things which has changed
+Player.prototype.getUpdateInfo = function () {
+    var playerUpdateInfo = {};
+    if (this.lastUpdateInfo.position[0] != this.body.position[0] || this.lastUpdateInfo.position[1] != this.body.position[1]) {
+        playerUpdateInfo.position = this.body.position;
+        this.lastUpdateInfo.position = [this.body.position[0], this.body.position[1]];
+    }
+    if (this.lastUpdateInfo.horizontalMove != this.horizontalDir) {
+        playerUpdateInfo.horizontalMove = this.horizontalDir;
+        this.lastUpdateInfo.horizontalMove = this.horizontalDir;
+    }
+    if (this.lastUpdateInfo.verticalMove != this.verticalDir) {
+        playerUpdateInfo.verticalMove = this.verticalDir;
+        this.lastUpdateInfo.verticalMove = this.verticalDir;
+    }
+    if (this.lastUpdateInfo.angle != this.body.angle) {
+        playerUpdateInfo.angle = this.body.angle;
+        this.lastUpdateInfo.angle = this.body.angle;
+    }
+    if (this.lastUpdateInfo.name != this.name) {
+        playerUpdateInfo.name = this.name;
+        this.lastUpdateInfo.name = this.name;
+    }
+
+    return playerUpdateInfo;
+};
+
 
 module.exports = Player;
