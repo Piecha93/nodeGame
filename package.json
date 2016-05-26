@@ -8,6 +8,7 @@
     "node-uuid": "latest",
     "ejs": "latest",
     "p2": "latest",
-    "tmx-parser": "1.4.0"
+    "tmx-parser": "1.4.0",
+    "mongodb": "~2.0.33"
   }
 }

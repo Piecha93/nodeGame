@@ -122,7 +122,7 @@ Render.prototype.update = function (delta) {
 function mouseMoveCallback(mousePointer) {
     var radians = Math.atan2(mousePointer.x - this.localPlayerRender.sprite.x + this.game.camera.x
         , mousePointer.y - this.localPlayerRender.sprite.y + this.game.camera.y);
-    var degree = (radians * (180 / Math.PI) * -1) + 90;
+    var degree = (radians * (180 / Math.PI) * -1) + 180;
     this.mouseMoveCallback(degree);
 }
 

@@ -12,7 +12,7 @@ function Player() {
     this.verticalDir = VerticalDir.none;
     this.speed = 0.2;
     this.angle = 0;
-    this.angleSpeed = 1;
+    this.angleSpeed = 2;
     this.isChanged = true;
     this.name = "";
 
@@ -72,12 +72,32 @@ Player.prototype.update = function (delta) {
         this.body.position[1] += this.verticalDir * offset;
 
         //update angle
-        if (Math.abs(this.angle - this.body.angle) > 0.1) {
-            //TODO fix rotation between 270 and -90
-            this.body.angle += (this.angle - this.body.angle) * this.angleSpeed / delta;
+        if (Math.abs(this.angle - this.body.angle) > 1) {
+            this.body.angle = lerpDegrees(this.body.angle, this.angle, this.angleSpeed / delta);
         }
     }
 };
+
+function lerpDegrees(start, end, amount) {
+    var difference = Math.abs(end - start);
+    if (difference > 180) {
+        if (end > start) {
+            start += 360;
+        }
+        else {
+            end += 360;
+        }
+    }
+
+    var value = (start + ((end - start) * amount));
+
+    var rangeZero = 360;
+
+    if (value >= 0 && value <= 360)
+        return value;
+
+    return (value % rangeZero);
+}
 
 //set player position to x, y
 Player.prototype.setPosition = function (x, y) {
