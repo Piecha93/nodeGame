@@ -2,17 +2,21 @@
  render text area for chat input
  using CanvasInput library
  */
-function MessageInputRender(game) {
+function MessageInputRender(game, group) {
     this.game = game;
+    this.group = group;
+    this.inputSprite = null;
+    this.bitmap = null;
 }
 
 MessageInputRender.prototype.init = function () {
-    var bitmap = this.game.add.bitmapData(250, 40);
-    this.inputSprite = this.game.add.sprite(0, this.game.height - 35, bitmap);
+    this.bitmap = this.game.add.bitmapData(250, 40);
+    this.inputSprite = this.game.add.sprite(0, this.game.height - 35, this.bitmap);
     this.inputSprite.fixedToCamera = true;
+    this.group.add(this.inputSprite);
 
     this.inputSprite.canvasInput = new CanvasInput({
-        canvas: bitmap.canvas,
+        canvas: this.bitmap.canvas,
         fontSize: 14,
         fontFamily: 'Arial',
         fontColor: '#212121',
@@ -29,7 +33,6 @@ MessageInputRender.prototype.init = function () {
 };
 
 MessageInputRender.prototype.update = function () {
-
 };
 
 MessageInputRender.prototype.startTyping = function () {
@@ -46,8 +49,20 @@ MessageInputRender.prototype.getTextAndReset = function () {
 };
 
 MessageInputRender.prototype.destroy = function () {
-    this.inputSprite.canvasInput.destroy();
-    this.inputSprite.destroy();
+    if (this.inputSprite != null) {
+        if (this.inputSprite.canvasInput != null) {
+            this.inputSprite.canvasInput.destroy();
+            this.inputSprite.canvasInput = null;
+        }
+        this.inputSprite.destroy();
+        this.inputSprite = null;
+    }
+    if (this.bitmap != null) {
+        this.bitmap.destroy();
+        this.bitmap = null;
+    }
+    this.game = null;
+    this.group = null;
 };
 
 module.exports = MessageInputRender;

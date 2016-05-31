@@ -4,7 +4,7 @@ var InputHandler = require('./logic/inputhandler');
 var MessageBox = require('./logic/chat/messagebox');
 
 //number of times per secound sending packets to server
-var updateTickRate = 20;
+var updateTickRate = 10;
 var update;
 resetUpdate();
 
@@ -29,10 +29,12 @@ var localPlayer = null;
 var socket = io.connect();
 
 function assetsLoadedCallback() {
-    socket.emit('connected');
+    socket.emit('ready');
 }
 
 socket.on('startgame', function (gameData) {
+    //reset game logic
+    gameLogic.reset();
     //start game loop when connected to server
     gameLogic.startGameLoop();
     //create map
@@ -40,17 +42,21 @@ socket.on('startgame', function (gameData) {
     //set render to game logic update
     gameLogic.setRender(render);
     //create local player with id from server
-    localPlayer = gameLogic.newPlayer(gameData.id);
-    localPlayer.id = gameData.id;
+    localPlayer = gameLogic.newPlayer(gameData.name);
     localPlayer.name = gameData.name;
     localPlayer.isMainPlayer = true;
 
+    clearTimeout(serverUpdateLoopTimeout);
+    clearTimeout(serverHeartbeatUpdateLoopTimeout);
     startServerUpdateLoop();
     startServerHeartbeatUpdateLoop();
-    //create map
-    render.createMap('testmap');
+
+    //clear render
+    render.destroyAll();
+    //create map to render
+    render.createMap(gameData.mapName);
     //add player to render
-    render.newPlayer(localPlayer);
+    render.newCharacter(localPlayer);
     //add messageBox to render
     render.createMessageBox(messageBox);
     //add stats (ping) to render. Ping is send by reference and has property "value" which contains ping value, so render always know if value changed
@@ -58,8 +64,9 @@ socket.on('startgame', function (gameData) {
 
     //set inputHandler callback
     inputHandler.setCallback(inputCallback);
+    inputHandler.clearInput();
 
-    console.log('Connection to server succesfull. Your id is: ' + gameData.id);
+    console.log('Connection to server succesfull. Welcome ' + gameData.name);
 });
 
 /*
@@ -68,10 +75,13 @@ socket.on('startgame', function (gameData) {
 
 //get gamelogic update from server
 socket.on('serverupdate', function (data) {
-    if (data.players !== undefined)
+    console.log("dd");
+    if (data.players !== undefined) {
         updatePlayers(data.players);
-    if (data.disconnectedClients.length > 0)
+    }
+    if (data.disconnectedClients.length > 0) {
         deletePlayers(data.disconnectedClients);
+    }
 });
 
 //get message from server
@@ -92,7 +102,7 @@ function updatePlayers(serverPlayers) {
         //create new player if don't exist locally
         if (typeof localPlayer == "undefined") {
             localPlayer = gameLogic.newPlayer(key);
-            render.newPlayer(localPlayer);
+            render.newCharacter(localPlayer);
         }
         localPlayer.serverUpdate(serverPlayers[key]);
     }
@@ -100,9 +110,11 @@ function updatePlayers(serverPlayers) {
 
 //delete disconnected players
 function deletePlayers(disconnected) {
-    disconnected.forEach(function (id) {
-        render.removePlayer(id);
-        gameLogic.removePlayer(id);
+    disconnected.forEach(function (name) {
+        if (localPlayer.name != name) {
+            render.removeCharacter(name);
+            gameLogic.removePlayer(name);
+        }
     });
 }
 
@@ -136,14 +148,16 @@ function serverHeartbeatsLoop() {
     }
 }
 
+var serverUpdateLoopTimeout = null;
 function startServerUpdateLoop() {
     serverUpdateLoop();
-    setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
+    serverUpdateLoopTimeout = setTimeout(startServerUpdateLoop, 1 / updateTickRate * 1000);
 }
 
+var serverHeartbeatUpdateLoopTimeout = null;
 function startServerHeartbeatUpdateLoop() {
     serverHeartbeatsLoop();
-    setTimeout(startServerHeartbeatUpdateLoop, 1 / heartBeatsRate * 1000);
+    serverHeartbeatUpdateLoopTimeout = setTimeout(startServerHeartbeatUpdateLoop, 1 / heartBeatsRate * 1000);
 }
 
 function resetUpdate() {
@@ -169,7 +183,7 @@ function inputCallback(input) {
             //if chat mode is false we entering chat mode
         } else {
             var message = render.endChat();
-            if (message != "") {
+            if (message != null || message != "") {
                 var m = messageBox.createMessage(message, localPlayer.name);
                 m.parseAddressee();
                 socket.emit('clientmessage', m);
@@ -187,9 +201,11 @@ function inputCallback(input) {
 }
 
 function mouseMoveCallback(degree) {
-    localPlayer.angle = degree;
-    update.angle = degree;
-    update.isEmpty = false;
+    if (localPlayer != null) {
+        localPlayer.angle = degree;
+        update.angle = degree;
+        update.isEmpty = false;
+    }
 }
 
 //clear input and send update when tab inactive

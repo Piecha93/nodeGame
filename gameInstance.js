@@ -24,8 +24,9 @@ GameServer.prototype.clearUpdate = function () {
 };
 
 //start game server
-GameServer.prototype.startGameServer = function () {
+GameServer.prototype.startGameServer = function (portalEvent) {
     this.gameLogic = new Game();
+    this.gameLogic.portalEvent = portalEvent;
     this.gameLogic.createMap(this.mapName);
     this.gameLogic.startGameLoop();
 
@@ -35,16 +36,9 @@ GameServer.prototype.startGameServer = function () {
 };
 
 //new client connected
-GameServer.prototype.clientConnected = function (client) {
+GameServer.prototype.clientReady = function (client) {
     this.clients.push(client);
-
-    console.log('New client connected. id: ' + client.id);
-    console.log('Clients connected(' + this.clients.length + '):');
-    this.clients.forEach(function (c) {
-        console.log(c.id + ' ' + c.name);
-    });
-
-    var newPlayer = this.gameLogic.newPlayer(client.id);
+    var newPlayer = this.gameLogic.newPlayer(client.name);
     newPlayer.name = client.name;
 
     for (var key in this.gameLogic.players) {
@@ -52,22 +46,16 @@ GameServer.prototype.clientConnected = function (client) {
     }
 
     this.update.isEmpty = false;
-
 };
 
 //client disconnected
-GameServer.prototype.clientDisconnected = function (client) {
+GameServer.prototype.clientLeft = function (client) {
     var indexToRemove = this.clients.indexOf(client);
     if (indexToRemove != -1) {
         this.clients.splice(indexToRemove, 1);
 
-        console.log('Client disconnected');
-        console.log('Clients connected(' + this.clients.length + '):');
-        this.clients.forEach(function (c) {
-            console.log(c.id + ' ' + c.name);
-        });
-        this.gameLogic.removePlayer(client.id);
-        this.update.disconnectedClients.push(client.id);
+        this.gameLogic.removePlayer(client.name);
+        this.update.disconnectedClients.push(client.name);
         this.update.isEmpty = false;
     }
 };
@@ -79,7 +67,7 @@ GameServer.prototype.updateLoop = function () {
     this.clients.forEach(function (c) {
         c.timeOutTime -= 1 / self.updateTickRate;
         if (c.timeOutTime < 0) {
-            self.clientDisconnected(c);
+            self.clientLeft(c);
         }
     });
 
@@ -107,16 +95,16 @@ GameServer.prototype.updateLoop = function () {
     }, 1 / this.updateTickRate * 1000);
 };
 
-GameServer.prototype.handleClientInput = function (id, input) {
+GameServer.prototype.handleClientInput = function (name, input) {
     //console.log('client: ' + id + ' sent: ' + input);
-    var player = this.gameLogic.getPlayer(id);
+    var player = this.gameLogic.getPlayer(name);
     if (player != null) {
         player.input = input;
     }
 };
 
-GameServer.prototype.handleClientAngle = function (id, angle) {
-    var player = this.gameLogic.getPlayer(id);
+GameServer.prototype.handleClientAngle = function (name, angle) {
+    var player = this.gameLogic.getPlayer(name);
     if (player != null) {
         player.angle = angle;
         player.isChanged = true;

@@ -8,7 +8,9 @@
     "node-uuid": "latest",
     "ejs": "latest",
     "p2": "latest",
-    "tmx-parser": "1.4.0",
-    "mongodb": "~2.0.33"
+    "tmx-parser": "1.4.0"
+  },
+  "devDependencies": {
+    "phaser-input": "^1.1.4"
   }
 }

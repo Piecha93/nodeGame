@@ -12,7 +12,20 @@ var io = require('socket.io').listen(server);
 var UUID = require('node-uuid');
 var tmx = require('tmx-parser');
 
-var GameServer = require('./gameserver');
+/*
+ var MongoClient = require('mongodb').MongoClient
+ , assert = require('assert');
+
+ // Connection URL
+ var url = 'mongodb://localhost:27017/local';
+ // Use connect method to connect to the Server
+ MongoClient.connect(url, function (err, db) {
+ assert.equal(null, err);
+ console.log("Connected correctly to server");
+
+ db.close();
+ });
+ */
 
 server.listen(port);
 console.log("Node server started on port: " + port);
@@ -25,28 +38,32 @@ app.use(express.static(__dirname + '/public'));
 var routes = require('./routes/index');
 app.use('/', routes);
 
+var GameInstance = require('./gameinstance');
+
 //keep game servers references (game server is single "world" instance.)
 var gameServers = {};
 //keep all connected clients
-var clients = [];
+var clients = {};
 //to count guest nicknames
 var names = 0;
 
 //start one game instance
-startNewServer();
+createNewInstance('mapatest');
+createNewInstance('mapatest2');
 
 //called when client start to loading page
 io.sockets.on('connection', function (client) {
-    client.id = -1;
+    client.name = 'Guest' + names.toString();
+    names++;
 
-    //called when client loaded assets and is reade to "real" connection
-    client.on('connected', function () {
-        clientConnected(client);
+    //called when client loaded assets and is ready to strat game
+    client.on('ready', function () {
+        clientReady(client);
     });
 
     //called when client disconnected
     client.on('disconnect', function () {
-        clientDisconnected(client);
+        clientLeft(client);
     });
 
     //called when client sends update
@@ -65,13 +82,10 @@ io.sockets.on('connection', function (client) {
     });
 });
 
-function clientConnected(client) {
-    client.id = UUID();
+function clientReady(client) {
     client.serverId = selectServer();
-    client.name = 'Guest' + names.toString();
-    names++;
 
-    clients.push(client);
+    clients[client.name] = client;
     client.timeOutTime = timeOut;
 
     //send message to all ppl on server
@@ -80,28 +94,27 @@ function clientConnected(client) {
         addressee: "system",
         content: client.name + " connected"
     };
+
     gameServers[client.serverId].sendMessageToAll(message);
 
     //add client to server
-    gameServers[client.serverId].clientConnected(client);
-    client.emit('startgame', {id: client.id, name: client.name, mapName: gameServers[client.serverId].mapName});
+    gameServers[client.serverId].clientReady(client);
+    client.emit('startgame', {name: client.name, mapName: gameServers[client.serverId].mapName});
 }
 
-function clientDisconnected(client) {
-    if (gameServers[client.serverId] != undefined) {
-        if (client !== undefined) {
-            gameServers[client.serverId].clientDisconnected(client);
-        }
+function clientLeft(client) {
+    if (client !== undefined && gameServers[client.serverId] != undefined) {
+        gameServers[client.serverId].clientLeft(client);
     }
 }
 
 function handleClientUpdate(client, data) {
     if (gameServers[client.serverId] != undefined) {
         if (data.input != null) {
-            gameServers[client.serverId].handleClientInput(client.id, data.input);
+            gameServers[client.serverId].handleClientInput(client.name, data.input);
         }
         if (data.angle != null) {
-            gameServers[client.serverId].handleClientAngle(client.id, data.angle);
+            gameServers[client.serverId].handleClientAngle(client.name, data.angle);
         }
         client.timeOutTime = timeOut;
     }
@@ -137,11 +150,11 @@ function handleClientMessage(client, message) {
         } else {
             var addresseeClient = null;
             //find client addressee
-            for (var i = 0; i < clients.length; i++) {
-                if (clients[i].name.toUpperCase() == message.addressee.toUpperCase() && clients[i].name.toUpperCase() != client.name.toUpperCase()) {
-                    addresseeClient = clients[i];
+            for (var key in this.clients) {
+                if (clients[key].name.toUpperCase() == message.addressee.toUpperCase() && clients[key].name.toUpperCase() != client.name.toUpperCase()) {
+                    addresseeClient = clients[key];
                     //to keep original letters case
-                    message.addressee = clients[i].name;
+                    message.addressee = clients[key].name;
                     break;
                 }
             }
@@ -169,10 +182,19 @@ function handleClientHeartbeat(client, data) {
     client.emit('heartbeatsresponse', {id: data.id})
 }
 
-function startNewServer() {
+function portalEvent(clientName) {
+    var client = clients[clientName];
+    if (client !== undefined) {
+        clientLeft(client);
+        clientReady(client);
+    }
+}
+
+function createNewInstance(mapName) {
     var id = UUID();
-    gameServers[id] = new GameServer(id, 'mapatest');
-    gameServers[id].startGameServer();
+    var gameInstance = new GameInstance(id, mapName);
+    gameInstance.startGameServer(portalEvent);
+    gameServers[id] = gameInstance;
 }
 
 function selectServer() {

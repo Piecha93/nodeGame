@@ -3,11 +3,11 @@
  TODO scrollbar, resize, hide, drag able
  */
 
-function MessageBoxRender(game, messageBox) {
+function MessageBoxRender(game, group, messageBox) {
     this.game = game;
+    this.group = group;
     this.messageBox = messageBox;
     this.textHolder = null;
-
 
     //size of message box
     this.heigth = 400;
@@ -29,6 +29,7 @@ MessageBoxRender.prototype.init = function () {
         wordWrapWidth: this.width
     });
 
+    this.group.add(this.textHolder);
     this.textHolder.fixedToCamera = true;
 };
 
@@ -62,6 +63,10 @@ MessageBoxRender.prototype.update = function () {
 
 MessageBoxRender.prototype.destroy = function () {
     this.textHolder.destroy(true, false);
+    this.textHolder = null;
+    this.messageBox = null;
+    this.game = null;
+    this.group = null;
 };
 
 function hexToString(hex) {

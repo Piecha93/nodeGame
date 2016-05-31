@@ -15,6 +15,9 @@ function Player() {
     this.angleSpeed = 2;
     this.isChanged = true;
     this.name = "";
+    this.level = 0;
+    this.items = [];
+
 
     this.isMainPlayer = false;
 
@@ -30,7 +33,7 @@ function Player() {
     };
 }
 
-Player.prototype.handleInput = function () {
+Player.prototype.handleInput = function () { 
     if (this.horizontalDir != 0 || this.verticalDir != 0) {
         this.horizontalDir = HorizontalDir.none;
         this.verticalDir = VerticalDir.none;
@@ -78,6 +81,7 @@ Player.prototype.update = function (delta) {
     }
 };
 
+//find shortest path between two angles
 function lerpDegrees(start, end, amount) {
     var difference = Math.abs(end - start);
     if (difference > 180) {
@@ -106,6 +110,7 @@ Player.prototype.setPosition = function (x, y) {
         this.body.position[1] = y;
     }
 };
+
 
 Player.prototype.serverUpdate = function (playerUpdateInfo) {
     if (playerUpdateInfo.hasOwnProperty('position')) {
